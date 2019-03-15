@@ -1,4 +1,5 @@
-import skimage.data
+#import skimage.data
+import cv2
 import numpy
 import matplotlib
 import NumPyCNN as numpycnn
@@ -24,11 +25,11 @@ For more info., contact me:
 # Reading the image
 #img = skimage.io.imread("test.jpg")
 #img = skimage.data.checkerboard()
-img = skimage.data.chelsea()
+img = cv2.imread('H:\\Undergraduate\\18-19-3\\Undergraduate Thesis\\Dataset\\images\\Org images\\gugong.bmp')
 #img = skimage.data.camera()
 
 # Converting the image into gray.
-img = skimage.color.rgb2gray(img)
+img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # First conv layer
 #l1_filter = numpy.random.rand(2,7,7)*20 # Preparing the filters randomly.
