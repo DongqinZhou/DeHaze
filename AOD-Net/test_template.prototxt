@@ -141,7 +141,7 @@ layer {{
   type: "Eltwise"
   bottom: "data"
   bottom: "K"
-  top: "prod"
+  top: "prod"	·
   eltwise_param {{
     operation: PROD
   }}
