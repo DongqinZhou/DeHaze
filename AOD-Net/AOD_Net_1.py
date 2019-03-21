@@ -48,8 +48,7 @@ def load_data(data_path,label_path, p_train):
     return x_train, y_train, x_test, y_test
 
 
-#concat层有问题
-################## define AOD-Net nodel
+################## define AOD-Net nodel using Sequential model
 input_shape = (None,None,3)
 model = Sequential()
 conv1 = Conv2D(3, 1, strides=(1, 1), padding='valid', activation='relu', input_shape = input_shape)
@@ -58,19 +57,19 @@ zp1 = ZeroPadding2D(padding = (1,1))
 model.add(zp1)
 conv2 = Conv2D(3, 3, strides=(1, 1), activation='relu')
 model.add(conv2)
-concat1 = Concatenate(axis = -1)([conv1, conv2])
+concat1 = Concatenate([conv1, conv2])
 model.add(concat1)
 zp2 = ZeroPadding2D(padding = (2,2))
 model.add(zp2)
 conv3 = Conv2D(3, 5, strides=(1, 1), activation='relu')
 model.add(conv3)
-concat2 = Concatenate(axis = -1)([conv2, conv3])
+concat2 = Concatenate([conv2, conv3])
 model.add(concat2)
 zp3 = ZeroPadding2D(padding = (3,3))
 model.add(zp3)
 conv4 = Conv2D(3, 7, strides=(1, 1), activation='relu')
 model.add(conv4)
-concat3 = Concatenate(axis = -1)([conv1, conv2, conv3, conv4])
+concat3 = Concatenate([conv1, conv2, conv3, conv4])
 model.add(concat3)
 zp4 = ZeroPadding2D(padding = (1,1))
 model.add(zp4)
@@ -82,7 +81,6 @@ subtract = Subtract([prod, conv5])
 model.add(subtract)
 one = K.backend(1, dtype="float")
 model.add(Add([subtract, one]))
-
 
 ##################### loss function
 def my_loss(y_true, y_pred):
