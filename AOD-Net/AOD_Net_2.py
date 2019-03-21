@@ -4,7 +4,7 @@ import numpy as np
 import random
 import os
 
-from keras.layers import Conv2D, Input, ZeroPadding2D, concatenate, add, multiply, subtract
+from keras.layers import Conv2D, Input, ZeroPadding2D, concatenate, add, multiply, subtract, Lambda
 from keras import optimizers
 from keras.models import Model
 import keras.backend as K
@@ -46,10 +46,16 @@ def load_data(data_path,label_path, p_train):
     x_test = data[round(n_datapoint * p_train):n_datapoint]
     y_train = label[0: round(n_datapoint * p_train)]
     y_test = label[round(n_datapoint * p_train):n_datapoint]    
-    
+    '''
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+    x_test = np.array(x_test)
+    x_test = np.array(y_test)
+    '''
     return x_train, y_train, x_test, y_test
 
 ################## define AOD-Net nodel using functional API
+#x_train.shape[1:]
 input_image = Input(shape = (None, None, 3))
 conv1 = Conv2D(3, (1,1), strides=(1, 1), padding='valid', activation='relu')(input_image)
 zp1 = ZeroPadding2D(padding = (1,1))(conv1)
@@ -65,27 +71,29 @@ zp4 = ZeroPadding2D(padding = (1,1))(concat3)
 conv5 = Conv2D(3, (3,3), strides=(1, 1), activation='relu')(zp4)
 prod = multiply([conv5, input_image])
 diff = subtract([prod, conv5])
-one = K.constant(1, dtype = "int")
+#out_image = diff + 1
+one = Lambda(lambda x: K.ones_like(x))(diff)
 out_image = add([diff, one])
 
 
 model = Model(inputs = input_image, outputs = out_image)
-plot_model(model, to_file='model.png')
+#plot_model(model, to_file='aodmodel.png')
 
-
+'''
 ##################### loss function
 def my_loss(y_true, y_pred):
-    err = np.sum((y_true.astype("float") - y_pred.astype("float")) ** 2)
-    err /= float(y_true.shape[0] * y_true.shape[1])
+    err = np.sum((y_true - y_pred) ** 2)
+    err /= (y_true.shape[0] * y_true.shape[1])
     return err
+'''
 
 ##################### optimizer
 sgd = optimizers.SGD(lr=0.01, clipvalue=0.1, momentum=0.9, decay=0.001, nesterov=False)
-model.compile(optimizer = sgd, loss = my_loss)
+model.compile(optimizer = sgd, loss = 'mean_squared_error')
 p_train = 0.8
 
-data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_image_data'
-label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_label'                     
+data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data_2'
+label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_label_2'                     
 x_train, y_train, x_test, y_test = load_data(data_path, label_path, p_train)
 model.fit(x_train, y_train, epochs = 20, batch_size = 32)
 MSE = model.evaluate(x_test, y_test,batch_size = 32)
