@@ -1,5 +1,7 @@
-# -*- coding: utf-8 -*-
 import cv2
-image = cv2.imread(r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images\forest1.jpg')
-cv2.imshow('image', image)
-cv2.waitKey(0)
+
+def resize_image(image, width, height):
+    resized_image = image
+    if image.shape != (height, width, 3):
+        resized_image = cv2.resize(image, (width, height), interpolation = cv2.INTER_AREA)
+    return resized_image

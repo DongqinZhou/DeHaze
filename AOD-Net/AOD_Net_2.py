@@ -17,7 +17,7 @@ import keras.backend as K
 
 
 ################### modified from data_input.py, test there!
-def load_data(data_path,label_path, p_train):
+def load_data(data_path,label_path, p_train, height, width):
     """
     load data and divide them into data-label pair.
     first read the file, then resize them, and eventually normalize them into [0,1] interval
@@ -36,16 +36,20 @@ def load_data(data_path,label_path, p_train):
     random.shuffle(data_files)  #将所有的文件路径打乱
     for data_file in data_files:
         hazy_image = cv2.imread(data_path + "\\" + data_file)#读取文件
+        if hazy_image.shape != (height, width, 3):
+            hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])]
         clear_image = cv2.imread(label_path + "\\" + label_file)
+        if clear_image.shape != (height, width, 3):
+            clear_image = cv2.resize(clear_image, (width, height), interpolation = cv2.INTER_AREA)
         data.append(hazy_image)
         label.append(clear_image)
 #    data = np.array(data,dtype="float")/255.0#归一化
     n_datapoint = len(data)
-    x_train = data[0: round(n_datapoint * p_train)]
-    x_test = data[round(n_datapoint * p_train):n_datapoint]
-    y_train = label[0: round(n_datapoint * p_train)]
-    y_test = label[round(n_datapoint * p_train):n_datapoint]    
+    x_train = np.asarray(data[0: round(n_datapoint * p_train)])
+    x_test = np.asarray(data[round(n_datapoint * p_train):n_datapoint])
+    y_train = np.asarray(label[0: round(n_datapoint * p_train)])
+    y_test = np.asarray(label[round(n_datapoint * p_train):n_datapoint]) 
     '''
     x_train = np.array(x_train)
     y_train = np.array(y_train)
@@ -92,10 +96,13 @@ def my_loss(y_true, y_pred):
 sgd = optimizers.SGD(lr=0.01, clipvalue=0.1, momentum=0.9, decay=0.001, nesterov=False)
 model.compile(optimizer = sgd, loss = 'mean_squared_error')
 p_train = 0.8
+width = 550
+height = 413
+
 
 data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data_2'
 label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_label_2'                     
-x_train, y_train, x_test, y_test = load_data(data_path, label_path, p_train)
+x_train, y_train, x_test, y_test = load_data(data_path, label_path, p_train, height, width)
 model.fit(x_train, y_train, epochs = 20, batch_size = 32)
 MSE = model.evaluate(x_test, y_test,batch_size = 32)
 # use the trained model: model.predict(X_new)

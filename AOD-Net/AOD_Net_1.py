@@ -40,10 +40,10 @@ def load_data(data_path,label_path, p_train):
         label.append(clear_image)
 #    data = np.array(data,dtype="float")/255.0#归一化
     n_datapoint = len(data)
-    x_train = data[0: round(n_datapoint * p_train)]
-    x_test = data[round(n_datapoint * p_train):n_datapoint]
-    y_train = label[0: round(n_datapoint * p_train)]
-    y_test = label[round(n_datapoint * p_train):n_datapoint]    
+    x_train = np.asarray(data[0: round(n_datapoint * p_train)])
+    x_test = np.asarray(data[round(n_datapoint * p_train):n_datapoint])
+    y_train = np.asarray(label[0: round(n_datapoint * p_train)])
+    y_test = np.asarray(label[round(n_datapoint * p_train):n_datapoint])    
     
     return x_train, y_train, x_test, y_test
 
