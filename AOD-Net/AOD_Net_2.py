@@ -77,7 +77,7 @@ out_image = add([diff, one])
 
 
 model = Model(inputs = input_image, outputs = out_image)
-#plot_model(model, to_file='aodmodel.png')
+plot_model(model, to_file='aodmodel.png')
 
 '''
 ##################### loss function
