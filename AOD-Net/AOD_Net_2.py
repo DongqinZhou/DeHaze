@@ -8,7 +8,7 @@ from keras.layers import Conv2D, Input, ZeroPadding2D, concatenate, add, multipl
 from keras import optimizers
 from keras.models import Model
 import keras.backend as K
-from keras.utils import plot_model
+#from keras.utils.vis_utils import plot_model
 
 
 
@@ -77,7 +77,8 @@ out_image = add([diff, one])
 
 
 model = Model(inputs = input_image, outputs = out_image)
-plot_model(model, to_file='aodmodel.png')
+model.summary()
+#plot_model(model, to_file='aodmodel.png')
 
 '''
 ##################### loss function
