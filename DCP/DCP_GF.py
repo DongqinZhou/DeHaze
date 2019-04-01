@@ -11,10 +11,11 @@ Created on Wed Mar 13 16:12:04 2019
 
 """
 Usage in IPython console:
-    import DCP_GF
+    import DCP_GF_Final
     im_path = "path(use \\ as separator)"
     im_dehaze = DCP_GF.dehaze(im_path, ...)
     cv2.imshow('image', im_dehaze[i])
+    cv2.waitKey(0)
         
 
 """  
@@ -24,17 +25,7 @@ import cv2
 import numpy as np
 import guidedfilter
 
-#im_path = ("H:\\Undergraduate\\18-19-3\\Undergraduate Thesis\\"
-#"Foggy photos\\IMG_20190224_101606.jpg")
-#im = cv2.imread(im_path,1)
-#cv2.imshow('image',im)  #显示图片
-#cv2.imwrite('messigray.png',im)
-#print(im.shape)
-p = 0.001  # percent of pixels
-W = 16     # window size
-omega = 0.95 # omega before transmission
-R, G, B = 0, 1, 2  # index for convenience
-L = 256  # color depth
+
 
 def get_dark_channel(I, w):
     """Get the dark channel prior in the (RGB) image data.
@@ -97,8 +88,8 @@ def get_transmission(I, A, darkch, omega, w):
     """
     return 1 - omega * get_dark_channel(I / A, w)  # CVPR09, eq.12
 
-def dehaze_raw(I, tmin=0.2, Amax=220, w=15, p=0.0001,
-               omega=0.95, guided=True, r=40, eps=1e-3):
+def dehaze_raw(I, tmin, Amax, w, p,
+               omega, guided, r, eps):
     """Get the dark channel prior, atmosphere light, transmission rate
        and refined transmission rate for raw RGB image data.
 
@@ -159,24 +150,18 @@ def get_radiance(I, A, t):
     tiledt[:, :, R] = tiledt[:, :, G] = tiledt[:, :, B] = t
     return (I - A) / tiledt + A  # CVPR09, eq.16
 
-def dehaze(im_path, tmin=0.2, Amax=220, w=W, p=p,
-           omega=omega, guided=True, r=40, eps=1e-3):
+def dehaze(im_path, tmin, Amax, w, p,
+           omega, guided, r, eps):
     """Dehaze the given RGB image.
 
-    Parameters
-    ----------
-    im:     the Image object of the RGB image
-    guided: refine the dehazing with guided filter or not
-    other parameters are the same as `dehaze_raw`
-
-    Return
+    
     ----------
     (dark, rawt, refinedt, rawrad, rerad)
     Images for dark channel prior, raw transmission estimate,
     refiend transmission estimate, recovered radiance with raw t,
     recovered radiance with refined t.
     """
-    im = cv2.imread(im_path,1)
+    im = cv2.imread(im_path)
     I = np.asarray(im, dtype=np.float64)
     Idark, A, rawt, refinedt = dehaze_raw(I, tmin, Amax, w, p,
                                           omega, guided, r, eps)
@@ -191,7 +176,16 @@ def dehaze(im_path, tmin=0.2, Amax=220, w=W, p=p,
                                     get_radiance(I, A, refinedt))]
 
 
+if __name__ =="__main__":
 
+    p = 0.001  # percent of pixels
+    W = 16     # window size
+    omega = 0.95 # omega before transmission
+    R, G, B = 0, 1, 2  # index for convenience
+    L = 256  # color depth
+    im_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data\0001_0.8_0.1.jpg'
+    im_dehaze = dehaze(im_path, tmin=0.2, Amax=220, w=W, p=p,
+           omega=omega, guided=True, r=40, eps=1e-3)
 
 
 
