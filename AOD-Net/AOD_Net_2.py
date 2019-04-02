@@ -83,7 +83,6 @@ def my_loss(y_true, y_pred):
     return err
 '''
 
-##################### optimizer
 if __name__ =="__main__":
     
     model = aodmodel()
@@ -115,12 +114,23 @@ if __name__ =="__main__":
     model.save('/home/jianan/Desktop/dongqin_temp/DeHaze/aodnet.model')
     print('model generated')
 
-# To use this model, results = model.predict_generator(...)
 
+'''
+width = 550
+height = 413
+batch_size = 32
 
+data_path = '/home/jianan/Desktop/dongqin_temp/Dataset/OTS001'
+label_path = '/home/jianan/Desktop/dongqin_temp/Dataset/clear_images'                      
+data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
+label_files = os.listdir(label_path)
 
+random.seed(0)  # ensure we have the same shuffled data every time
+random.shuffle(data_files)  
+x_train = data_files[0: 10]
 
-
+x, y = load_data(x_train, label_files, height, width)
+'''
 
 
 
