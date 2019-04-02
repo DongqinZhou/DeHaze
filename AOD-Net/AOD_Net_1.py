@@ -10,7 +10,9 @@ from keras.models import Sequential
 import keras.backend as K
 from keras import optimizers
 
-
+'''
+This model was defined using Sequential model, not so very suitable for this problem.
+'''
 
 
 

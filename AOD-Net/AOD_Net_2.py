@@ -8,7 +8,7 @@ from keras.layers import Conv2D, Input, ZeroPadding2D, concatenate, add, multipl
 from keras import optimizers
 from keras.models import Model
 import keras.backend as K
-#from keras.utils.vis_utils import plot_model
+
 
 
 
@@ -17,25 +17,16 @@ import keras.backend as K
 
 
 ################### modified from data_input.py, test there!
-def load_data(data_path,label_path, p_train, height, width):
-    """
-    load data and divide them into data-label pair.
-    first read the file, then resize them, and eventually normalize them into [0,1] interval
-    ideally, the input parameter should have a label path... but how could we keep the data and labels in 
-    accordance? shuffle all files from one folder and then find its corresponding label in another folder?
-    
-    p_train: proportion of training data
-    data_path: path where hazy images locate
-    label_path: path where clear images locate
-    """
+def load_data(data_files,label_files, height, width):
+    '''
+    label_path: the path where all label images locate
+    data_path: the path where a batch of hazy images locate 
+    '''
     data = []
     label = []
-    data_files = os.listdir(data_path)
-    label_files = os.listdir(label_path)
-    random.seed(0)  #保证每次数据顺序一致
-    random.shuffle(data_files)  #将所有的文件路径打乱
+    
     for data_file in data_files:
-        hazy_image = cv2.imread(data_path + "/" + data_file)#读取文件
+        hazy_image = cv2.imread(data_path + "/" + data_file)
         if hazy_image.shape != (height, width, 3):
             hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])]
@@ -45,19 +36,19 @@ def load_data(data_path,label_path, p_train, height, width):
         data.append(hazy_image)
         label.append(clear_image)
 #    data = np.array(data,dtype="float")/255.0#归一化
-    n_datapoint = len(data)
-    x_train = np.asarray(data[0: round(n_datapoint * p_train)])
-    x_test = np.asarray(data[round(n_datapoint * p_train):n_datapoint])
-    y_train = np.asarray(label[0: round(n_datapoint * p_train)])
-    y_test = np.asarray(label[round(n_datapoint * p_train):n_datapoint]) 
-    '''
-    x_train = np.array(x_train)
-    y_train = np.array(y_train)
-    x_test = np.array(x_test)
-    x_test = np.array(y_test)
-    '''
-    return x_train, y_train, x_test, y_test
+    
+    data = np.asarray(data) / 255.0
+    label = np.asarray(label) / 255.0
+    
+    return data, label
 
+def get_train_batch(data_files, label_files, batch_size, height, width):
+   
+    while 1:
+        for i in range(0, len(data_files), batch_size):
+            x, y = load_data(data_files[i : i+batch_size], label_files, height, width)
+            
+            yield x, y
 
 ################## define AOD-Net nodel using functional API
 def aodmodel():
@@ -84,8 +75,6 @@ def aodmodel():
     #model.summary()
     return model
 
-#plot_model(model, to_file='aodmodel.png')
-
 '''
 ##################### loss function
 def my_loss(y_true, y_pred):
@@ -100,18 +89,55 @@ if __name__ =="__main__":
     model = aodmodel()
     sgd = optimizers.SGD(lr=0.01, clipvalue=0.1, momentum=0.9, decay=0.001, nesterov=False)
     model.compile(optimizer = sgd, loss = 'mean_squared_error')
-    p_train = 0.8
+    p_train = 0.7
     width = 550
     height = 413
-    
+    batch_size = 32
     
     data_path = '/home/jianan/Desktop/dongqin_temp/Dataset/OTS001'
-    label_path = '/home/jianan/Desktop/dongqin_temp/Dataset/clear_images'                     
-    x_train, y_train, x_test, y_test = load_data(data_path, label_path, p_train, height, width)
-    model.fit(x_train, y_train, epochs = 20, batch_size = 32)
-    MSE = model.evaluate(x_test, y_test,batch_size = 32)
+    label_path = '/home/jianan/Desktop/dongqin_temp/Dataset/clear_images'                      
+    data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
+    label_files = os.listdir(label_path)
+    
+    random.seed(0)  # ensure we have the same shuffled data every time
+    random.shuffle(data_files)  
+    x_train = data_files[0: round(len(data_files) * p_train)]
+    x_test =  data_files[round(len(data_files) * p_train) : len(data_files)]
+    steps_per_epoch = len(x_train) // batch_size + 1
+    steps = len(x_test) // batch_size + 1
+    
+    model.fit_generator(generator = get_train_batch(x_train, label_files, batch_size, height, width), 
+                        steps_per_epoch=steps_per_epoch, epochs = 20, use_multiprocessing=True, 
+                        shuffle=False, initial_epoch=0)
+    MSE = model.evaluate_generator(generator=get_train_batch(x_test,
+                        label_files, batch_size, height, width), steps=steps)
     # use the trained model: model.predict(X_new)
     model.save('/home/jianan/Desktop/dongqin_temp/DeHaze/aodnet.model')
+    print('model generated')
+
+# To use this model, results = model.predict_generator(...)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

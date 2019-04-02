@@ -21,7 +21,7 @@ layer {{
     num_output: 3
     kernel_size: 1
   }}
-}}	
+}}
 
 layer {{
    name: "relu1"
@@ -141,7 +141,7 @@ layer {{
   type: "Eltwise"
   bottom: "data"
   bottom: "K"
-  top: "prod"	·
+  top: "prod"
   eltwise_param {{
     operation: PROD
   }}
