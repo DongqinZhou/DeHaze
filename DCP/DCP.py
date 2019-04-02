@@ -62,10 +62,12 @@ if __name__ =="__main__":
     L = 256  # color depth
     images_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data'
     images_filenames = os.listdir(images_path)
+    all_dehazed_images = []
     for image_filename in images_filenames:
         image_path = images_path + '\\' + image_filename
         im_dehaze = dehaze(image_path, tmin=0.2, Amax=220, w=W, p=p,
            omega=omega, r=40, eps=1e-3)
+        all_dehazed_images.append(im_dehaze)
 
 
 
