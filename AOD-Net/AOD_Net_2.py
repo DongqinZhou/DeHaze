@@ -51,7 +51,7 @@ def aodmodel():
     conv1 = Conv2D(3, (1,1), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(input_image)
     #zp1 = ZeroPadding2D(padding = (1,1))(conv1)
     conv2 = Conv2D(3, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(conv1)
-    concat1 = concatenate([conv1, conv2], aaxis = -1)
+    concat1 = concatenate([conv1, conv2], axis = -1)
     #zp2 = ZeroPadding2D(padding = (2,2))(concat1)
     conv3 = Conv2D(3, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(concat1)
     concat2 = concatenate([conv2, conv3], axis = -1)
