@@ -11,14 +11,7 @@ import keras.backend as K
 from keras.activations import relu 
 
 
-
-
-
-
-
-
-
-################### modified from data_input.py, test there!
+################### 
 def load_data(data_files,label_files, height, width):
     '''
     label_path: the path where all label images locate
@@ -44,7 +37,7 @@ def load_data(data_files,label_files, height, width):
     
     return data, label
 
-def get_train_batch(data_files, label_files, batch_size, height, width):
+def get_batch(data_files, label_files, batch_size, height, width):
    
     while 1:
         for i in range(0, len(data_files), batch_size):
@@ -90,8 +83,8 @@ if __name__ =="__main__":
     sgd = optimizers.SGD(lr=0.001, clipvalue=0.1, momentum=0.9, decay=0.0001, nesterov=False)
     model.compile(optimizer = sgd, loss = 'mean_squared_error')
     p_train = 0.7
-    width = 550
-    height = 413
+    width = 320
+    height = 240
     batch_size = 32
     
     data_path = '/home/jianan/Desktop/dongqin_temp/Dataset/OTS001'
@@ -102,15 +95,15 @@ if __name__ =="__main__":
     random.seed(0)  # ensure we have the same shuffled data every time
     random.shuffle(data_files)  
     x_train = data_files[0: round(len(data_files) * p_train)]
-    x_test =  data_files[round(len(data_files) * p_train) : len(data_files)]
+    x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     steps_per_epoch = len(x_train) // batch_size + 1
-    steps = len(x_test) // batch_size + 1
+    steps = len(x_val) // batch_size + 1
     
-    model.fit_generator(generator = get_train_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 20, use_multiprocessing=True, 
+    model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
+                        steps_per_epoch=steps_per_epoch, epochs = 20, validation_data = 
+                        get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
+                        use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0)
-    MSE = model.evaluate_generator(generator=get_train_batch(x_test,
-                        label_files, batch_size, height, width), steps=steps)
     # use the trained model: model.predict(X_new)
     model.save('/home/jianan/Desktop/dongqin_temp/DeHaze/aodnet.model')
     print('model generated')
