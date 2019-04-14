@@ -4,10 +4,12 @@ import numpy as np
 import random
 import os
 
-from keras.layers import Conv2D, Input, ZeroPadding2D, concatenate, add, multiply, subtract, Lambda
+from keras.layers import Conv2D, Input, concatenate, multiply, subtract, Lambda
 from keras import optimizers
 from keras.models import Model
 import keras.backend as K
+from keras.activations import relu 
+
 
 
 
@@ -53,24 +55,23 @@ def get_train_batch(data_files, label_files, batch_size, height, width):
 ################## define AOD-Net nodel using functional API
 def aodmodel():
     input_image = Input(shape = (None, None, 3))
-    conv1 = Conv2D(3, (1,1), strides=(1, 1), padding='valid', activation='relu')(input_image)
-    zp1 = ZeroPadding2D(padding = (1,1))(conv1)
-    conv2 = Conv2D(3, (3,3), strides=(1, 1), activation='relu')(zp1)
-    concat1 = concatenate([conv1, conv2])
-    zp2 = ZeroPadding2D(padding = (2,2))(concat1)
-    conv3 = Conv2D(3, (5,5), strides=(1, 1), activation='relu')(zp2)
-    concat2 = concatenate([conv2, conv3])
-    zp3 = ZeroPadding2D(padding = (3,3))(concat2)
-    conv4 = Conv2D(3, (7,7), strides=(1, 1), activation='relu')(zp3)
-    concat3 = concatenate([conv1, conv2, conv3, conv4])
-    zp4 = ZeroPadding2D(padding = (1,1))(concat3)
-    conv5 = Conv2D(3, (3,3), strides=(1, 1), activation='relu')(zp4)
+    conv1 = Conv2D(3, (1,1), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(input_image)
+    #zp1 = ZeroPadding2D(padding = (1,1))(conv1)
+    conv2 = Conv2D(3, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(conv1)
+    concat1 = concatenate([conv1, conv2], aaxis = -1)
+    #zp2 = ZeroPadding2D(padding = (2,2))(concat1)
+    conv3 = Conv2D(3, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(concat1)
+    concat2 = concatenate([conv2, conv3], axis = -1)
+    #zp3 = ZeroPadding2D(padding = (3,3))(concat2)
+    conv4 = Conv2D(3, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(concat2)
+    concat3 = concatenate([conv1, conv2, conv3, conv4], axis=-1)
+    #zp4 = ZeroPadding2D(padding = (1,1))(concat3)
+    conv5 = Conv2D(3, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(concat3)
     prod = multiply([conv5, input_image])
     diff = subtract([prod, conv5])
     #out_image = diff + 1
-    one = Lambda(lambda x: K.ones_like(x))(diff)
-    out_image = add([diff, one])
-    
+    add_b = Lambda(lambda x: 1+x)(diff)
+    out_image=Lambda(lambda x:relu(x))(add_b)
     model = Model(inputs = input_image, outputs = out_image)
     #model.summary()
     return model
@@ -86,7 +87,7 @@ def my_loss(y_true, y_pred):
 if __name__ =="__main__":
     
     model = aodmodel()
-    sgd = optimizers.SGD(lr=0.01, clipvalue=0.1, momentum=0.9, decay=0.001, nesterov=False)
+    sgd = optimizers.SGD(lr=0.001, clipvalue=0.1, momentum=0.9, decay=0.0001, nesterov=False)
     model.compile(optimizer = sgd, loss = 'mean_squared_error')
     p_train = 0.7
     width = 550
