@@ -20,15 +20,15 @@ def load_data(data_files,label_files, height, width):
         hazy_image = cv2.imread(data_path + "/" + data_file)
         if hazy_image.shape != (height, width, 3):
             hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-        label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])]
-        trans_map = cv2.imread(label_path + "/" + label_file)
-        if trans_map.shape != (height, width, 3):
+        label_file = label_files[label_files.index(data_file[0:7] + data_file[-4:])]
+        trans_map = cv2.imread(label_path + "/" + label_file, 0)
+        if trans_map.shape != (height, width):
             trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
         data.append(hazy_image)
         label.append(trans_map)
     
     data = np.asarray(data) / 255.0
-    label = np.asarray(label) / 255.0
+    label = np.asarray(label).reshape(len(label), height, width, 1) / 255.0
     
     return data, label
 
@@ -75,33 +75,35 @@ class Linear_Comb(Layer):
     
 def coarse_net():
     input_image = Input(shape = (None, None, 3))
-    conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(input_image)
+    conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(input_image)
     mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv1)
     up1 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp1)
-    conv2 = Conv2D(5, (9,9), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(up1)
+    conv2 = Conv2D(5, (9,9), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(up1)
     mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv2)
     up2 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp2)
-    conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(up2)
+    conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(up2)
     mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv3)
     up3 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp3)
-    linear = Linear_Comb(1)(up3)
+    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal')(up3)
+    #linear = Linear_Comb(1)(up3)
     #print(linear.shape)
     model = Model(inputs = input_image, outputs = linear)
     return model
 
 def fine_net(coarse_model):
     input_image = Input(shape = (None, None, 3))
-    conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(input_image)
+    conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(input_image)
     mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv1)
     up1 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp1)
     concat1 = concatenate([up1, coarse_model.predict(input_image)], axis = -1)
-    conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(concat1)
+    conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(concat1)
     mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv2)
     up2 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp2)
-    conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(up2)
+    conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(up2)
     mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv3)
     up3 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp3)
-    linear = Linear_Comb(1)(up3)
+    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal')(up3)
+    #linear = Linear_Comb(1)(up3)
     model = Model(inputs = input_image, outputs = linear)
     return model
 
@@ -111,10 +113,10 @@ if __name__ =="__main__":
     p_train = 0.7
     width = 320
     height = 240
-    batch_size = 100
+    batch_size = 10
     
-    data_path = '/home/jianan/Incoming/dongqin/OTS/OTS001'
-    label_path = '/home/jianan/Incoming/dongqin/OTS/clear_images'                      
+    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\haze'
+    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\trans'                      
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)
     
@@ -127,26 +129,39 @@ if __name__ =="__main__":
     reduce_lr = LearningRateScheduler(scheduler)
     
     coarse_model = coarse_net()
+    coarse_model.summary()
     coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     coarse_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/AOD-Net/aodnet.model')
+    coarse_model.save('C:\\Users\\Zero_Zhou\\DeHaze\\MSCNN\\scoarse.model')
     print('coarse model generated')
     
     fine_model = fine_net(coarse_model)
+    fine_model.summary()
     fine_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     fine_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/AOD-Net/aodnet.model')
+    coarse_model.save('C:\\Users\\Zero_Zhou\\DeHaze\\MSCNN\\fine.model')
     print('fine model generated')
 
 
+
+
+
+'''
+data_path = r'H:\\Undergraduate\\18-19-3\\Undergraduate Thesis\\Dataset\\ITS_eg\\haze'
+label_path = r'H:\\Undergraduate\\18-19-3\\Undergraduate Thesis\\Dataset\\ITS_eg\\trans'                      
+data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
+label_files = os.listdir(label_path)
+
+data, label = load_data(data_files, label_files, 240, 320)
+'''
 
 
 
