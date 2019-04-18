@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import random
 import os
+import keras.backend as K
 
 from keras.layers import Conv2D, Input, UpSampling2D, concatenate, MaxPooling2D
 from keras import optimizers
 from keras.models import Model
-import keras.backend as K
 from keras.activations import sigmoid
 from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
@@ -21,11 +21,11 @@ def load_data(data_files,label_files, height, width):
         if hazy_image.shape != (height, width, 3):
             hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])]
-        clear_image = cv2.imread(label_path + "/" + label_file)
-        if clear_image.shape != (height, width, 3):
-            clear_image = cv2.resize(clear_image, (width, height), interpolation = cv2.INTER_AREA)
+        trans_map = cv2.imread(label_path + "/" + label_file)
+        if trans_map.shape != (height, width, 3):
+            trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
         data.append(hazy_image)
-        label.append(clear_image)
+        label.append(trans_map)
     
     data = np.asarray(data) / 255.0
     label = np.asarray(label) / 255.0
@@ -52,20 +52,27 @@ class Linear_Comb(Layer):
     '''
     https://keunwoochoi.wordpress.com/2016/11/18/for-beginners-writing-a-custom-keras-layer/
     https://blog.csdn.net/u013084616/article/details/79295857
+    http://kibo.tech/2018/08/12/56-%E8%AE%A9Keras%E6%9B%B4%E9%85%B7%E4%B8%80%E4%BA%9B%EF%BC%81Keras%E6%A8%A1%E5%9E%8B%E6%9D%82%E8%B0%88/
     '''
     
-    def __init__(self, **kwargs):
-        #self.tensor = tensor
+    def __init__(self, output_dim, **kwargs):
+        self.output_dim = output_dim
         super(Linear_Comb, self).__init__(**kwargs)
          
     def build(self, input_shape):
-        self.kernel = self.add_weight(name = 'kernel', shape = input_shape[2], initializer='uniform', trainable=True)
-        self.bias = self.add_weight(name='bias', initializer='uniform', trainable=True)
+        self.kernel = self.add_weight(name = 'kernel', 
+                                      shape = (input_shape[3],self.output_dim), 
+                                      initializer='uniform', 
+                                      trainable=True)
+        self.bias = self.add_weight(name='bias', 
+                                    shape=(self.output_dim,),
+                                    initializer='uniform', 
+                                    trainable=True)
         super(Linear_Comb, self).build(input_shape)
     
     def call(self, x):
         return sigmoid(K.dot(x, self.kernel) + self.bias)
-
+    
 def coarse_net():
     input_image = Input(shape = (None, None, 3))
     conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(input_image)
@@ -77,7 +84,8 @@ def coarse_net():
     conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(up2)
     mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv3)
     up3 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp3)
-    linear = Linear_Comb()(up3)
+    linear = Linear_Comb(1)(up3)
+    #print(linear.shape)
     model = Model(inputs = input_image, outputs = linear)
     return model
 
@@ -93,7 +101,7 @@ def fine_net(coarse_model):
     conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='valid', activation='relu',kernel_initializer='random_normal')(up2)
     mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv3)
     up3 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp3)
-    linear = Linear_Comb()(up3)
+    linear = Linear_Comb(1)(up3)
     model = Model(inputs = input_image, outputs = linear)
     return model
 
