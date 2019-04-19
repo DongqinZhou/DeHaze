@@ -7,6 +7,7 @@ import keras.backend as K
 from keras.layers import Conv2D, Input, UpSampling2D, concatenate, MaxPooling2D
 from keras import optimizers
 from keras.models import Model
+from keras.models import load_model
 from keras.activations import sigmoid
 from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
@@ -24,6 +25,7 @@ def load_data(data_files,label_files, height, width):
         trans_map = cv2.imread(label_path + "/" + label_file, 0)
         if trans_map.shape != (height, width):
             trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
+        #np.reshape(trans_map,(height, width,1))
         data.append(hazy_image)
         label.append(trans_map)
     
@@ -41,7 +43,7 @@ def get_batch(data_files, label_files, batch_size, height, width):
             yield x, y
             
 def scheduler(epoch):
-    if epoch % 20 == 0 and epoch != 0:
+    if epoch % 5 == 0 and epoch != 0:
         lr = K.get_value(sgd.lr)
         K.set_value(sgd.lr, lr - 0.1)
         print("lr changed to {}".format(lr - 0.1))
@@ -74,37 +76,36 @@ class Linear_Comb(Layer):
         return sigmoid(K.dot(x, self.kernel) + self.bias)
     
 def coarse_net():
-    input_image = Input(shape = (None, None, 3))
-    conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(input_image)
-    mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv1)
-    up1 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp1)
-    conv2 = Conv2D(5, (9,9), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(up1)
-    mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv2)
-    up2 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp2)
-    conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(up2)
-    mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv3)
-    up3 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp3)
-    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal')(up3)
+    input_image = Input(shape = (None, None, 3), name = 'c_input')
+    conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv1')(input_image)
+    mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp1')(conv1)
+    up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up1')(mp1)
+    conv2 = Conv2D(5, (9,9), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv2')(up1)
+    mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp2')(conv2)
+    up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up2')(mp2)
+    conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv3')(up2)
+    mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp3')(conv3)
+    up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up3')(mp3)
+    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(up3)
     #linear = Linear_Comb(1)(up3)
-    #print(linear.shape)
     model = Model(inputs = input_image, outputs = linear)
     return model
 
 def fine_net(coarse_model):
-    input_image = Input(shape = (None, None, 3))
-    conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(input_image)
-    mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv1)
-    up1 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp1)
-    concat1 = concatenate([up1, coarse_model.predict(input_image)], axis = -1)
-    conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(concat1)
-    mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv2)
-    up2 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp2)
-    conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal')(up2)
-    mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid')(conv3)
-    up3 = UpSampling2D(size=(2,2), interpolation = 'nearest')(mp3)
-    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal')(up3)
+    #input_image = Input(shape = (None, None, 3))
+    conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv1')(coarse_model.input)
+    mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp1')(conv1)
+    up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up1')(mp1)
+    concat1 = concatenate([up1, coarse_model.get_layer(name='c_linear').output], axis = -1, name = 'f_concat')
+    conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv2')(concat1)
+    mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp2')(conv2)
+    up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up2')(mp2)
+    conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv3')(up2)
+    mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp3')(conv3)
+    up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up3')(mp3)
+    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(up3)
     #linear = Linear_Comb(1)(up3)
-    model = Model(inputs = input_image, outputs = linear)
+    model = Model(inputs = coarse_model.input, outputs = linear)
     return model
 
 if __name__ =="__main__":
@@ -115,8 +116,8 @@ if __name__ =="__main__":
     height = 240
     batch_size = 10
     
-    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\haze'
-    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\trans'                      
+    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
+    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)
     
@@ -132,36 +133,26 @@ if __name__ =="__main__":
     coarse_model.summary()
     coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     coarse_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('C:\\Users\\Zero_Zhou\\DeHaze\\MSCNN\\scoarse.model')
+    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/coarse.model')
     print('coarse model generated')
     
-    fine_model = fine_net(coarse_model)
+    cmodel = load_model('coarse.model')
+    fine_model = fine_net(cmodel)
     fine_model.summary()
     fine_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     fine_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('C:\\Users\\Zero_Zhou\\DeHaze\\MSCNN\\fine.model')
+    fine_model.save('/home/jianan/Incoming/dongqin/DeHaze/fine.model')
     print('fine model generated')
 
 
-
-
-
-'''
-data_path = r'H:\\Undergraduate\\18-19-3\\Undergraduate Thesis\\Dataset\\ITS_eg\\haze'
-label_path = r'H:\\Undergraduate\\18-19-3\\Undergraduate Thesis\\Dataset\\ITS_eg\\trans'                      
-data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-label_files = os.listdir(label_path)
-
-data, label = load_data(data_files, label_files, 240, 320)
-'''
 
 
 
