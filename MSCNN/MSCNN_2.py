@@ -3,7 +3,7 @@ import os
 import cv2
 import random
 import numpy as np
-from keras.models import load_model
+from MSCNN_1 import fine_net, coarse_net
 
 def get_airlight(hazy_image, trans_map, p):
     M, N = trans_map.shape
@@ -27,7 +27,10 @@ def get_radiance(hazy_image, airlight, trans_map, L):
 
 if __name__ =="__main__":
     
-    fmodel = load_model('fine.model')
+    cmodel = coarse_net()
+    cmodel.load_weights('coarse_model_weights.h5')
+    fmodel = fine_net(cmodel)
+    fmodel.load_weights('fine_model_weights.h5')
     
     testdata_path = '/home/jianan/Incoming/dongqin/OTS/OTS001'
     testdata_files = os.listdir(testdata_path)

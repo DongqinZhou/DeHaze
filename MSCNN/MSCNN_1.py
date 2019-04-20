@@ -64,16 +64,25 @@ class Linear_Comb(Layer):
     def build(self, input_shape):
         self.kernel = self.add_weight(name = 'kernel', 
                                       shape = (input_shape[3],self.output_dim), 
-                                      initializer='uniform', 
+                                      initializer='random_normal', 
                                       trainable=True)
         self.bias = self.add_weight(name='bias', 
                                     shape=(self.output_dim,),
-                                    initializer='uniform', 
+                                    initializer='random_normal', 
                                     trainable=True)
         super(Linear_Comb, self).build(input_shape)
     
     def call(self, x):
         return sigmoid(K.dot(x, self.kernel) + self.bias)
+    '''
+    def get_config(self):
+        config = {"output_dim": self.output_dim}
+        base_config = super(Linear_Comb, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+    '''
+    
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], input_shape[1], input_shape[2], self.output_dim)
     
 def coarse_net():
     input_image = Input(shape = (None, None, 3), name = 'c_input')
@@ -86,8 +95,10 @@ def coarse_net():
     conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv3')(up2)
     mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp3')(conv3)
     up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up3')(mp3)
-    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(up3)
-    #linear = Linear_Comb(1)(up3)
+    ### if self defined layer does not work, consider using this convolutional layer
+    #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(up3)
+    ###
+    linear = Linear_Comb(1, name = 'c_linear')(up3)
     model = Model(inputs = input_image, outputs = linear)
     return model
 
@@ -103,8 +114,10 @@ def fine_net(coarse_model):
     conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv3')(up2)
     mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp3')(conv3)
     up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up3')(mp3)
-    linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(up3)
-    #linear = Linear_Comb(1)(up3)
+    ### if self defined layer does not work, consider using this convolutional layer
+    #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(up3)
+    ###
+    linear = Linear_Comb(1, name= 'f_linear')(up3)
     model = Model(inputs = coarse_model.input, outputs = linear)
     return model
 
@@ -141,23 +154,24 @@ if __name__ =="__main__":
     coarse_model.summary()
     coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     coarse_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/coarse.model')
+    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/coarse_model.h5')
+    coarse_model.save_weights('coarse_model_weights.h5')
     print('coarse model generated')
     
-    cmodel = load_model('coarse.model')
-    fine_model = fine_net(cmodel)
+    fine_model = fine_net(coarse_model)
     fine_model.summary()
     fine_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     fine_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    fine_model.save('/home/jianan/Incoming/dongqin/DeHaze/fine.model')
+    fine_model.save('/home/jianan/Incoming/dongqin/DeHaze/fine_model.h5')
+    fine_model.save_weights('fine_model_weights.h5')
     print('fine model generated')
 
 
