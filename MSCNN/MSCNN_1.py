@@ -29,7 +29,7 @@ def load_data(data_files,label_files, height, width):
         data.append(hazy_image)
         label.append(trans_map)
     
-    data = np.asarray(data) / 255.0
+    data = np.asarray(data) 
     label = np.asarray(label).reshape(len(label), height, width, 1) / 255.0
     
     return data, label
@@ -43,7 +43,7 @@ def get_batch(data_files, label_files, batch_size, height, width):
             yield x, y
             
 def scheduler(epoch):
-    if epoch % 5 == 0 and epoch != 0:
+    if epoch % 20 == 0 and epoch != 0:
         lr = K.get_value(sgd.lr)
         K.set_value(sgd.lr, lr - 0.1)
         print("lr changed to {}".format(lr - 0.1))
@@ -108,6 +108,14 @@ def fine_net(coarse_model):
     model = Model(inputs = coarse_model.input, outputs = linear)
     return model
 
+'''
+data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
+label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
+data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
+label_files = os.listdir(label_path)
+data, label = load_data(data_files, label_files, 240, 320)
+
+'''
 if __name__ =="__main__":
     
     sgd = optimizers.SGD(lr=0.001, momentum=0.9, decay=5e-4, nesterov=False)
@@ -133,7 +141,7 @@ if __name__ =="__main__":
     coarse_model.summary()
     coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     coarse_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
@@ -145,13 +153,12 @@ if __name__ =="__main__":
     fine_model.summary()
     fine_model.compile(optimizer = sgd, loss = 'mean_squared_error')
     fine_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = 70, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
     fine_model.save('/home/jianan/Incoming/dongqin/DeHaze/fine.model')
     print('fine model generated')
-
 
 
 
