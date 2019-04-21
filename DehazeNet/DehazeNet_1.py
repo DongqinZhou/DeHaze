@@ -5,10 +5,9 @@ import random
 import os
 import keras.backend as K
 
-from keras.layers import Conv2D, Input, UpSampling2D, concatenate, MaxPooling2D, Activation
-from keras import optimizers
+from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation
+from keras import optimizers, initializers
 from keras.models import Model
-from keras.activations import sigmoid
 from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
 from keras.utils.generic_utils import get_custom_objects
@@ -83,7 +82,7 @@ class MaxoutConv2D(Layer):
         output = None
         for _ in range(self.output_dim):
             
-            conv_out = Conv2D(self.nb_features, self.kernel_size, padding=self.padding)(x)
+            conv_out = Conv2D(self.nb_features, self.kernel_size, padding=self.padding, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)
             # make modifications here for weight initialization
             
             maxout_out = K.max(conv_out, axis=-1, keepdims=True)
@@ -115,14 +114,21 @@ class MaxoutConv2D(Layer):
     
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
     input_image = Input(shape = (None, None, 3), name = 'input')
+    print(input_image.shape)
     convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', name='convmax')(input_image)
-    conv1 = Conv2D(16, (3, 3), strides = (1,1), padding = 'same', kernel_initializer='random_normal',name='conv1')(convmax)
-    conv2 = Conv2D(16, (5, 5), strides = (1,1), padding = 'same', kernel_initializer='random_normal',name='conv2')(convmax)
-    conv3 = Conv2D(16, (7, 7), strides = (1,1), padding = 'same', kernel_initializer='random_normal',name='conv3')(convmax)
+    print(convmax.shape)
+    conv1 = Conv2D(16, (3, 3), strides = (1,1), padding = 'same', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
+    print(conv1.shape)
+    conv2 = Conv2D(16, (5, 5), strides = (1,1), padding = 'same', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
+    print(conv2.shape)
+    conv3 = Conv2D(16, (7, 7), strides = (1,1), padding = 'same', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
+    print(conv3.shape)
     concat = concatenate([conv1, conv2, conv3], axis=-1, name='concat')
+    print(concat.shape)
     mp = MaxPooling2D(pool_size=(7,7), padding='valid', name='maxpool')(concat)
-    conv4 = Conv2D(1, (6,6), padding='valid',activation='BReLU', kernel_initializer='random_normal',name='conv4')(mp)
-    #print(conv4.shape)
+    print(mp.shape)
+    conv4 = Conv2D(1, (6,6), padding='valid',activation='BReLU', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
+    print(conv4.shape)
     model = Model(inputs = input_image, outputs = conv4)
     
     ## set weight initializer!!!
@@ -152,6 +158,7 @@ if __name__ =="__main__":
     reduce_lr = LearningRateScheduler(scheduler)
     
     dehazenet = DehazeNet()
+    dehazenet.summary()
     '''
     coarse_model.summary()
     coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
