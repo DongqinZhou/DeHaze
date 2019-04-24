@@ -5,7 +5,7 @@ import random
 import os
 import keras.backend as K
 
-from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation
+from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation, UpSampling2D
 from keras import optimizers, initializers
 from keras.models import Model
 from keras.engine.topology import Layer
@@ -69,12 +69,14 @@ class MaxoutConv2D(Layer):
     
     """
     
-    def __init__(self, kernel_size, output_dim, nb_features=4, padding='valid', **kwargs):
+    def __init__(self, kernel_size, strides, output_dim, nb_features=4, padding='valid', use_bias = True, **kwargs):
         
         self.kernel_size = kernel_size
+        self.strides = strides
         self.output_dim = output_dim
         self.nb_features = nb_features
         self.padding = padding
+        self.use_bias = use_bias
         super(MaxoutConv2D, self).__init__(**kwargs)
 
     def call(self, x):
@@ -82,7 +84,7 @@ class MaxoutConv2D(Layer):
         output = None
         for _ in range(self.output_dim):
             
-            conv_out = Conv2D(self.nb_features, self.kernel_size, padding=self.padding, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)
+            conv_out = Conv2D(self.nb_features, self.kernel_size, strides=self.strides, padding=self.padding, use_bias = self.use_bias, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)
             # make modifications here for weight initialization
             
             maxout_out = K.max(conv_out, axis=-1, keepdims=True)
@@ -115,23 +117,24 @@ class MaxoutConv2D(Layer):
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
     input_image = Input(shape = (None, None, 3), name = 'input')
     print(input_image.shape)
-    convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', name='convmax')(input_image)
+    convmax = MaxoutConv2D(kernel_size = (5, 5), strides = (16,16), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
     print(convmax.shape)
-    conv1 = Conv2D(16, (3, 3), strides = (1,1), padding = 'same', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
+    conv1 = Conv2D(16, (3, 3), strides = (16,16), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
     print(conv1.shape)
-    conv2 = Conv2D(16, (5, 5), strides = (1,1), padding = 'same', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
+    conv2 = Conv2D(16, (5, 5), strides = (16,16), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
     print(conv2.shape)
-    conv3 = Conv2D(16, (7, 7), strides = (1,1), padding = 'same', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
+    conv3 = Conv2D(16, (7, 7), strides = (16,16), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
     print(conv3.shape)
     concat = concatenate([conv1, conv2, conv3], axis=-1, name='concat')
     print(concat.shape)
     mp = MaxPooling2D(pool_size=(7,7), padding='valid', name='maxpool')(concat)
     print(mp.shape)
-    conv4 = Conv2D(1, (6,6), padding='valid',activation='BReLU', kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
+    conv4 = Conv2D(1, (6,6), strides = (16, 16), padding='valid',activation='BReLU', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
     print(conv4.shape)
-    model = Model(inputs = input_image, outputs = conv4)
+    up = UpSampling2D(size=(16,16), interpolation = 'nearest', name = 'up')(conv4)
+    print(up.shape)
+    model = Model(inputs = input_image, outputs = up)
     
-    ## set weight initializer!!!
     return model
 
 
@@ -160,29 +163,15 @@ if __name__ =="__main__":
     dehazenet = DehazeNet()
     dehazenet.summary()
     '''
-    coarse_model.summary()
-    coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
-    coarse_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
+    dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
+    dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/coarse_model.h5')
-    coarse_model.save_weights('coarse_model_weights.h5')
-    print('coarse model generated')
-    
-    fine_model = fine_net(coarse_model)
-    fine_model.summary()
-    fine_model.compile(optimizer = sgd, loss = 'mean_squared_error')
-    fine_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
-                        get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
-                        use_multiprocessing=True, 
-                        shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    fine_model.save('/home/jianan/Incoming/dongqin/DeHaze/fine_model.h5')
-    fine_model.save_weights('fine_model_weights.h5')
-    print('fine model generated')
-`'''
+    dehazenet.save_weights('dehazenet_weights.h5')
+    print('dehazenet generated')
+    '''
 
 
 
