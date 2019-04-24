@@ -7,7 +7,6 @@ import keras.backend as K
 from keras.layers import Conv2D, Input, UpSampling2D, concatenate, MaxPooling2D
 from keras import optimizers
 from keras.models import Model
-from keras.models import load_model
 from keras.activations import sigmoid
 from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
@@ -84,41 +83,37 @@ class Linear_Comb(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], input_shape[2], self.output_dim)
     
-def coarse_net():
-    input_image = Input(shape = (None, None, 3), name = 'c_input')
-    conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv1')(input_image)
-    mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp1')(conv1)
-    up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up1')(mp1)
-    conv2 = Conv2D(5, (9,9), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv2')(up1)
-    mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp2')(conv2)
-    up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up2')(mp2)
-    conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv3')(up2)
-    mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp3')(conv3)
-    up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up3')(mp3)
+def MSCNN():
+    input_image = Input(shape = (None, None, 3), name = 'input')
+    c_conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv1')(input_image)
+    c_mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp1')(c_conv1)
+    c_up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up1')(c_mp1)
+    c_conv2 = Conv2D(5, (9,9), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv2')(c_up1)
+    c_mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp2')(c_conv2)
+    c_up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up2')(c_mp2)
+    c_conv3 = Conv2D(10, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv3')(c_up2)
+    c_mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp3')(c_conv3)
+    c_up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up3')(c_mp3)
     ### if self defined layer does not work, consider using this convolutional layer
     #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(up3)
     ###
-    linear = Linear_Comb(1, name = 'c_linear')(up3)
-    model = Model(inputs = input_image, outputs = linear)
-    return model
-
-def fine_net(coarse_model):
-    #input_image = Input(shape = (None, None, 3))
-    conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv1')(coarse_model.input)
-    mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp1')(conv1)
-    up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up1')(mp1)
-    concat1 = concatenate([up1, coarse_model.get_layer(name='c_linear').output], axis = -1, name = 'f_concat')
-    conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv2')(concat1)
-    mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp2')(conv2)
-    up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up2')(mp2)
-    conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv3')(up2)
-    mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp3')(conv3)
-    up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up3')(mp3)
+    c_linear = Linear_Comb(1, name = 'c_linear')(c_up3)
+    
+    f_conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv1')(input_image)
+    f_mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp1')(f_conv1)
+    f_up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up1')(f_mp1)
+    concat1 = concatenate([f_up1, c_linear], axis = -1, name = 'f_concat')
+    f_conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv2')(concat1)
+    f_mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp2')(f_conv2)
+    f_up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up2')(f_mp2)
+    f_conv3 = Conv2D(10, (3,3), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv3')(f_up2)
+    f_mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp3')(f_conv3)
+    f_up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up3')(f_mp3)
     ### if self defined layer does not work, consider using this convolutional layer
     #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(up3)
     ###
-    linear = Linear_Comb(1, name= 'f_linear')(up3)
-    model = Model(inputs = coarse_model.input, outputs = linear)
+    f_linear = Linear_Comb(1, name= 'f_linear')(f_up3)
+    model = Model(inputs = input_image, outputs = f_linear)
     return model
 
 '''
@@ -150,29 +145,17 @@ if __name__ =="__main__":
     steps = len(x_val) // batch_size + 1
     reduce_lr = LearningRateScheduler(scheduler)
     
-    coarse_model = coarse_net()
-    coarse_model.summary()
-    coarse_model.compile(optimizer = sgd, loss = 'mean_squared_error')
-    coarse_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
+    mscnn = MSCNN()
+    mscnn.summary()
+    mscnn.compile(optimizer = sgd, loss = 'mean_squared_error')
+    mscnn.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    coarse_model.save('/home/jianan/Incoming/dongqin/DeHaze/coarse_model.h5')
-    coarse_model.save_weights('coarse_model_weights.h5')
-    print('coarse model generated')
-    
-    fine_model = fine_net(coarse_model)
-    fine_model.summary()
-    fine_model.compile(optimizer = sgd, loss = 'mean_squared_error')
-    fine_model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
-                        get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
-                        use_multiprocessing=True, 
-                        shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    fine_model.save('/home/jianan/Incoming/dongqin/DeHaze/fine_model.h5')
-    fine_model.save_weights('fine_model_weights.h5')
-    print('fine model generated')
+    mscnn.save('/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5')
+    mscnn.save_weights('mscnn.h5')
+    print('MSCNN generated')
 
 
 
