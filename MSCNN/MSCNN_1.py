@@ -20,7 +20,7 @@ def load_data(data_files,label_files, height, width):
         hazy_image = cv2.imread(data_path + "/" + data_file)
         if hazy_image.shape != (height, width, 3):
             hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-        label_file = label_files[label_files.index(data_file[0:7] + data_file[-4:])]
+        label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]
         trans_map = cv2.imread(label_path + "/" + label_file, 0)
         if trans_map.shape != (height, width):
             trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
