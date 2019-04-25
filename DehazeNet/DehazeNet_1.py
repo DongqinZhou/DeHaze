@@ -5,7 +5,7 @@ import random
 import os
 import keras.backend as K
 
-from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation, UpSampling2D
+from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation
 from keras import optimizers, initializers
 from keras.models import Model
 from keras.engine.topology import Layer
@@ -131,9 +131,8 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     print(mp.shape)
     conv4 = Conv2D(1, (6,6), strides = (16, 16), padding='valid',activation='BReLU', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
     print(conv4.shape)
-    up = UpSampling2D(size=(16,16), interpolation = 'nearest', name = 'up')(conv4)
-    print(up.shape)
-    model = Model(inputs = input_image, outputs = up)
+    
+    model = Model(inputs = input_image, outputs = conv4)
     
     return model
 
@@ -151,6 +150,11 @@ if __name__ =="__main__":
     label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)
+    '''
+    train patch: 16 * 16 
+    trans: a scalar
+    '''
+    
     
     random.seed(0)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
@@ -162,6 +166,7 @@ if __name__ =="__main__":
     
     dehazenet = DehazeNet()
     dehazenet.summary()
+    
     '''
     dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
     dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
@@ -172,6 +177,9 @@ if __name__ =="__main__":
     dehazenet.save_weights('dehazenet_weights.h5')
     print('dehazenet generated')
     '''
+    
+    
+    
 
 
 
