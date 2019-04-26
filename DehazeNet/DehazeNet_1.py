@@ -96,7 +96,7 @@ class MaxoutConv2D(Layer):
 
             else:
                 output = maxout_out
-
+        
         return output
 
     def compute_output_shape(self, input_shape):
@@ -118,27 +118,27 @@ class MaxoutConv2D(Layer):
     
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
     input_image = Input(shape = (None, None, 3), name = 'input')
-    print(input_image.shape)
+    print(K.int_shape(input_image))
     convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
-    print(convmax.shape)
+    print(K.int_shape(convmax))
     conv1 = Conv2D(16, (3, 3), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
-    print(conv1.shape)
+    print(K.int_shape(conv1))
     conv2 = Conv2D(16, (5, 5), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
-    print(conv2.shape)
+    print(K.int_shape(conv2))
     conv3 = Conv2D(16, (7, 7), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
-    print(conv3.shape)
+    print(K.int_shape(conv3))
     concat = concatenate([conv1, conv2, conv3], axis=-1, name='concat')
-    print(concat.shape)
-    mp = MaxPooling2D(pool_size=(7,7), padding='valid', name='maxpool')(concat)
-    print(mp.shape)
+    print(K.int_shape(concat))
+    mp = MaxPooling2D(pool_size=(7,7), strides=1, padding='valid', name='maxpool')(concat)
+    print(K.int_shape(mp))
     conv4 = Conv2D(1, (6,6), padding='valid',activation='BReLU', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
-    print(conv4.shape)
+    print(K.int_shape(conv4))
     
     model = Model(inputs = input_image, outputs = conv4)
     
     return model
 
-
+'''
 data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
 label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
 data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
@@ -153,7 +153,7 @@ if __name__ =="__main__":
     p_train = 0.8
     width = 320
     height = 240
-    batch_size = 1
+    batch_size = 10
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0'
     
     data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
@@ -171,6 +171,7 @@ if __name__ =="__main__":
     
     dehazenet = DehazeNet()
     dehazenet.summary()
+
     
     
     dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
@@ -181,7 +182,7 @@ if __name__ =="__main__":
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
     dehazenet.save_weights('dehazenet_weights.h5')
     print('dehazenet generated')
-'''
+
     
     
     

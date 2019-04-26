@@ -6,8 +6,10 @@ import os
 import cv2
 import random
 import numpy as np
-from DehazeNet_1 import DehazeNet
+from DehazeNet_1 import DehazeNet, BReLu
+from keras.layers import Activation
 from guidedfilter import guided_filter
+from keras.utils.generic_utils import get_custom_objects
 
 def get_airlight(hazy_image, trans_map, p):
     M, N = trans_map.shape
@@ -32,6 +34,7 @@ def get_radiance(hazy_image, airlight, trans_map, L):
 
 if __name__ =="__main__":
     
+    get_custom_objects().update({'BReLU':Activation(BReLu)})
     dehazenet = DehazeNet()
     dehazenet.load_weights('dehazenet_weights.h5')
     
