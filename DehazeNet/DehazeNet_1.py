@@ -12,7 +12,7 @@ from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
 from keras.utils.generic_utils import get_custom_objects
 
-def load_data(data_files,label_files, height, width):
+def load_data(data_files,label_files, height, width, patch_size = 16):
     
     data = []
     label = []
@@ -21,16 +21,19 @@ def load_data(data_files,label_files, height, width):
         hazy_image = cv2.imread(data_path + "/" + data_file)
         if hazy_image.shape != (height, width, 3):
             hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-        label_file = label_files[label_files.index(data_file[0:7] + data_file[-4:])]
+        label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]
         trans_map = cv2.imread(label_path + "/" + label_file, 0)
         if trans_map.shape != (height, width):
             trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
-        #np.reshape(trans_map,(height, width,1))
-        data.append(hazy_image)
-        label.append(trans_map)
+        for i in random.sample(range(height // patch_size), height // patch_size):
+            for j in random.sample(range(width // patch_size),width // patch_size):
+                hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
+                trans_patch = trans_map[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16),]
+                data.append(hazy_patch)
+                label.append(np.mean(trans_patch))
     
-    data = np.asarray(data) 
-    label = np.asarray(label).reshape(len(label), height, width, 1) / 255.0
+    data = np.asarray(data) # whether to normalize?
+    label = np.asarray(label).reshape(len(label), 1, 1, 1) / 255.0
     
     return data, label
 
@@ -69,10 +72,9 @@ class MaxoutConv2D(Layer):
     
     """
     
-    def __init__(self, kernel_size, strides, output_dim, nb_features=4, padding='valid', use_bias = True, **kwargs):
+    def __init__(self, kernel_size, output_dim, nb_features=4, padding='valid', use_bias = True, **kwargs):
         
         self.kernel_size = kernel_size
-        self.strides = strides
         self.output_dim = output_dim
         self.nb_features = nb_features
         self.padding = padding
@@ -84,7 +86,7 @@ class MaxoutConv2D(Layer):
         output = None
         for _ in range(self.output_dim):
             
-            conv_out = Conv2D(self.nb_features, self.kernel_size, strides=self.strides, padding=self.padding, use_bias = self.use_bias, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)
+            conv_out = Conv2D(self.nb_features, self.kernel_size, padding=self.padding, use_bias = self.use_bias, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)
             # make modifications here for weight initialization
             
             maxout_out = K.max(conv_out, axis=-1, keepdims=True)
@@ -117,19 +119,19 @@ class MaxoutConv2D(Layer):
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
     input_image = Input(shape = (None, None, 3), name = 'input')
     print(input_image.shape)
-    convmax = MaxoutConv2D(kernel_size = (5, 5), strides = (16,16), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
+    convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
     print(convmax.shape)
-    conv1 = Conv2D(16, (3, 3), strides = (16,16), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
+    conv1 = Conv2D(16, (3, 3), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
     print(conv1.shape)
-    conv2 = Conv2D(16, (5, 5), strides = (16,16), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
+    conv2 = Conv2D(16, (5, 5), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
     print(conv2.shape)
-    conv3 = Conv2D(16, (7, 7), strides = (16,16), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
+    conv3 = Conv2D(16, (7, 7), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
     print(conv3.shape)
     concat = concatenate([conv1, conv2, conv3], axis=-1, name='concat')
     print(concat.shape)
     mp = MaxPooling2D(pool_size=(7,7), padding='valid', name='maxpool')(concat)
     print(mp.shape)
-    conv4 = Conv2D(1, (6,6), strides = (16, 16), padding='valid',activation='BReLU', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
+    conv4 = Conv2D(1, (6,6), padding='valid',activation='BReLU', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
     print(conv4.shape)
     
     model = Model(inputs = input_image, outputs = conv4)
@@ -137,37 +139,40 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     return model
 
 
+data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
+label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
+data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
+label_files = os.listdir(label_path)   
+data, label = load_data(data_files, label_files, 240, 320) 
+
+'''
 if __name__ =="__main__":
     
     sgd = optimizers.SGD(lr=0.005, momentum=0.9, decay=5e-4, nesterov=False)
     get_custom_objects().update({'BReLU':Activation(BReLu)})
-    p_train = 0.7
+    p_train = 0.8
     width = 320
     height = 240
-    batch_size = 10
+    batch_size = 1
+    #os.environ["CUDA_VISIBLE_DEVICES"] = '0'
     
     data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
     label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-    label_files = os.listdir(label_path)
-    '''
-    train patch: 16 * 16 
-    trans: a scalar
-    '''
+    label_files = os.listdir(label_path)    
     
-    
-    random.seed(0)  # ensure we have the same shuffled data every time
+    #random.seed(0)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
-    steps_per_epoch = len(x_train) // batch_size + 1
-    steps = len(x_val) // batch_size + 1
+    steps_per_epoch = len(x_train) // batch_size 
+    steps = len(x_val) // batch_size 
     reduce_lr = LearningRateScheduler(scheduler)
     
     dehazenet = DehazeNet()
     dehazenet.summary()
     
-    '''
+    
     dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
     dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
@@ -176,7 +181,7 @@ if __name__ =="__main__":
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
     dehazenet.save_weights('dehazenet_weights.h5')
     print('dehazenet generated')
-    '''
+'''
     
     
     

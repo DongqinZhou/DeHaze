@@ -63,10 +63,10 @@ if __name__ =="__main__":
         
         for i in range(height // patch_size):
             for j in range(width // patch_size):
-                hazy_patch = hazy_image[(i * 16) : (16 * i + 15), (j * 16) : (j * 16 + 15), :]
+                hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
                 hazy_input = np.reshape(hazy_patch, (1, patch_size, patch_size, channel))
                 trans = dehazenet.predict(hazy_input)
-                trans_map[(i * 16) : (16 * i + 15), (j * 16) : (j * 16 + 15)] = trans
+                trans_map[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16)] = trans
         
         norm_hazy_image = (hazy_image - hazy_image.min()) / (hazy_image.max() - hazy_image.min())
         refined_trans_map = guided_filter(norm_hazy_image, trans_map)
