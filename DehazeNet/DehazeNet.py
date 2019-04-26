@@ -8,6 +8,7 @@ import keras.backend as K
 from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation
 from keras import optimizers, initializers
 from keras.models import Model
+from guidedfilter import guided_filter
 from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
 from keras.utils.generic_utils import get_custom_objects
@@ -19,12 +20,15 @@ def load_data(data_files,label_files, height, width, patch_size = 16):
     
     for data_file in data_files:
         hazy_image = cv2.imread(data_path + "/" + data_file)
-        if hazy_image.shape != (height, width, 3):
-            hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
+        if hazy_image.shape[0] % patch_size != 0:
+            height = hazy_image.shape[0] // patch_size * patch_size
+        if hazy_image.shape[1] % patch_size != 0:
+            width = hazy_image.shape[1] // patch_size * patch_size
+        
+        hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]
         trans_map = cv2.imread(label_path + "/" + label_file, 0)
-        if trans_map.shape != (height, width):
-            trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
+        trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
         for i in random.sample(range(height // patch_size), height // patch_size):
             for j in random.sample(range(width // patch_size),width // patch_size):
                 hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
@@ -44,16 +48,29 @@ def get_batch(data_files, label_files, batch_size, height, width):
             x, y = load_data(data_files[i : i+batch_size], label_files, height, width)
             
             yield x, y
-            
-def scheduler(epoch):
-    if epoch % 20 == 0 and epoch != 0:
-        lr = K.get_value(sgd.lr)
-        K.set_value(sgd.lr, lr - 0.1)
-        print("lr changed to {}".format(lr - 0.1))
-    return K.get_value(sgd.lr)
 
 def BReLu(x):
     return K.minimum(K.maximum(0., x), 1.)
+
+def get_airlight(hazy_image, trans_map, p):
+    M, N = trans_map.shape
+    flat_image = hazy_image.reshape(M*N, 3)
+    flat_trans = trans_map.ravel()
+    searchidx = (-flat_trans).argsort()[:round(M * N * p)]
+    
+    return np.max(flat_image.take(searchidx, axis=0), axis = 0)
+
+def get_radiance(hazy_image, airlight, trans_map, L):
+    tiledt = np.zeros_like(hazy_image)
+    tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
+    min_t = np.ones_like(hazy_image) * 0.1
+    t = np.maximum(tiledt, min_t)
+    hazy_image = hazy_image.astype(int)
+    airlight = airlight.astype(int)
+    clear_ = (hazy_image - airlight) / t + airlight
+    clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
+    
+    return clear_image
 
 class MaxoutConv2D(Layer):
     """
@@ -86,9 +103,7 @@ class MaxoutConv2D(Layer):
         output = None
         for _ in range(self.output_dim):
             
-            conv_out = Conv2D(self.nb_features, self.kernel_size, padding=self.padding, use_bias = self.use_bias, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)
-            # make modifications here for weight initialization
-            
+            conv_out = Conv2D(self.nb_features, self.kernel_size, padding=self.padding, use_bias = self.use_bias, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001))(x)            
             maxout_out = K.max(conv_out, axis=-1, keepdims=True)
 
             if output is not None:
@@ -117,71 +132,125 @@ class MaxoutConv2D(Layer):
         return (input_shape[0], output_height, output_width, self.output_dim)
     
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
+    get_custom_objects().update({'BReLU':Activation(BReLu)})
     input_image = Input(shape = (None, None, 3), name = 'input')
-    print(K.int_shape(input_image))
     convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
-    print(K.int_shape(convmax))
     conv1 = Conv2D(16, (3, 3), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
-    print(K.int_shape(conv1))
     conv2 = Conv2D(16, (5, 5), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
-    print(K.int_shape(conv2))
     conv3 = Conv2D(16, (7, 7), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv3')(convmax)
-    print(K.int_shape(conv3))
     concat = concatenate([conv1, conv2, conv3], axis=-1, name='concat')
-    print(K.int_shape(concat))
     mp = MaxPooling2D(pool_size=(7,7), strides=1, padding='valid', name='maxpool')(concat)
-    print(K.int_shape(mp))
     conv4 = Conv2D(1, (6,6), padding='valid',activation='BReLU', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv4')(mp)
-    print(K.int_shape(conv4))
     
     model = Model(inputs = input_image, outputs = conv4)
     
     return model
 
-'''
-data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
-label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
-data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-label_files = os.listdir(label_path)   
-data, label = load_data(data_files, label_files, 240, 320) 
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, width = 320, height = 240, batch_size = 10):
+    
+    def scheduler(epoch):
+        if epoch % 20 == 0 and epoch != 0:
+            lr = K.get_value(sgd.lr)
+            K.set_value(sgd.lr, lr - 0.1)
+            print("lr changed to {}".format(lr - 0.1))
+        return K.get_value(sgd.lr)
 
-'''
-if __name__ =="__main__":
+    dehazenet = DehazeNet()
+    dehazenet.summary()
     
-    sgd = optimizers.SGD(lr=0.005, momentum=0.9, decay=5e-4, nesterov=False)
-    get_custom_objects().update({'BReLU':Activation(BReLu)})
-    p_train = 0.8
-    width = 320
-    height = 240
-    batch_size = 10
-    #os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+    sgd = optimizers.SGD(lr = lr, momentum = momentum, decay=decay, nesterov=False)
+    dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
     
-    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
-    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
+    p_train = p_train
+    width = width
+    height = height
+    batch_size = batch_size
+                        
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)    
     
-    #random.seed(0)  # ensure we have the same shuffled data every time
+    random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
-    steps_per_epoch = len(x_train) // batch_size 
-    steps = len(x_val) // batch_size 
+    if len(x_train) % batch_size == 0:
+        steps_per_epoch = len(x_train) // batch_size
+    else:
+        steps_per_epoch = len(x_train) // batch_size + 1
+        
+    if len(x_val) % batch_size == 0:
+        steps = len(x_val) // batch_size
+    else:
+        steps = len(x_val) // batch_size + 1
+        
     reduce_lr = LearningRateScheduler(scheduler)
-    
-    dehazenet = DehazeNet()
-    dehazenet.summary()
-
-    
-    
-    dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
+   
     dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    dehazenet.save_weights('dehazenet_weights.h5')
+    dehazenet.save_weights(weights_path + '/dehazenet_weights.h5')
     print('dehazenet generated')
+    
+    return weights_path + '/dehazenet_weights.h5'
+
+def usemodel(weights, testdata_path):
+    dehazenet = DehazeNet()
+    dehazenet.load_weights(weights)
+    
+    testdata_files = os.listdir(testdata_path)
+    random.seed(100)
+    random.shuffle(testdata_files)
+   
+    patch_size = 16
+    p = 0.001
+    L = 256
+    
+    hazy_images = []
+    trans_maps = []
+    clear_images = []
+    
+    for testdata_file in testdata_files:
+        hazy_image = cv2.imread(testdata_path + '/' + testdata_file) 
+        if hazy_image.shape[0] % patch_size != 0:
+            height = hazy_image.shape[0] // patch_size * patch_size
+        if hazy_image.shape[1] % patch_size != 0:
+            width = hazy_image.shape[1] // patch_size * patch_size
+            
+        hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
+        hazy_images.append(hazy_image)
+        channel = hazy_image.shape[2]
+        trans_map = np.zeros((height, width))
+        
+        for i in range(height // patch_size):
+            for j in range(width // patch_size):
+                hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
+                hazy_input = np.reshape(hazy_patch, (1, patch_size, patch_size, channel))
+                trans = dehazenet.predict(hazy_input)
+                trans_map[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16)] = trans
+        
+        norm_hazy_image = (hazy_image - hazy_image.min()) / (hazy_image.max() - hazy_image.min())
+        refined_trans_map = guided_filter(norm_hazy_image, trans_map)
+        
+        trans_maps.append(refined_trans_map)
+        
+        Airlight = get_airlight(hazy_image, trans_map, p)
+        clear_image = get_radiance(hazy_image, Airlight, trans_map, L)
+        clear_images.append(clear_image)
+    
+    return hazy_images, clear_images
+
+if __name__ =="__main__":
+    
+    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
+    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
+    weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
+    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    
+    weights = train_model(data_path, label_path, weights_path)
+    hazy_images, clear_images = usemodel(weights, testdata_path)
+	
 
     
     

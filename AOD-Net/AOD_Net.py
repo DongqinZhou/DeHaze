@@ -88,13 +88,13 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0)
-    model.save_weights('aodnet.h5')
+    model.save_weights(weights_path + '/aodnet.h5')
     print('model generated')
     return weights_path + '/aodnet.h5'
 
-def usemodel(weights_path, testdata_path):
+def usemodel(weights, testdata_path):
     model = aodmodel()
-    model.load_weights(weights_path)
+    model.load_weights(weights)
 
     testdata_files = os.listdir(testdata_path)
     random.seed(100)
