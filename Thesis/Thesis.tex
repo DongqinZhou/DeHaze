@@ -15,7 +15,7 @@
 %%% format settings
 % 要注意，latex的字号变动会覆盖baselineskip
 % latex默认的baselineskip是fontsize的1.2倍，所以改了fontsize之后baselineskip也变了
-% 行距计算：baselineskip * baselinestretch，baselinestretch和linespread其实是差不多的，只是取值不一样，后者去1.3对应前者的1.5，1.6对应2；所以一般设置行距直接改后面的因子
+% 行距计算：baselineskip * baselinestretch，baselinestretch和linespread其实是差不多的，只是取值不一样，后者取1.3对应前者的1.5，1.6对应2；所以一般设置行距直接改后面的因子
 
 %%% new commands
 \newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
@@ -23,32 +23,74 @@
 
 \begin{document}
 
+%%% 封面
 \begin{figure}[H]
 \centering
 \includegraphics[width=4.28in]{seu}
 \end{figure}
-\vspace{26pt}
+\vspace{10pt}
 
 \begin{center}
-\setstretch{3.2}
+\setstretch{3}
 \Large
 \textbf{题目} \quad \underline{\makebox[250pt][c]{\textbf{图像去雾化方法研究}}}\\
 \underline{\makebox[80pt][c]{\textbf{交通学院}}}院（系）\quad \underline{\makebox[80pt][c]{\bf 交通工程}}专业 \\
 学\qquad 号 \underline{\makebox[300pt][c]{\textbf{21015111}}}\\
 学生姓名 \underline{\makebox[300pt][c]{\textbf{周冬秦}}}\\
-指导教师 \underline{\makebox[300pt][c]{\textbf{何铁军 教授}}}\\
+指导教师 \underline{\makebox[300pt][c]{\textbf{何铁军\  教授}}}\\
 起止日期 \underline{\makebox[300pt][c]{\textbf{2019年2月25日至2019年6月2日}}}\\
 设计地点 \underline{\makebox[300pt][c]{\textbf{东南大学交通学院203室}}}
 
 \end{center}
 \newpage
 
+%%% 独创性声明、授权声明
+\vspace{3cm}
+\begin{center}
+\textbf{\Large 东南大学毕业（设计）论文 \\ \medskip 独创性声明}
+\end{center}
+\par 本人声明所呈交的毕业（设计）论文是我个人在导师指导下进行的研究工作及取得的研究成果。尽我所知，除了文中特别加以标注和致谢的地方外，论文中不包含其他人已经发表或撰写过的研究成果，也不包含为获得东南大学或其它教育机构的学位或证书而使用过的材料。与我一同工作的同志对本研究所做的任何贡献均已在论文中作了明确的说明并表示了谢意。
+\begin{flushright}
+论文作者签名：\rule{2cm}{0.05em} \quad 日期：\rule{2cm}{0.05em}
+\end{flushright}
+\vspace{4cm}
+
+\begin{center}
+\textbf{\Large 东南大学毕业（设计）论文使用 \\ \medskip 授权声明}
+\end{center}
+\par 东南大学有权保留本人所送交毕业（设计）论文的复印件和电子文档，可以采用影印、缩印或其他复制手段保存论文。本人电子文档的内容和纸质论文的内容相一致。除在保密期内的保密论文和在技术保护期限内的论文外，允许论文被查阅和借阅，可以公布（包括以电子信息形式刊登）论文的全部或中、英文摘要等部分内容。论文的公布（包括以电子信息形式刊登）授权东南大学教务处办理。
+\begin{flushright}
+论文作者签名：\rule{2cm}{0.05em} \quad 导师签名：\rule{2cm}{0.05em} \quad 日期：\rule{2cm}{0.05em}
+\end{flushright}
+\newpage
+
+%%% 摘要
+\begin{center}
+\LARGE 摘\quad 要
+\end{center}
+
+{\setstretch{1.5}
+\par 本文用自行研制的高温同轴双筒流变仪，研究了半固态ZA12合金的流变性能。
+对半固态ZA12合金的剪切应力与时间关系曲线和滞回环进行了测试和分析。结果表明半固态ZA12合金具有触变性，其触变性的大小与固相分数和剪切速率有关。在稳态和瞬态的不同条件下，半固态ZA12浆液表现出不同的流体特征。在稳态条件下，半固态ZA12合金的表观黏度随剪切速率的增加而下降，呈现出假塑性的流变特性；而在瞬态条件下，其表观黏度随剪切速率的增加而增大，呈现出胀流性的流变特性。
+\par 最后，根据瞬态条件下的试验结果以及流变学理论，建立了能适应实际工况条件的ZA12合金的动态流变模型。\newline
+
+\noindent 关键词：半固态，ZA12合金，触变性能，流变性能，表观黏度，流变模型
+}
+
+\begin{center}
+Abstract
+\end{center}
+\par In this thesis, the rheological behavior of semi-solid ZA12 alloy was investigated using a specially designed high temperature Couette rheometer.
+\par The evolution of shear stress with time and the hysteresis loops of semi-solid ZA12 alloy were measured and analyzed. The results show that semi-solid ZA12 alloy possesses the thixotropic property, which varies with solid fraction and shear rate. In addition, the semi-solid ZA12 alloy slurry exhibits different rheological behaviors under steady state and transient state conditions. In case of steady state, the apparent viscosity of semi-solid ZA12 alloy decreases with the increase of shear rate, showing the pseudo-plastic rheological behavior. However, under the transient state condition, it presents the dilatant rheological behavior, i.e. the apparent viscosity increases as shear rate increases.
+\par Finally, based on the transient state experimental results and rheology theory, a dynamic rheological model of semi-solid ZA12 alloy was developed, which could be applicable to practical semi-solid processes.\newline
+
+\noindent KEY WORDS: semi-solid, ZA12 alloy, thixotropic behavior, rheological behavior, apparent viscosity, rheological model
+\newpage
+
+%%% 目录
 
 
-
-
-
-
+\vspace{5cm}
 
 \textbf{fuck}
 
