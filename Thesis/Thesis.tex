@@ -1,16 +1,24 @@
 \documentclass[a4paper, 12pt]{article}
 \usepackage[UTF8]{ctex}
-\usepackage{graphicx}
-\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
-%\usepackage{amssymb}
-%\usepackage[font=scriptsize]{caption}
-%\usepackage{amsmath}
-\usepackage{float}
-%\usepackage{cuted}
-%\usepackage{hyperref}
-%\usepackage{wrapfig}
-%\usepackage{multirow}
-%\usepackage[symbol]{footmisc}
+\usepackage{graphicx} % for pictures
+\usepackage[margin=2cm]{geometry}
+\usepackage{float} % for pictures
+\usepackage{xeCJK}% for chinese input
+\usepackage{setspace} % for line spacing
+
+
+%%% font settings
+\setCJKmainfont{SimSun}
+\setmainfont{Times New Roman}
+\newCJKfontfamily[mingliu]\mlu{MingLiU}
+
+%%% format settings
+% 要注意，latex的字号变动会覆盖baselineskip
+% latex默认的baselineskip是fontsize的1.2倍，所以改了fontsize之后baselineskip也变了
+% 行距计算：baselineskip * baselinestretch，baselinestretch和linespread其实是差不多的，只是取值不一样，后者去1.3对应前者的1.5，1.6对应2；所以一般设置行距直接改后面的因子
+
+%%% new commands
+\newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
 
 
 \begin{document}
@@ -19,9 +27,41 @@
 \centering
 \includegraphics[width=4.28in]{seu}
 \end{figure}
+\vspace{26pt}
+
+\begin{center}
+\setstretch{3.2}
+\Large
+\textbf{题目} \quad \underline{\makebox[250pt][c]{\textbf{图像去雾化方法研究}}}\\
+\underline{\makebox[80pt][c]{\textbf{交通学院}}}院（系）\quad \underline{\makebox[80pt][c]{\bf 交通工程}}专业 \\
+学\qquad 号 \underline{\makebox[300pt][c]{\textbf{21015111}}}\\
+学生姓名 \underline{\makebox[300pt][c]{\textbf{周冬秦}}}\\
+指导教师 \underline{\makebox[300pt][c]{\textbf{何铁军 教授}}}\\
+起止日期 \underline{\makebox[300pt][c]{\textbf{2019年2月25日至2019年6月2日}}}\\
+设计地点 \underline{\makebox[300pt][c]{\textbf{东南大学交通学院203室}}}
+
+\end{center}
+\newpage
 
 
 
+
+
+
+
+
+\textbf{fuck}
+
+\bigskip
+你好啊啊
+
+{\heiti 你好啊啊，黑体}
+
+{\kaishu 你好啊啊，楷书}
+
+{\mlu 你好啊啊，细明体}
+
+what the hell is going on 
 
 
 
