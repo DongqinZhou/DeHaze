@@ -2,10 +2,11 @@
 \usepackage[UTF8]{ctex}
 \usepackage{graphicx} % for pictures
 \usepackage[margin=2cm]{geometry}
+\usepackage{tocloft} % for tableofcontents
 \usepackage{float} % for pictures
 \usepackage{xeCJK}% for chinese input
 \usepackage{setspace} % for line spacing
-\usepackage{anyfontsize}
+\usepackage{anyfontsize}% set font size
 
 
 
@@ -21,7 +22,9 @@
 
 %%% new commands
 \newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
-
+\renewcommand{\contentsname}{\hfill \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 \hfill} 
+\renewcommand{\cftaftertoctitle}{\hfill}
+%\renewcommand{\contentsname}{\fontsize{16}{19.2} \selectfont \heiti \centering 目\qquad \qquad录}
 
 \begin{document}
 
@@ -37,7 +40,7 @@
 {\fontsize{16}{46}\selectfont % first : fontsize; second : baselineskip
 
 \textbf{题目} \quad \underline{\makebox[250pt][c]{\textbf{图像去雾化方法研究}}}\\
-\underline{\makebox[80pt][c]{\textbf{交通学院}}}院（系）\quad \underline{\makebox[80pt][c]{\bf 交通工程}}专业 \\
+\underline{\makebox[100pt][c]{\textbf{交通学院}}}院（系）\quad \underline{\makebox[100pt][c]{\bf 交通工程}}专业 \\
 学\qquad 号 \underline{\makebox[300pt][c]{\textbf{21015111}}}\\
 学生姓名 \underline{\makebox[300pt][c]{\textbf{周冬秦}}}\\
 指导教师 \underline{\makebox[300pt][c]{\textbf{何铁军\  教授}}}\\
@@ -48,9 +51,9 @@
 \newpage
 
 %%% 独创性声明、授权声明
-\vspace{3cm}
+\vspace*{36pt}
 \begin{center}
-\textbf{\Large 东南大学毕业（设计）论文 \\ \medskip 独创性声明}
+\textbf{\fontsize{16}{19.2} \selectfont 东南大学毕业（设计）论文 \\ \medskip 独创性声明}
 \end{center}
 \par 本人声明所呈交的毕业（设计）论文是我个人在导师指导下进行的研究工作及取得的研究成果。尽我所知，除了文中特别加以标注和致谢的地方外，论文中不包含其他人已经发表或撰写过的研究成果，也不包含为获得东南大学或其它教育机构的学位或证书而使用过的材料。与我一同工作的同志对本研究所做的任何贡献均已在论文中作了明确的说明并表示了谢意。
 \begin{flushright}
@@ -59,7 +62,7 @@
 \vspace{4cm}
 
 \begin{center}
-\textbf{\Large 东南大学毕业（设计）论文使用 \\ \medskip 授权声明}
+\textbf{\fontsize{16}{19.2} \selectfont 东南大学毕业（设计）论文使用 \\ \medskip 授权声明}
 \end{center}
 \par 东南大学有权保留本人所送交毕业（设计）论文的复印件和电子文档，可以采用影印、缩印或其他复制手段保存论文。本人电子文档的内容和纸质论文的内容相一致。除在保密期内的保密论文和在技术保护期限内的论文外，允许论文被查阅和借阅，可以公布（包括以电子信息形式刊登）论文的全部或中、英文摘要等部分内容。论文的公布（包括以电子信息形式刊登）授权东南大学教务处办理。
 \begin{flushright}
@@ -68,6 +71,7 @@
 \newpage
 
 %%% 摘要
+\vspace*{12pt}
 \begin{center}
 \LARGE 摘\quad 要
 \end{center}
@@ -80,7 +84,7 @@
 \noindent 关键词：半固态，ZA12合金，触变性能，流变性能，表观黏度，流变模型
 }
 \newpage
-
+\vspace*{12pt}
 \begin{center}
 Abstract
 \end{center}
@@ -92,9 +96,10 @@ Abstract
 \newpage
 
 %%% 目录
+\vspace*{36pt}
 \tableofcontents
 
-
+\newpage
 \vspace{5cm}
 
 \textbf{fuck}
