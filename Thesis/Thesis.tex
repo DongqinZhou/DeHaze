@@ -13,7 +13,10 @@
 %%% font settings
 \setCJKmainfont{SimSun}
 \setmainfont{Times New Roman}
-\newCJKfontfamily[mingliu]\mlu{MingLiU}
+%\newCJKfontfamily[mingliu]\mlu{MingLiU}
+
+%%% TOC setting
+\setuptoc{toc}{totoc}
 
 %%% format settings
 % 要注意，latex的字号变动会覆盖baselineskip
@@ -71,6 +74,7 @@
 \newpage
 
 %%% 摘要
+\addchap{摘要}
 \vspace*{12pt}
 \begin{center}
 \LARGE 摘\quad 要
@@ -84,6 +88,7 @@
 \noindent 关键词：半固态，ZA12合金，触变性能，流变性能，表观黏度，流变模型
 }
 \newpage
+\addchap{Abstract}
 \vspace*{12pt}
 \begin{center}
 Abstract
@@ -111,7 +116,7 @@ Abstract
 
 {\kaishu 你好啊啊，楷书}
 
-{\mlu 你好啊啊，细明体}
+%{\mlu 你好啊啊，细明体}
 
 what the hell is going on 
 
