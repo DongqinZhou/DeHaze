@@ -44,7 +44,7 @@ def get_batch(data_files, label_files, batch_size, height, width):
 def scheduler(epoch):
     if epoch % 20 == 0 and epoch != 0:
         lr = K.get_value(sgd.lr)
-        K.set_value(sgd.lr, lr - 0.1)
+        K.set_value(sgd.lr, lr - 0.001)
         print("lr changed to {}".format(lr - 0.1))
     return K.get_value(sgd.lr)
 
@@ -83,8 +83,8 @@ class Linear_Comb(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], input_shape[2], self.output_dim)
     
-def MSCNN():
-    input_image = Input(shape = (None, None, 3), name = 'input')
+def coarseNet():
+    input_image = Input(shape = (None, None, 3), name = 'c_input')
     c_conv1 = Conv2D(5, (11,11), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'c_conv1')(input_image)
     c_mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp1')(c_conv1)
     c_up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up1')(c_mp1)
@@ -98,11 +98,14 @@ def MSCNN():
     #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(up3)
     ###
     c_linear = Linear_Comb(1, name = 'c_linear')(c_up3)
-    
-    f_conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv1')(input_image)
+    model = Model(inputs = input_image, outputs = c_linear)
+    return model
+
+def fineNet(coarseNet):
+    f_conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv1')(coarseNet.input)
     f_mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp1')(f_conv1)
     f_up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up1')(f_mp1)
-    concat1 = concatenate([f_up1, c_linear], axis = -1, name = 'f_concat')
+    concat1 = concatenate([f_up1, coarseNet.get_layer(name = 'c_linear').output], axis = -1, name = 'f_concat')
     f_conv2 = Conv2D(5, (5,5), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv2')(concat1)
     f_mp2 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp2')(f_conv2)
     f_up2 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up2')(f_mp2)
@@ -113,7 +116,7 @@ def MSCNN():
     #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(up3)
     ###
     f_linear = Linear_Comb(1, name= 'f_linear')(f_up3)
-    model = Model(inputs = input_image, outputs = f_linear)
+    model = Model(inputs = coarseNet.input, outputs = f_linear)
     return model
 
 '''
@@ -126,8 +129,8 @@ data, label = load_data(data_files, label_files, 240, 320)
 '''
 if __name__ =="__main__":
     
-    sgd = optimizers.SGD(lr=0.001, momentum=0.9, decay=5e-4, nesterov=False)
-    p_train = 0.7
+    sgd = optimizers.SGD(lr=0.1, momentum=0.9, decay=5e-4, nesterov=False)
+    p_train = 0.8
     width = 320
     height = 240
     batch_size = 10
@@ -145,17 +148,27 @@ if __name__ =="__main__":
     steps = len(x_val) // batch_size + 1
     reduce_lr = LearningRateScheduler(scheduler)
     
-    mscnn = MSCNN()
-    mscnn.summary()
-    mscnn.compile(optimizer = sgd, loss = 'mean_squared_error')
-    mscnn.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
+    c_net = coarseNet()
+    c_net.summary()
+    c_net.compile(optimizer = sgd, loss = 'mean_squared_error')
+    c_net.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    mscnn.save('/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5')
-    mscnn.save_weights('mscnn.h5')
-    print('MSCNN generated')
+    c_net.save_weights('/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5')
+    print('coarseNet generated')
+    
+    f_net = fineNet(c_net)
+    f_net.summary()
+    f_net.compile(optimizer = sgd, loss = 'mean_squared_error')
+    f_net.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
+                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
+                        use_multiprocessing=True, 
+                        shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
+    f_net.save_weights('/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5')
+    print('fineNet generated')
 
 
 

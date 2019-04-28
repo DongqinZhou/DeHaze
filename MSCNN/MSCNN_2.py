@@ -3,7 +3,7 @@ import os
 import cv2
 import random
 import numpy as np
-from MSCNN_1 import MSCNN
+from MSCNN_1 import fineNet
 
 def get_airlight(hazy_image, trans_map, p):
     M, N = trans_map.shape
@@ -27,8 +27,8 @@ def get_radiance(hazy_image, airlight, trans_map, L):
 
 if __name__ =="__main__":
     
-    mscnn = MSCNN()
-    mscnn.load_weights('mscnn.h5')
+    f_net = fineNet()
+    f_net.load_weights('fineNet.h5')
     
     testdata_path = '/home/jianan/Incoming/dongqin/OTS/OTS001'
     testdata_files = os.listdir(testdata_path)
@@ -54,7 +54,7 @@ if __name__ =="__main__":
         width = hazy_image.shape[1]
         channel = hazy_image.shape[2]
         hazy_input = np.reshape(hazy_image, (1, height, width, channel))
-        trans_map = mscnn.predict(hazy_input)
+        trans_map = f_net.predict(hazy_input)
         trans_map = np.floor(np.reshape(trans_map, (height, width)))
         trans_maps.append(trans_map)
         Airlight = get_airlight(hazy_image, trans_map, p)
