@@ -41,14 +41,6 @@ def get_batch(data_files, label_files, batch_size, height, width):
             
             yield x, y
             
-def scheduler(epoch):
-    if epoch % 20 == 0 and epoch != 0:
-        lr = K.get_value(sgd.lr)
-        K.set_value(sgd.lr, lr - 0.001)
-        print("lr changed to {}".format(lr - 0.1))
-    return K.get_value(sgd.lr)
-
-
 class Linear_Comb(Layer):
     '''
     https://keunwoochoi.wordpress.com/2016/11/18/for-beginners-writing-a-custom-keras-layer/
@@ -73,15 +65,29 @@ class Linear_Comb(Layer):
     
     def call(self, x):
         return sigmoid(K.dot(x, self.kernel) + self.bias)
-    '''
-    def get_config(self):
-        config = {"output_dim": self.output_dim}
-        base_config = super(Linear_Comb, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-    '''
     
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], input_shape[2], self.output_dim)
+    
+def get_airlight(hazy_image, trans_map, p):
+    M, N = trans_map.shape
+    flat_image = hazy_image.reshape(M*N, 3)
+    flat_trans = trans_map.ravel()
+    searchidx = (-flat_trans).argsort()[:round(M * N * p)]
+    
+    return np.max(flat_image.take(searchidx, axis=0), axis = 0)
+
+def get_radiance(hazy_image, airlight, trans_map, L):
+    tiledt = np.zeros_like(hazy_image)
+    tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
+    min_t = np.ones_like(hazy_image) * 0.1
+    t = np.maximum(tiledt, min_t)
+    hazy_image = hazy_image.astype(int)
+    airlight = airlight.astype(int)
+    clear_ = (hazy_image - airlight) / t + airlight
+    clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
+    
+    return clear_image
     
 def coarseNet():
     input_image = Input(shape = (None, None, 3), name = 'c_input')
@@ -102,6 +108,8 @@ def coarseNet():
     return model
 
 def fineNet(coarseNet):
+    for layer in coarseNet.layers:
+        layer.trainable = False
     f_conv1 = Conv2D(4, (7,7), strides=(1, 1), padding='same', activation='relu',kernel_initializer='random_normal', name = 'f_conv1')(coarseNet.input)
     f_mp1 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp1')(f_conv1)
     f_up1 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up1')(f_mp1)
@@ -119,57 +127,115 @@ def fineNet(coarseNet):
     model = Model(inputs = coarseNet.input, outputs = f_linear)
     return model
 
-'''
-data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
-label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
-data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-label_files = os.listdir(label_path)
-data, label = load_data(data_files, label_files, 240, 320)
+def train_model(data_path, label_path, weights_path, lr=0.1, momentum=0.9, decay=5e-4, p_train = 0.8, 
+                width = 320, height = 240, batch_size = 10, nb_epochs = 15):
+    
+    def scheduler(epoch):
+        if epoch % 20 == 0 and epoch != 0:
+            lr = K.get_value(sgd.lr)
+            K.set_value(sgd.lr, lr - 0.001)
+            print("lr changed to {}".format(lr - 0.1))
+        return K.get_value(sgd.lr)
 
-'''
-if __name__ =="__main__":
+    sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
+    p_train = p_train
+    width = width
+    height = height
+    batch_size = batch_size
+    nb_epochs = nb_epochs
     
-    sgd = optimizers.SGD(lr=0.1, momentum=0.9, decay=5e-4, nesterov=False)
-    p_train = 0.8
-    width = 320
-    height = 240
-    batch_size = 10
-    
-    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
-    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)
     
-    random.seed(0)  # ensure we have the same shuffled data every time
+    random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
-    steps_per_epoch = len(x_train) // batch_size + 1
-    steps = len(x_val) // batch_size + 1
+    if len(x_train) % batch_size == 0:
+        steps_per_epoch = len(x_train) // batch_size
+    else:
+        steps_per_epoch = len(x_train) // batch_size + 1
+        
+    if len(x_val) % batch_size == 0:
+        steps = len(x_val) // batch_size
+    else:
+        steps = len(x_val) // batch_size + 1
     reduce_lr = LearningRateScheduler(scheduler)
     
     c_net = coarseNet()
     c_net.summary()
     c_net.compile(optimizer = sgd, loss = 'mean_squared_error')
     c_net.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    c_net.save_weights('/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5')
+    c_net.save_weights(weights_path + '/coarseNet.h5')
     print('coarseNet generated')
     
     f_net = fineNet(c_net)
     f_net.summary()
     f_net.compile(optimizer = sgd, loss = 'mean_squared_error')
     f_net.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    f_net.save_weights('/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5')
+    f_net.save_weights(weights_path + '/fineNet.h5')
     print('fineNet generated')
+    
+    return weights_path + '/coarseNet.h5', weights_path + '/fineNet.h5'
 
+def usemodel(coarse_weights, fine_weights, testdata_path):
+    
+    c_net = coarseNet()
+    c_net.load_weights(coarse_weights)
+    f_net = fineNet(c_net)
+    f_net.load_weights(fine_weights)
+    
+    testdata_files = os.listdir(testdata_path)
+    random.seed(100)
+    random.shuffle(testdata_files)
+    
+    height = 240
+    width = 320
+    p = 0.001
+    L = 256
+    
+    hazy_images = []
+    trans_maps = []
+    clear_images = []
+    
+    for testdata_file in testdata_files:
+        hazy_image = cv2.imread(testdata_path + '/' + testdata_file) 
+        if hazy_image.shape[0] % 2 != 0:
+            height = hazy_image.shape[0] // 2 * 2
+        if hazy_image.shape[1] % 2 != 0:
+            width = hazy_image.shape[1] // 2 * 2
+        hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
+        hazy_images.append(hazy_image)
+        
+        channel = hazy_image.shape[2]
+        hazy_input = np.reshape(hazy_image, (1, height, width, channel))
+        trans_map = f_net.predict(hazy_input)
+        trans_map = np.reshape(trans_map, (height, width))
+        trans_maps.append(trans_map)
+        Airlight = get_airlight(hazy_image, trans_map, p)
+        clear_image = get_radiance(hazy_image, Airlight, trans_map, L)
+        clear_images.append(clear_image)
+
+    
+    return hazy_images, clear_images
+
+if __name__ =="__main__":
+    
+    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
+    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
+    weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
+    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    
+    coarse_weights, fine_weights = train_model(data_path, label_path, weights_path)
+    hazy_images, clear_images = usemodel(coarse_weights, fine_weights, testdata_path)
 
 
 

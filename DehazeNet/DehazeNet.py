@@ -146,7 +146,7 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, width = 320, height = 240, batch_size = 10):
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, width = 320, height = 240, batch_size = 10, nb_epochs = 20):
     
     def scheduler(epoch):
         if epoch % 20 == 0 and epoch != 0:
@@ -165,6 +165,7 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     width = width
     height = height
     batch_size = batch_size
+	nb_epochs = nb_epochs
                         
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)    
@@ -186,7 +187,7 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     reduce_lr = LearningRateScheduler(scheduler)
    
     dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])

@@ -1,2 +1,4 @@
 # DeHaze
-Single Image Dehazing, some algorithms
+
+Implementation of AOD-Net, DehazeNet, MSCNN, DCP for single image dehazing using Keras/Python.
+
