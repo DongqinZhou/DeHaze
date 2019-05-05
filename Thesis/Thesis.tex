@@ -13,7 +13,10 @@
 %%% font settings
 \setCJKmainfont{SimSun}
 \setmainfont{Times New Roman}
-\newCJKfontfamily[mingliu]\mlu{MingLiU}
+%\newCJKfontfamily[mingliu]\mlu{MingLiU}
+
+%%% TOC setting
+
 
 %%% format settings
 % 要注意，latex的字号变动会覆盖baselineskip
@@ -72,9 +75,8 @@
 
 %%% 摘要
 \vspace*{12pt}
-\begin{center}
-\LARGE 摘\quad 要
-\end{center}
+\begin{abstract}
+\addcontentsline{toc}{chapter}{\numberline{}摘要}
 
 {\setstretch{1.5}
 \par 本文用自行研制的高温同轴双筒流变仪，研究了半固态ZA12合金的流变性能。
@@ -83,7 +85,12 @@
 
 \noindent 关键词：半固态，ZA12合金，触变性能，流变性能，表观黏度，流变模型
 }
+\end{abstract}
+
 \newpage
+
+\begin{abstract}
+\addcontentsline{toc}{chapter}{\numberline{}Abstract}
 \vspace*{12pt}
 \begin{center}
 Abstract
@@ -93,6 +100,7 @@ Abstract
 \par Finally, based on the transient state experimental results and rheology theory, a dynamic rheological model of semi-solid ZA12 alloy was developed, which could be applicable to practical semi-solid processes.\newline
 
 \noindent KEY WORDS: semi-solid, ZA12 alloy, thixotropic behavior, rheological behavior, apparent viscosity, rheological model
+\end{abstract}
 \newpage
 
 %%% 目录
@@ -111,7 +119,7 @@ Abstract
 
 {\kaishu 你好啊啊，楷书}
 
-{\mlu 你好啊啊，细明体}
+%{\mlu 你好啊啊，细明体}
 
 what the hell is going on 
 

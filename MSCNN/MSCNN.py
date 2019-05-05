@@ -127,14 +127,14 @@ def fineNet(coarseNet):
     model = Model(inputs = coarseNet.input, outputs = f_linear)
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.1, momentum=0.9, decay=5e-4, p_train = 0.8, 
+def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, decay=5e-4, p_train = 0.8, 
                 width = 320, height = 240, batch_size = 10, nb_epochs = 15):
     
     def scheduler(epoch):
         if epoch % 20 == 0 and epoch != 0:
             lr = K.get_value(sgd.lr)
-            K.set_value(sgd.lr, lr - 0.001)
-            print("lr changed to {}".format(lr - 0.1))
+            K.set_value(sgd.lr, lr * 0.1)
+            print("lr changed to {}".format(lr * 0.1))
         return K.get_value(sgd.lr)
 
     sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
