@@ -26,13 +26,15 @@
 \newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
 \renewcommand{\contentsname}{\hfill \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 \hfill} 
 \renewcommand{\cftaftertoctitle}{\hfill}
-%\renewcommand{\contentsname}{\fontsize{16}{19.2} \selectfont \heiti \centering 目\qquad \qquad录}
+%\renewcommand{\cftsecleader}{\cftdotfill{\cftsecdotsep}}
+%\renewcommand\cftsecdotsep{\cftdot}
+%\renewcommand\cftsubsecdotsep{\cftdot}
 
 \renewenvironment{abstract}[1]
 {
 \newcommand{\keywords}{#1}
 \phantomsection
-\addcontentsline{toc}{chapter}{摘要}
+\addcontentsline{toc}{chapter}{\vspace{12pt}摘要}
 
 \vspace*{12pt}
 \begin{center}
@@ -48,7 +50,7 @@
 {
 \newcommand{\keywords}{#1}
 \phantomsection
-\addcontentsline{toc}{chapter}{Abstract}
+\addcontentsline{toc}{chapter}{\\ Abstract}
 
 \vspace*{12pt}
 \begin{center}
@@ -135,7 +137,7 @@ KEY WORDS: \keywords
 \end{abstract}
 
 \newpage
-\pagenumbering{Roman}
+
 \begin{englishabstract}{semi-solid, ZA12 alloy, thixotropic behavior, rheological behavior, apparent viscosity, rheological model}
 \par In this thesis, the rheological behavior of semi-solid ZA12 alloy was investigated using a specially designed high temperature Couette rheometer.
 \par The evolution of shear stress with time and the hysteresis loops of semi-solid ZA12 alloy were measured and analyzed. The results show that semi-solid ZA12 alloy possesses the thixotropic property, which varies with solid fraction and shear rate. In addition, the semi-solid ZA12 alloy slurry exhibits different rheological behaviors under steady state and transient state conditions. In case of steady state, the apparent viscosity of semi-solid ZA12 alloy decreases with the increase of shear rate, showing the pseudo-plastic rheological behavior. However, under the transient state condition, it presents the dilatant rheological behavior, i.e. the apparent viscosity increases as shear rate increases.
@@ -146,8 +148,33 @@ KEY WORDS: \keywords
 %%% 目录
 \vspace*{36pt}
 \tableofcontents
+\thispagestyle{empty}
+\newpage
+
+%%% 正文
+\pagenumbering{arabic}
+\section{绪论}
+\subsection{研究背景和意义}
+信息化时代的一大特征即是海量数据的存储，例如图片、视频、音频、文本数据等。以图片数据为例，绝大部分的图片都采集于室外，但室外采集的图片相比于室内图片，更容易受到空中浑浊物，如水滴、悬浮颗粒的降质影响。降质图片无法反映原景物的对比度和真实颜色，降低观赏性，某些图片还会丢失重要信息，如交叉口抓拍图片。
+
+图像去雾化处理是一个热门的研究领域。一方面，图像去雾能够有助于高层次的计算机视觉研究，如目标检测、无人驾驶等；另一方面，经过去雾处理的图片能够较好地纠正色差，更具观赏性。此外，在去雾处理中生成的深度图也会有助于图像编辑和其他视觉算法[1]。
+含雾图片形成可以由大气散射模型来描述，这一模型最初是由McCartney[2]提出来的，之后由Narasimhan和Nayar[3, 4]进一步发展。模型表达式如下：
+\begin{equation}
+{\bf I(x)} = {\bf J(x)}t{\bf (x)} + {\bf A}(1 - t{\bf (x)})
+\end{equation}
+
+
+
+
+
+
+
+
+
+
 
 \newpage
+
 \vspace{5cm}
 
 \textbf{fuck}
