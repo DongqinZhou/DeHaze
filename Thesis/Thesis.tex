@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt]{article}
+\documentclass[a4paper, 12pt]{report}
 \usepackage[UTF8]{ctex}
 \usepackage{graphicx} % for pictures
 \usepackage[margin=2cm]{geometry}
@@ -24,17 +24,15 @@
 
 %%% new commands
 \newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
-\renewcommand{\contentsname}{\hfill \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 \hfill} 
-\renewcommand{\cftaftertoctitle}{\hfill}
-%\renewcommand{\cftsecleader}{\cftdotfill{\cftsecdotsep}}
-%\renewcommand\cftsecdotsep{\cftdot}
-%\renewcommand\cftsubsecdotsep{\cftdot}
+\renewcommand{\contentsname}{\centerline{ \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 } }
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftdotsep}{1}
 
 \renewenvironment{abstract}[1]
 {
 \newcommand{\keywords}{#1}
 \phantomsection
-\addcontentsline{toc}{chapter}{\vspace{12pt}摘要}
+\addcontentsline{toc}{chapter}{摘要\quad }
 
 \vspace*{12pt}
 \begin{center}
@@ -50,7 +48,7 @@
 {
 \newcommand{\keywords}{#1}
 \phantomsection
-\addcontentsline{toc}{chapter}{\\ Abstract}
+\addcontentsline{toc}{chapter}{Abstract\quad }
 
 \vspace*{12pt}
 \begin{center}
@@ -146,15 +144,16 @@ KEY WORDS: \keywords
 \newpage
 
 %%% 目录
-\vspace*{36pt}
+\vspace*{24pt}
+{\fontsize{12pt}{18pt} \selectfont
 \tableofcontents
-\thispagestyle{empty}
+}\thispagestyle{empty}
 \newpage
 
 %%% 正文
 \pagenumbering{arabic}
-\section{绪论}
-\subsection{研究背景和意义}
+\chapter{绪论\quad}
+\section{研究背景和意义\quad}
 信息化时代的一大特征即是海量数据的存储，例如图片、视频、音频、文本数据等。以图片数据为例，绝大部分的图片都采集于室外，但室外采集的图片相比于室内图片，更容易受到空中浑浊物，如水滴、悬浮颗粒的降质影响。降质图片无法反映原景物的对比度和真实颜色，降低观赏性，某些图片还会丢失重要信息，如交叉口抓拍图片。
 
 图像去雾化处理是一个热门的研究领域。一方面，图像去雾能够有助于高层次的计算机视觉研究，如目标检测、无人驾驶等；另一方面，经过去雾处理的图片能够较好地纠正色差，更具观赏性。此外，在去雾处理中生成的深度图也会有助于图像编辑和其他视觉算法[1]。
@@ -163,6 +162,8 @@ KEY WORDS: \keywords
 {\bf I(x)} = {\bf J(x)}t{\bf (x)} + {\bf A}(1 - t{\bf (x)})
 \end{equation}
 
+\subsection{测试\quad}
+嘿， 你好啊
 
 
 
