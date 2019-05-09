@@ -30,7 +30,7 @@
 
 \renewenvironment{abstract}[1]
 {
-
+\newcommand{\keywords}{#1}
 \phantomsection
 \addcontentsline{toc}{chapter}{摘要}
 
@@ -38,15 +38,15 @@
 \begin{center}
 \fontsize{18}{21.6}\selectfont 摘\qquad 要
 \end{center}
-
+}
 {
   \\[1\baselineskip]
-  \textbf{关键词：} #1
+  关键词： \keywords
 }
 
 \newenvironment{englishabstract}[1]
 {
-
+\newcommand{\keywords}{#1}
 \phantomsection
 \addcontentsline{toc}{chapter}{Abstract}
 
@@ -54,8 +54,10 @@
 \begin{center}
 Abstract
 \end{center}
-
-{\textbf KEY WORDS：} #1
+}
+{
+\\[1\baselineskip]
+KEY WORDS: \keywords
 }
 
 
@@ -80,6 +82,7 @@ Abstract
 
 %%% 封面
 \vspace*{36pt}
+\thispagestyle{empty}
 \begin{figure}[H]
 \centering
 \includegraphics[width=4.28in, height = 1.52in]{seu}
@@ -101,6 +104,7 @@ Abstract
 \newpage
 
 %%% 独创性声明、授权声明
+\thispagestyle{empty}
 \vspace*{36pt}
 \begin{center}
 \textbf{\fontsize{16}{19.2} \selectfont 东南大学毕业（设计）论文 \\ \medskip 独创性声明}
@@ -121,31 +125,21 @@ Abstract
 \newpage
 
 %%% 摘要
-
-
-
-
-
-%\vspace*{12pt}
+\pagenumbering{Roman}
 \begin{abstract}{半固态，ZA12合金，触变性能，流变性能，表观黏度，流变模型}
-%\addcontentsline{toc}{chapter}{\numberline{}摘要}
-
 {\setstretch{1.5}
 \par 本文用自行研制的高温同轴双筒流变仪，研究了半固态ZA12合金的流变性能。
 对半固态ZA12合金的剪切应力与时间关系曲线和滞回环进行了测试和分析。结果表明半固态ZA12合金具有触变性，其触变性的大小与固相分数和剪切速率有关。在稳态和瞬态的不同条件下，半固态ZA12浆液表现出不同的流体特征。在稳态条件下，半固态ZA12合金的表观黏度随剪切速率的增加而下降，呈现出假塑性的流变特性；而在瞬态条件下，其表观黏度随剪切速率的增加而增大，呈现出胀流性的流变特性。
-\par 最后，根据瞬态条件下的试验结果以及流变学理论，建立了能适应实际工况条件的ZA12合金的动态流变模型。\newline
-
+\par 最后，根据瞬态条件下的试验结果以及流变学理论，建立了能适应实际工况条件的ZA12合金的动态流变模型。
 }
 \end{abstract}
 
 \newpage
-
+\pagenumbering{Roman}
 \begin{englishabstract}{semi-solid, ZA12 alloy, thixotropic behavior, rheological behavior, apparent viscosity, rheological model}
-
 \par In this thesis, the rheological behavior of semi-solid ZA12 alloy was investigated using a specially designed high temperature Couette rheometer.
 \par The evolution of shear stress with time and the hysteresis loops of semi-solid ZA12 alloy were measured and analyzed. The results show that semi-solid ZA12 alloy possesses the thixotropic property, which varies with solid fraction and shear rate. In addition, the semi-solid ZA12 alloy slurry exhibits different rheological behaviors under steady state and transient state conditions. In case of steady state, the apparent viscosity of semi-solid ZA12 alloy decreases with the increase of shear rate, showing the pseudo-plastic rheological behavior. However, under the transient state condition, it presents the dilatant rheological behavior, i.e. the apparent viscosity increases as shear rate increases.
-\par Finally, based on the transient state experimental results and rheology theory, a dynamic rheological model of semi-solid ZA12 alloy was developed, which could be applicable to practical semi-solid processes.\newline
-
+\par Finally, based on the transient state experimental results and rheology theory, a dynamic rheological model of semi-solid ZA12 alloy was developed, which could be applicable to practical semi-solid processes.
 \end{englishabstract}
 \newpage
 
