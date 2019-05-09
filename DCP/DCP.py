@@ -35,7 +35,7 @@ def get_radiance(I, A, t):
     tiledt[:, :, R] = tiledt[:, :, G] = tiledt[:, :, B] = t
     return (I - A) / tiledt + A  # CVPR09, eq.16
 
-def dehaze(im_path, tmin, Amax, w, p,
+def dehaze(im_path, tmin, w, p,
            omega, r, eps):
     
     im = cv2.imread(im_path)
@@ -44,14 +44,15 @@ def dehaze(im_path, tmin, Amax, w, p,
     m, n, _ = I.shape
     Idark = get_dark_channel(I, w)
     A = get_atmosphere(I, Idark, p)
-    A = np.minimum(A, Amax)
+#    A = np.minimum(A, Amax)
     rawt = get_transmission(I, A, Idark, omega, w)
+    rawt = np.maximum(rawt, tmin)
     normI = (I - I.min()) / (I.max() - I.min())  # normalize I
     refinedt = guidedfilter.guided_filter(normI, rawt, r, eps)
 
     clear_image = get_radiance(I, A, refinedt)
     
-    return np.maximum(np.minimum(clear_image, L - 1), 0).astype(np.uint8) 
+    return im, np.maximum(np.minimum(clear_image, L - 1), 0).astype(np.uint8) 
 
 if __name__ =="__main__":
 
@@ -60,14 +61,16 @@ if __name__ =="__main__":
     omega = 0.95 # omega before transmission
     R, G, B = 0, 1, 2  # index for convenience
     L = 256  # color depth
-    images_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data'
-    images_filenames = os.listdir(images_path)
-    all_dehazed_images = []
+    images_path = '/home/jianan/Incoming/dongqin/test_images_data'
+    hazy_images = []
+    images_filenames = os.listdir(images_path)[0:10]
+    clear_images = []
     for image_filename in images_filenames:
-        image_path = images_path + '\\' + image_filename
-        im_dehaze = dehaze(image_path, tmin=0.2, Amax=220, w=W, p=p,
+        image_path = images_path + '/' + image_filename
+        hazy_image, im_dehaze = dehaze(image_path, tmin = 0.1, w=W, p=p,
            omega=omega, r=40, eps=1e-3)
-        all_dehazed_images.append(im_dehaze)
+        hazy_images.append(hazy_image)
+        clear_images.append(im_dehaze)
 
 
 
