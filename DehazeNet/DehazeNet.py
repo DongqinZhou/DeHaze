@@ -41,11 +41,11 @@ def load_data(data_files,label_files, patch_size = 16):
     
     return data, label
 
-def get_batch(data_files, label_files, batch_size, height, width):
+def get_batch(data_files, label_files, batch_size):
    
     while 1:
         for i in range(0, len(data_files), batch_size):
-            x, y = load_data(data_files[i : i+batch_size], label_files, height, width)
+            x, y = load_data(data_files[i : i+batch_size], label_files)
             
             yield x, y
 
@@ -146,13 +146,13 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 10, nb_epochs = 20):
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 10, nb_epochs = 40):
     
     def scheduler(epoch):
         if epoch % 20 == 0 and epoch != 0:
             lr = K.get_value(sgd.lr)
-            K.set_value(sgd.lr, lr - 0.1)
-            print("lr changed to {}".format(lr - 0.1))
+            K.set_value(sgd.lr, lr * 0.5)
+            print("lr changed to {}".format(lr * 0.5))
         return K.get_value(sgd.lr)
 
     dehazenet = DehazeNet()
@@ -166,7 +166,7 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
 	nb_epochs = nb_epochs
                         
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-    label_files = os.listdir(label_path)    
+    label_files = os.listdir(label_path)[0:10000]    
     
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
@@ -189,10 +189,10 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
                         get_batch(x_val, label_files, batch_size), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    dehazenet.save_weights(weights_path + '/dehazenet_weights.h5')
+    dehazenet.save_weights(weights_path + '/dehazenet.h5')
     print('dehazenet generated')
     
-    return weights_path + '/dehazenet_weights.h5'
+    return weights_path + '/dehazenet.h5'
 
 def usemodel(weights, testdata_path):
     dehazenet = DehazeNet()
