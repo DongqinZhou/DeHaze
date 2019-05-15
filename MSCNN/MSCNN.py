@@ -130,14 +130,22 @@ def fineNet(coarseNet):
 def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, decay=5e-4, p_train = 0.8, 
                 width = 320, height = 240, batch_size = 10, nb_epochs = 15):
     
-    def scheduler(epoch):
+    def c_scheduler(epoch):
         if epoch % 20 == 0 and epoch != 0:
-            lr = K.get_value(sgd.lr)
-            K.set_value(sgd.lr, lr * 0.1)
+            lr = K.get_value(c_sgd.lr)
+            K.set_value(c_sgd.lr, lr * 0.1)
             print("lr changed to {}".format(lr * 0.1))
-        return K.get_value(sgd.lr)
+        return K.get_value(c_sgd.lr)
+		
+	def f_scheduler(epoch):
+        if epoch % 20 == 0 and epoch != 0:
+            lr = K.get_value(f_sgd.lr)
+            K.set_value(f_sgd.lr, lr * 0.1)
+            print("lr changed to {}".format(lr * 0.1))
+        return K.get_value(f_sgd.lr)
 
-    sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
+    c_sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
+	f_sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
     p_train = p_train
     width = width
     height = height
@@ -160,27 +168,29 @@ def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, dec
         steps = len(x_val) // batch_size
     else:
         steps = len(x_val) // batch_size + 1
-    reduce_lr = LearningRateScheduler(scheduler)
     
+	c_reduce_lr = LearningRateScheduler(c_scheduler)
+    f_reduce_lr = LearningRateScheduler(f_scheduler)
+	
     c_net = coarseNet()
     c_net.summary()
-    c_net.compile(optimizer = sgd, loss = 'mean_squared_error')
+    c_net.compile(optimizer = c_sgd, loss = 'mean_squared_error')
     c_net.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
-                        shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
+                        shuffle=False, initial_epoch=0, callbacks = [c_reduce_lr])
     c_net.save_weights(weights_path + '/coarseNet.h5')
     print('coarseNet generated')
     
     f_net = fineNet(c_net)
     f_net.summary()
-    f_net.compile(optimizer = sgd, loss = 'mean_squared_error')
+    f_net.compile(optimizer = f_sgd, loss = 'mean_squared_error')
     f_net.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
-                        shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
+                        shuffle=False, initial_epoch=0, callbacks = [f_reduce_lr])
     f_net.save_weights(weights_path + '/fineNet.h5')
     print('fineNet generated')
     
@@ -236,23 +246,4 @@ if __name__ =="__main__":
     
     coarse_weights, fine_weights = train_model(data_path, label_path, weights_path)
     hazy_images, clear_images = usemodel(coarse_weights, fine_weights, testdata_path)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

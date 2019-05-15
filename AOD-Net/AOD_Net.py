@@ -71,6 +71,7 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
     label_files = os.listdir(label_path)
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files)  
+	data_files = data_files[0:40000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     if len(x_train) % batch_size == 0:
@@ -143,35 +144,3 @@ if __name__ =="__main__":
     hazy_images, clear_images = usemodel(weights, testdata_path)
     
     
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,8 +2,13 @@
 import os
 import cv2
 
+from MSCNN import usemodel as MSCNN
+from DehazeNet import usemodel as DehazeNet
+from AOD_Net import usemodel as AOD_Net
+from DCP import use_dcp as DCP
 from skimage.measure import compare_ssim as ssim
 from skimage.measure import compare_psnr as psnr
+
 
 def PSNR(im_true, im_test):
     return psnr(im_true, im_test)
@@ -57,6 +62,32 @@ def frame_to_video(video_path, frame_path, fps = 30, shape = (1280, 720)):
     video_writer.release()
 
 
+if __name__ =="__main__":
+    
+    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    testlabel_path = ''
+    AOD_Net_Weights = ''
+    MSCNN_Coarse_Weights = ''
+    MSCNN_Fine_Weights = ''
+    DehazeNet_Weights = ''
+    
+    DCP_Hazy, DCP_Dehazed = DCP(testdata_path)
+    AOD_Hazy, AOD_Dehazed = AOD_Net(AOD_Net_Weights, testdata_path)
+    DehazeNet_Hazy, DehazeNet_Dehazed = DehazeNet(DehazeNet_Weights, testdata_path)
+    MSCNN_Hazy, MSCNN_Dehazed = MSCNN(MSCNN_Coarse_Weights, MSCNN_Fine_Weights, testdata_path)
+    DCP_PSNR = []
+    DCP_SSIM = []
+    AOD_PSNR = []
+    AOD_SSIM = []
+    MSCNN_PSNR = []
+    MSCNN_SSIM = []
+    DehazeNet_PSNR = []
+    DehazeNet_SSIM = []
+    
+    # the input of use model should be a single image instead of a filepath, otherwise we can not place dehazed image and ground truth image accordingly
+    
+    #for i in range(len(DCP_Dehazed)):
+        
 
 
 

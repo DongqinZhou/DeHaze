@@ -149,7 +149,7 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
 def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 10, nb_epochs = 40):
     
     def scheduler(epoch):
-        if epoch % 20 == 0 and epoch != 0:
+        if epoch % 10 == 0 and epoch != 0:
             lr = K.get_value(sgd.lr)
             K.set_value(sgd.lr, lr * 0.5)
             print("lr changed to {}".format(lr * 0.5))
@@ -166,10 +166,11 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
 	nb_epochs = nb_epochs
                         
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-    label_files = os.listdir(label_path)[0:10000]    
+    label_files = os.listdir(label_path)   
     
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
+	data_files = data_files[0:10000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     if len(x_train) % batch_size == 0:
@@ -250,20 +251,3 @@ if __name__ =="__main__":
     weights = train_model(data_path, label_path, weights_path)
     hazy_images, clear_images = usemodel(weights, testdata_path)
 	
-
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
