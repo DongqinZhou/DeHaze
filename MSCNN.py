@@ -101,9 +101,9 @@ def coarseNet():
     c_mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'c_mp3')(c_conv3)
     c_up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'c_up3')(c_mp3)
     ### if self defined layer does not work, consider using this convolutional layer
-    #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(up3)
+    c_linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'c_linear')(c_up3)
     ###
-    c_linear = Linear_Comb(1, name = 'c_linear')(c_up3)
+    #c_linear = Linear_Comb(1, name = 'c_linear')(c_up3)
     model = Model(inputs = input_image, outputs = c_linear)
     return model
 
@@ -121,9 +121,9 @@ def fineNet(coarseNet):
     f_mp3 = MaxPooling2D(pool_size = (2,2), padding = 'valid', name = 'f_mp3')(f_conv3)
     f_up3 = UpSampling2D(size=(2,2), interpolation = 'nearest', name = 'f_up3')(f_mp3)
     ### if self defined layer does not work, consider using this convolutional layer
-    #linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(up3)
+    f_linear = Conv2D(1, (1,1), strides=(1,1), padding ='same', activation='sigmoid',kernel_initializer='random_normal', name = 'f_linear')(f_up3)
     ###
-    f_linear = Linear_Comb(1, name= 'f_linear')(f_up3)
+    #f_linear = Linear_Comb(1, name= 'f_linear')(f_up3)
     model = Model(inputs = coarseNet.input, outputs = f_linear)
     return model
 
@@ -195,12 +195,15 @@ def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, dec
     
     return weights_path + '/coarseNet.h5', weights_path + '/fineNet.h5'
 
-def usemodel(coarse_weights, fine_weights, hazy_image):
-    
+def Load_model(coarse_weights, fine_weights):
     c_net = coarseNet()
     c_net.load_weights(coarse_weights)
     f_net = fineNet(c_net)
     f_net.load_weights(fine_weights)
+    
+    return f_net
+
+def usemodel(f_net, hazy_image):
     
     height = hazy_image.shape[0]
     width = hazy_image.shape[1]
@@ -224,15 +227,13 @@ def usemodel(coarse_weights, fine_weights, hazy_image):
 
 if __name__ =="__main__":
     
-    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
-    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
-    weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
-    #testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\haze'
+    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\trans'
     
-    coarse_weights, fine_weights = train_model(data_path, label_path, weights_path)
-    #hazy_images, clear_images = usemodel(coarse_weights, fine_weights, testdata_path)
+    data_files = os.listdir(data_path) 
+    label_files = os.listdir(label_path)
 
-
+    data, label = load_data(data_files, label_files, 240, 320) 
 
 
 

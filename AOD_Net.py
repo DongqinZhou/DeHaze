@@ -88,18 +88,21 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0)
-    model.save_weights('aodnet.h5')
+    model.save_weights(weights_path + '/aodnet.h5')
     print('model generated')
     return weights_path + '/aodnet.h5'
 
-def usemodel(weights_path, hazy_image):
+def Load_model(weights):
     model = aodmodel()
-    model.load_weights(weights_path)
+    model.load_weights(weights)
+    return model
+
+def usemodel(model, hazy_image):
     
     height = hazy_image.shape[0]
     width = hazy_image.shape[1]
     channel = hazy_image.shape[2]
-    hazy_input = np.reshape(hazy_image, (1, height, width, channel))
+    hazy_input = np.reshape(hazy_image, (1, height, width, channel)) / 255.0
     clear_ = model.predict(hazy_input)
     clear_image = np.floor(np.reshape(clear_, (height, width, channel)) * 255).astype(np.uint8)
     
@@ -122,13 +125,16 @@ if __name__ =="__main__":
         Changeable values are given in default, namely, lr, batch_size, p_train, nb_epochs
     '''
     
-    data_path = '/home/jianan/Incoming/dongqin/test_images_data'
-    label_path = '/home/jianan/Incoming/dongqin/test_images_label'
-    weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
-    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data_2'
+    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_label_2'
+    #weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
     
-    weights = train_model(data_path, label_path, weights_path)
-    hazy_images, clear_images = usemodel(weights, testdata_path)
+    data_files = os.listdir(data_path) 
+    label_files = os.listdir(label_path)
+    
+    data, label = load_data(data_files, label_files, 240, 320)
+    
+    #weights = train_model(data_path, label_path, weights_path)
     
     
     

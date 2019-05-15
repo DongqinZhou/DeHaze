@@ -13,17 +13,19 @@ from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
 from keras.utils.generic_utils import get_custom_objects
 
-def load_data(data_files,label_files, height, width, patch_size = 16):
+def load_data(data_files,label_files, patch_size = 16):
     
     data = []
     label = []
     
     for data_file in data_files:
         hazy_image = cv2.imread(data_path + "/" + data_file)
-        if hazy_image.shape[0] % patch_size != 0:
-            height = hazy_image.shape[0] // patch_size * patch_size
-        if hazy_image.shape[1] % patch_size != 0:
-            width = hazy_image.shape[1] // patch_size * patch_size
+        height = hazy_image.shape[0]
+        width = hazy_image.shape[1]
+        if height % patch_size != 0:
+            height = height // patch_size * patch_size
+        if width % patch_size != 0:
+            width = width // patch_size * patch_size
         
         hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]
@@ -41,11 +43,11 @@ def load_data(data_files,label_files, height, width, patch_size = 16):
     
     return data, label
 
-def get_batch(data_files, label_files, batch_size, height, width):
+def get_batch(data_files, label_files, batch_size):
    
     while 1:
         for i in range(0, len(data_files), batch_size):
-            x, y = load_data(data_files[i : i+batch_size], label_files, height, width)
+            x, y = load_data(data_files[i : i+batch_size], label_files)
             
             yield x, y
 
@@ -146,7 +148,7 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, width = 320, height = 240, batch_size = 10):
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 40, nb_epochs = 40):
     
     def scheduler(epoch):
         if epoch % 10 == 0 and epoch != 0:
@@ -162,9 +164,8 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
     
     p_train = p_train
-    width = width
-    height = height
     batch_size = batch_size
+    nb_epochs = nb_epochs
                         
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
     label_files = os.listdir(label_path)    
@@ -186,9 +187,9 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
         
     reduce_lr = LearningRateScheduler(scheduler)
    
-    dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
-                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
-                        get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
+    dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size), 
+                        steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
+                        get_batch(x_val, label_files, batch_size), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
     dehazenet.save_weights(weights_path + '/dehazenet_weights.h5')
@@ -196,9 +197,12 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     
     return weights_path + '/dehazenet_weights.h5'
 
-def usemodel(weights, hazy_image):
+def Load_model(weights):
     dehazenet = DehazeNet()
     dehazenet.load_weights(weights)
+    return dehazenet
+    
+def usemodel(dehazenet, hazy_image):
    
     patch_size = 16
     p = 0.001
@@ -235,13 +239,14 @@ def usemodel(weights, hazy_image):
 
 if __name__ =="__main__":
     
-    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
-    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
-    weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
-    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\haze'
+    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\trans'
     
-    weights = train_model(data_path, label_path, weights_path)
-    hazy_images, clear_images = usemodel(weights, testdata_path)
+    data_files = os.listdir(data_path) 
+    label_files = os.listdir(label_path)
+
+    data, label = load_data(data_files, label_files)                      
+    
 
     
     

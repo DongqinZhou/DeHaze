@@ -5,8 +5,11 @@ import random
 import numpy as np
 
 from MSCNN import usemodel as MSCNN
+from MSCNN import Load_model as load_mscnn
 from DehazeNet import usemodel as DehazeNet
+from DehazeNet import Load_model as load_dehazenet
 from AOD_Net import usemodel as AOD_Net
+from AOD_Net import Load_model as load_aodnet
 from DCP import use_dcp as DCP
 from skimage.measure import compare_ssim as ssim
 from skimage.measure import compare_psnr as psnr
@@ -66,6 +69,47 @@ def frame_to_video(video_path, frame_path, fps = 30, shape = (1280, 720)):
         video_writer.write(image)
     
     video_writer.release()
+    
+def video_dehaze(fps, width, height):
+    video_path = '/home/jianan/Incoming/dongqin/Dashcam Captures Shocking Motorway Pile-Up In Fog_Trim.mp4'
+    video_frames_path = '/home/jianan/Incoming/dongqin/video_3_frames'
+    DCP_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DCP_dehazed_frames_path'
+    AOD_dehazed_frames_path = '/home/jianan/Incoming/dongqin/AOD_dehazed_frames_path'
+    MSCNN_dehazed_frames_path = '/home/jianan/Incoming/dongqin/MSCNN_dehazed_frames_path'
+    DehazeNet_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DehazeNet_dehazed_frames_path'
+    dehazed_videos_path = '/home/jianan/Incoming/dongqin'
+    
+    AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
+    MSCNN_Coarse_Weights = '/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5'
+    MSCNN_Fine_Weights = '/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5'
+    DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    
+    model_aod = load_aodnet(AOD_Net_Weights)
+    model_dehazenet = load_dehazenet(DehazeNet_Weights)
+    model_mscnn = load_mscnn(MSCNN_Coarse_Weights, MSCNN_Fine_Weights)
+    
+    hazy_images = extract_video_frames(video_path, video_frames_path)
+    image_count = 1
+    
+    for hazy_image in hazy_images:
+        DCP_Dehazed = DCP(hazy_image)
+        AOD_Dehazed = AOD_Net(model_aod, hazy_image)
+        DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
+        MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
+        
+        cv2.imwrite(video_frames_path + '/Hazy_%d.jpg' % image_count, hazy_image)
+        cv2.imwrite(DCP_dehazed_frames_path + '/DCP_%d.jpg' % image_count, DCP_Dehazed)
+        cv2.imwrite(AOD_dehazed_frames_path + '/AOD_%d.jpg' % image_count, AOD_Dehazed)
+        cv2.imwrite(MSCNN_dehazed_frames_path + '/MSCNN_%d.jpg' % image_count, MSCNN_Dehazed)
+        cv2.imwrite(DehazeNet_dehazed_frames_path + '/DehazeNet_%d.jpg' % image_count, DehazeNet_Dehazed)
+        
+        image_count += 1
+    
+    frame_to_video(dehazed_videos_path + '/DCP_Dehazed_Video.avi', DCP_dehazed_frames_path, fps = fps, shape = (width, height))
+    frame_to_video(dehazed_videos_path + '/AOD_Dehazed_Video.avi', AOD_dehazed_frames_path, fps = fps, shape = (width, height))
+    frame_to_video(dehazed_videos_path + '/MSCNN_Dehazed_Video.avi', MSCNN_dehazed_frames_path, fps = fps, shape = (width, height))
+    frame_to_video(dehazed_videos_path + '/DehazeNet_Dehazed_Video.avi', DehazeNet_dehazed_frames_path, fps = fps, shape = (width, height))
+    
 
 def compute_psnr_ssim():
     '''
@@ -79,6 +123,10 @@ def compute_psnr_ssim():
     MSCNN_Coarse_Weights = '/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5'
     MSCNN_Fine_Weights = '/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5'
     DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    
+    model_aod = load_aodnet(AOD_Net_Weights)
+    model_dehazenet = load_dehazenet(DehazeNet_Weights)
+    model_mscnn = load_mscnn(MSCNN_Coarse_Weights, MSCNN_Fine_Weights)
     
     Hazy_Images_Path = '/home/jianan/Incoming/dongqin/Hazy_Images'
     Clear_Images_Path = '/home/jianan/Incoming/dongqin/Clear_Images'
@@ -108,9 +156,9 @@ def compute_psnr_ssim():
         clear_image = cv2.imread(testlabel_path + '/' + test_label)
         
         DCP_Dehazed = DCP(hazy_image)
-        AOD_Dehazed = AOD_Net(AOD_Net_Weights, hazy_image)
-        DehazeNet_Dehazed = DehazeNet(DehazeNet_Weights, hazy_image)
-        MSCNN_Dehazed = MSCNN(MSCNN_Coarse_Weights, MSCNN_Fine_Weights, hazy_image)
+        AOD_Dehazed = AOD_Net(model_aod, hazy_image)
+        DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
+        MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
         
         DCP_PSNR.append(PSNR(clear_image, DCP_Dehazed))
         DCP_SSIM.append(SSIM(clear_image, DCP_Dehazed))
