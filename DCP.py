@@ -35,10 +35,9 @@ def get_radiance(I, A, t):
     tiledt[:, :, 0] = tiledt[:, :, 1] = tiledt[:, :, 2] = t
     return (I - A) / tiledt + A  # CVPR09, eq.16
 
-def dehaze(im_path, tmin, w, p,
+def dehaze(im, tmin, w, p,
            omega, r, eps, L):
     
-    im = cv2.imread(im_path)
     I = np.asarray(im, dtype=np.float64)
     
     m, n, _ = I.shape
@@ -54,29 +53,22 @@ def dehaze(im_path, tmin, w, p,
     
     return im, np.maximum(np.minimum(clear_image, L - 1), 0).astype(np.uint8) 
 
-def use_dcp(images_path, p = 0.001, W = 16, omega = 0.95, L = 256):
+def use_dcp(hazy_image, p = 0.001, W = 16, omega = 0.95, L = 256):
     '''
     p      percent of pixels
     W      window size
     omega  before transmission
     L      highest pixel value
     '''
-    hazy_images = []
-    images_filenames = os.listdir(images_path)
-    clear_images = []
-    for image_filename in images_filenames:
-        image_path = images_path + '/' + image_filename
-        hazy_image, im_dehaze = dehaze(image_path, tmin = 0.1, w=W, p=p,
-           omega=omega, r=40, eps=1e-3, L = L)
-        hazy_images.append(hazy_image)
-        clear_images.append(im_dehaze)
+    _, im_dehaze = dehaze(hazy_image, tmin = 0.1, w=W, p=p,
+       omega=omega, r=40, eps=1e-3, L = L)
     
-    return hazy_images, clear_images
+    return im_dehaze
 
 if __name__ =="__main__":
     
     images_path = '/home/jianan/Incoming/dongqin/test_real_images'
-    hazy_images, clear_images = use_dcp(images_path)
+    #hazy_images, clear_images = use_dcp(images_path)
 
 
 

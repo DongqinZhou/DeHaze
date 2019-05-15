@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import cv2
+import random
+import numpy as np
 
 from MSCNN import usemodel as MSCNN
 from DehazeNet import usemodel as DehazeNet
@@ -11,9 +13,13 @@ from skimage.measure import compare_psnr as psnr
 
 
 def PSNR(im_true, im_test):
+    if im_true.shape != im_test.shape:
+        im_true = cv2.resize(im_true, (im_test.shape[1], im_test.shape[0]), interpolation = cv2.INTER_AREA)
     return psnr(im_true, im_test)
 
 def SSIM(im1, im2):
+    if im1.shape != im2.shape:
+        im1 = cv2.resize(im1, (im2.shape[1], im2.shape[0]), interpolation = cv2.INTER_AREA)
     return ssim(im1, im2, multichannel = True, gaussian_weights = True)
 
 ### Video processing
@@ -61,20 +67,30 @@ def frame_to_video(video_path, frame_path, fps = 30, shape = (1280, 720)):
     
     video_writer.release()
 
-
-if __name__ =="__main__":
+def compute_psnr_ssim():
+    '''
+    computes PSNR and SSIM for DCP, AOD, DehazeNet, MSCNN
+    stores the dehazed images to a file for calculation of SSEQ and BLIINDS-II
+    '''
+    testdata_path = '/home/jianan/Incoming/dongqin/testdata'
+    testlabel_path = '/home/jianan/Incoming/dongqin/testlabel'
     
-    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
-    testlabel_path = ''
-    AOD_Net_Weights = ''
-    MSCNN_Coarse_Weights = ''
-    MSCNN_Fine_Weights = ''
-    DehazeNet_Weights = ''
+    AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
+    MSCNN_Coarse_Weights = '/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5'
+    MSCNN_Fine_Weights = '/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5'
+    DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
     
-    DCP_Hazy, DCP_Dehazed = DCP(testdata_path)
-    AOD_Hazy, AOD_Dehazed = AOD_Net(AOD_Net_Weights, testdata_path)
-    DehazeNet_Hazy, DehazeNet_Dehazed = DehazeNet(DehazeNet_Weights, testdata_path)
-    MSCNN_Hazy, MSCNN_Dehazed = MSCNN(MSCNN_Coarse_Weights, MSCNN_Fine_Weights, testdata_path)
+    Hazy_Images_Path = '/home/jianan/Incoming/dongqin/Hazy_Images'
+    Clear_Images_Path = '/home/jianan/Incoming/dongqin/Clear_Images'
+    DCP_Dehazed_Path = '/home/jianan/Incoming/dongqin/DCP_Dehazed'
+    AOD_Dehazed_Path = '/home/jianan/Incoming/dongqin/AOD_Dehazed'
+    MSCNN_Dehazed_Path = '/home/jianan/Incoming/dongqin/MSCNN_Dehazed'
+    DehazeNet_Dehazed_Path = '/home/jianan/Incoming/dongqin/DehazeNet_Dehazed'
+    
+    test_data_files = os.listdir(testdata_path)
+    test_label_files = os.listdir(testlabel_path)
+    random.shuffle(test_data_files)
+    
     DCP_PSNR = []
     DCP_SSIM = []
     AOD_PSNR = []
@@ -84,13 +100,42 @@ if __name__ =="__main__":
     DehazeNet_PSNR = []
     DehazeNet_SSIM = []
     
-    # the input of use model should be a single image instead of a filepath, otherwise we can not place dehazed image and ground truth image accordingly
+    image_count = 1
     
-    #for i in range(len(DCP_Dehazed)):
+    for test_data in test_data_files:
+        test_label = test_label_files[test_label_files.index(test_data[0:4] + test_data[-4:])] # this is subject to change depending on the test set used
+        hazy_image = cv2.imread(testdata_path + '/' + test_data)
+        clear_image = cv2.imread(testlabel_path + '/' + test_label)
         
+        DCP_Dehazed = DCP(hazy_image)
+        AOD_Dehazed = AOD_Net(AOD_Net_Weights, hazy_image)
+        DehazeNet_Dehazed = DehazeNet(DehazeNet_Weights, hazy_image)
+        MSCNN_Dehazed = MSCNN(MSCNN_Coarse_Weights, MSCNN_Fine_Weights, hazy_image)
+        
+        DCP_PSNR.append(PSNR(clear_image, DCP_Dehazed))
+        DCP_SSIM.append(SSIM(clear_image, DCP_Dehazed))
+        AOD_PSNR.append(PSNR(clear_image, AOD_Dehazed))
+        AOD_SSIM.append(SSIM(clear_image, AOD_Dehazed))
+        MSCNN_PSNR.append(PSNR(clear_image, MSCNN_Dehazed))
+        MSCNN_SSIM.append(SSIM(clear_image, MSCNN_Dehazed))
+        DehazeNet_PSNR.append(PSNR(clear_image, DehazeNet_Dehazed))
+        DehazeNet_SSIM.append(SSIM(clear_image, DehazeNet_Dehazed))
+        
+        cv2.imwrite(Hazy_Images_Path + '/Hazy_%d.jpg' % image_count, hazy_image)
+        cv2.imwrite(Clear_Images_Path + '/Clear_%d.jpg' % image_count, clear_image)
+        cv2.imwrite(DCP_Dehazed_Path + '/DCP_%d.jpg' % image_count, DCP_Dehazed)
+        cv2.imwrite(AOD_Dehazed_Path + '/AOD_%d.jpg' % image_count, AOD_Dehazed)
+        cv2.imwrite(MSCNN_Dehazed_Path + '/MSCNN_%d.jpg' % image_count, MSCNN_Dehazed)
+        cv2.imwrite(DehazeNet_Dehazed_Path + '/DehazeNet_%d.jpg' % image_count, DehazeNet_Dehazed)
+        
+        image_count += 1
+        
+    return np.mean(DCP_PSNR), np.mean(DCP_SSIM), np.mean(AOD_PSNR), np.mean(AOD_SSIM), np.mean(MSCNN_PSNR), np.mean(MSCNN_SSIM), np.mean(DehazeNet_PSNR), np.mean(DehazeNet_SSIM)      
+            
 
-
-
+if __name__ =="__main__":
+    
+    dcp_psnr, dcp_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
 
 
 

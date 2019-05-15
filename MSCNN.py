@@ -131,21 +131,21 @@ def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, dec
                 width = 320, height = 240, batch_size = 10, nb_epochs = 15):
     
     def c_scheduler(epoch):
-        if epoch % 20 == 0 and epoch != 0:
+        if epoch % 5 == 0 and epoch != 0:
             lr = K.get_value(c_sgd.lr)
             K.set_value(c_sgd.lr, lr * 0.1)
             print("lr changed to {}".format(lr * 0.1))
         return K.get_value(c_sgd.lr)
-		
-	def f_scheduler(epoch):
-        if epoch % 20 == 0 and epoch != 0:
+    
+    def f_scheduler(epoch):
+        if epoch % 5 == 0 and epoch != 0:
             lr = K.get_value(f_sgd.lr)
             K.set_value(f_sgd.lr, lr * 0.1)
             print("lr changed to {}".format(lr * 0.1))
         return K.get_value(f_sgd.lr)
 
     c_sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
-	f_sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
+    f_sgd = optimizers.SGD(lr=lr, momentum=momentum, decay=decay, nesterov=False)
     p_train = p_train
     width = width
     height = height
@@ -168,10 +168,9 @@ def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, dec
         steps = len(x_val) // batch_size
     else:
         steps = len(x_val) // batch_size + 1
-    
-	c_reduce_lr = LearningRateScheduler(c_scheduler)
+    c_reduce_lr = LearningRateScheduler(c_scheduler)
     f_reduce_lr = LearningRateScheduler(f_scheduler)
-	
+    
     c_net = coarseNet()
     c_net.summary()
     c_net.compile(optimizer = c_sgd, loss = 'mean_squared_error')
@@ -196,54 +195,59 @@ def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, dec
     
     return weights_path + '/coarseNet.h5', weights_path + '/fineNet.h5'
 
-def usemodel(coarse_weights, fine_weights, testdata_path):
+def usemodel(coarse_weights, fine_weights, hazy_image):
     
     c_net = coarseNet()
     c_net.load_weights(coarse_weights)
     f_net = fineNet(c_net)
     f_net.load_weights(fine_weights)
     
-    testdata_files = os.listdir(testdata_path)
-    random.seed(100)
-    random.shuffle(testdata_files)
-    
-    height = 240
-    width = 320
+    height = hazy_image.shape[0]
+    width = hazy_image.shape[1]
     p = 0.001
     L = 256
-    
-    hazy_images = []
-    trans_maps = []
-    clear_images = []
-    
-    for testdata_file in testdata_files:
-        hazy_image = cv2.imread(testdata_path + '/' + testdata_file) 
-        if hazy_image.shape[0] % 2 != 0:
-            height = hazy_image.shape[0] // 2 * 2
-        if hazy_image.shape[1] % 2 != 0:
-            width = hazy_image.shape[1] // 2 * 2
-        hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-        hazy_images.append(hazy_image)
         
-        channel = hazy_image.shape[2]
-        hazy_input = np.reshape(hazy_image, (1, height, width, channel))
-        trans_map = f_net.predict(hazy_input)
-        trans_map = np.reshape(trans_map, (height, width))
-        trans_maps.append(trans_map)
-        Airlight = get_airlight(hazy_image, trans_map, p)
-        clear_image = get_radiance(hazy_image, Airlight, trans_map, L)
-        clear_images.append(clear_image)
-
+    if height % 2 != 0:
+        height = hazy_image.shape[0] // 2 * 2
+    if width % 2 != 0:
+        width = hazy_image.shape[1] // 2 * 2
+    hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
     
-    return hazy_images, clear_images
+    channel = hazy_image.shape[2]
+    hazy_input = np.reshape(hazy_image, (1, height, width, channel))
+    trans_map = f_net.predict(hazy_input)
+    trans_map = np.reshape(trans_map, (height, width))
+    Airlight = get_airlight(hazy_image, trans_map, p)
+    clear_image = get_radiance(hazy_image, Airlight, trans_map, L)
+    
+    return clear_image
 
 if __name__ =="__main__":
     
     data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
     label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
     weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
-    testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
+    #testdata_path = '/home/jianan/Incoming/dongqin/test_real_images'
     
     coarse_weights, fine_weights = train_model(data_path, label_path, weights_path)
-    hazy_images, clear_images = usemodel(coarse_weights, fine_weights, testdata_path)
+    #hazy_images, clear_images = usemodel(coarse_weights, fine_weights, testdata_path)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

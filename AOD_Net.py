@@ -71,7 +71,6 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
     label_files = os.listdir(label_path)
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files)  
-	data_files = data_files[0:40000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     if len(x_train) % batch_size == 0:
@@ -89,34 +88,22 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0)
-    model.save_weights(weights_path + '/aodnet.h5')
+    model.save_weights('aodnet.h5')
     print('model generated')
     return weights_path + '/aodnet.h5'
 
-def usemodel(weights, testdata_path):
+def usemodel(weights_path, hazy_image):
     model = aodmodel()
-    model.load_weights(weights)
-
-    testdata_files = os.listdir(testdata_path)
-    random.seed(100)
-    random.shuffle(testdata_files)
+    model.load_weights(weights_path)
     
-    #steps = len(testdata_files) // batch_size
-    hazy_images = []
-    clear_images = []
+    height = hazy_image.shape[0]
+    width = hazy_image.shape[1]
+    channel = hazy_image.shape[2]
+    hazy_input = np.reshape(hazy_image, (1, height, width, channel))
+    clear_ = model.predict(hazy_input)
+    clear_image = np.floor(np.reshape(clear_, (height, width, channel)) * 255).astype(np.uint8)
     
-    for testdata_file in testdata_files:
-        hazy_image = cv2.imread(testdata_path + '/' + testdata_file) / 255
-        hazy_images.append(hazy_image)
-        height = hazy_image.shape[0]
-        width = hazy_image.shape[1]
-        channel = hazy_image.shape[2]
-        hazy_input = np.reshape(hazy_image, (1, height, width, channel))
-        clear_ = model.predict(hazy_input)
-        clear_image = np.floor(np.reshape(clear_, (height, width, channel)) * 255).astype(np.uint8)
-        clear_images.append(clear_image)
-    
-    return hazy_images, clear_images
+    return clear_image
 
 if __name__ =="__main__":
     
@@ -144,3 +131,35 @@ if __name__ =="__main__":
     hazy_images, clear_images = usemodel(weights, testdata_path)
     
     
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

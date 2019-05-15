@@ -13,7 +13,7 @@ from keras.engine.topology import Layer
 from keras.callbacks import LearningRateScheduler
 from keras.utils.generic_utils import get_custom_objects
 
-def load_data(data_files,label_files, patch_size = 16):
+def load_data(data_files,label_files, height, width, patch_size = 16):
     
     data = []
     label = []
@@ -41,11 +41,11 @@ def load_data(data_files,label_files, patch_size = 16):
     
     return data, label
 
-def get_batch(data_files, label_files, batch_size):
+def get_batch(data_files, label_files, batch_size, height, width):
    
     while 1:
         for i in range(0, len(data_files), batch_size):
-            x, y = load_data(data_files[i : i+batch_size], label_files)
+            x, y = load_data(data_files[i : i+batch_size], label_files, height, width)
             
             yield x, y
 
@@ -146,7 +146,7 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 10, nb_epochs = 40):
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, width = 320, height = 240, batch_size = 10):
     
     def scheduler(epoch):
         if epoch % 10 == 0 and epoch != 0:
@@ -162,15 +162,16 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
     
     p_train = p_train
+    width = width
+    height = height
     batch_size = batch_size
-	nb_epochs = nb_epochs
                         
     data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
-    label_files = os.listdir(label_path)   
+    label_files = os.listdir(label_path)    
     
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
-	data_files = data_files[0:10000]
+    data_files = data_files[0:10000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     if len(x_train) % batch_size == 0:
@@ -185,61 +186,52 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
         
     reduce_lr = LearningRateScheduler(scheduler)
    
-    dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size), 
-                        steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
-                        get_batch(x_val, label_files, batch_size), validation_steps = steps,
+    dehazenet.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
+                        steps_per_epoch=steps_per_epoch, epochs = 2, validation_data = 
+                        get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    dehazenet.save_weights(weights_path + '/dehazenet.h5')
+    dehazenet.save_weights(weights_path + '/dehazenet_weights.h5')
     print('dehazenet generated')
     
-    return weights_path + '/dehazenet.h5'
+    return weights_path + '/dehazenet_weights.h5'
 
-def usemodel(weights, testdata_path):
+def usemodel(weights, hazy_image):
     dehazenet = DehazeNet()
     dehazenet.load_weights(weights)
-    
-    testdata_files = os.listdir(testdata_path)
-    random.seed(100)
-    random.shuffle(testdata_files)
    
     patch_size = 16
     p = 0.001
     L = 256
     
-    hazy_images = []
-    trans_maps = []
-    clear_images = []
+    width = hazy_image.shape[1]
+    height = hazy_image.shape[0]
     
-    for testdata_file in testdata_files:
-        hazy_image = cv2.imread(testdata_path + '/' + testdata_file) 
-        if hazy_image.shape[0] % patch_size != 0:
-            height = hazy_image.shape[0] // patch_size * patch_size
-        if hazy_image.shape[1] % patch_size != 0:
-            width = hazy_image.shape[1] // patch_size * patch_size
-            
-        hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-        hazy_images.append(hazy_image)
-        channel = hazy_image.shape[2]
-        trans_map = np.zeros((height, width))
+    if height % patch_size != 0:
+        height = height // patch_size * patch_size
+    if width % patch_size != 0:
+        width = width // patch_size * patch_size
         
-        for i in range(height // patch_size):
-            for j in range(width // patch_size):
-                hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
-                hazy_input = np.reshape(hazy_patch, (1, patch_size, patch_size, channel))
-                trans = dehazenet.predict(hazy_input)
-                trans_map[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16)] = trans
-        
-        norm_hazy_image = (hazy_image - hazy_image.min()) / (hazy_image.max() - hazy_image.min())
-        refined_trans_map = guided_filter(norm_hazy_image, trans_map)
-        
-        trans_maps.append(refined_trans_map)
-        
-        Airlight = get_airlight(hazy_image, trans_map, p)
-        clear_image = get_radiance(hazy_image, Airlight, trans_map, L)
-        clear_images.append(clear_image)
+    hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
     
-    return hazy_images, clear_images
+    channel = hazy_image.shape[2]
+    trans_map = np.zeros((height, width))
+    
+    for i in range(height // patch_size):
+        for j in range(width // patch_size):
+            hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
+            hazy_input = np.reshape(hazy_patch, (1, patch_size, patch_size, channel))
+            trans = dehazenet.predict(hazy_input)
+            trans_map[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16)] = trans
+    
+    norm_hazy_image = (hazy_image - hazy_image.min()) / (hazy_image.max() - hazy_image.min())
+    refined_trans_map = guided_filter(norm_hazy_image, trans_map)
+    
+    Airlight = get_airlight(hazy_image, refined_trans_map, p)
+    clear_image = get_radiance(hazy_image, Airlight, refined_trans_map, L)
+    
+    
+    return clear_image
 
 if __name__ =="__main__":
     
@@ -250,4 +242,20 @@ if __name__ =="__main__":
     
     weights = train_model(data_path, label_path, weights_path)
     hazy_images, clear_images = usemodel(weights, testdata_path)
-	
+
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
