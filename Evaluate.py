@@ -10,7 +10,8 @@ from DehazeNet import usemodel as DehazeNet
 from DehazeNet import Load_model as load_dehazenet
 from AOD_Net import usemodel as AOD_Net
 from AOD_Net import Load_model as load_aodnet
-from DCP import dehaze as DCP
+from DCP import dehaze_1 as DCP_1
+from DCP import dehaze_2 as DCP_2
 from skimage.measure import compare_ssim as ssim
 from skimage.measure import compare_psnr as psnr
 
@@ -91,7 +92,7 @@ def video_dehaze(fps, width, height):
     image_count = 1
     
     for hazy_image in hazy_images:
-        DCP_Dehazed = DCP(hazy_image)
+        DCP_Dehazed = DCP_2(hazy_image)
         AOD_Dehazed = AOD_Net(model_aod, hazy_image)
         DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
         MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
@@ -128,7 +129,8 @@ def compute_psnr_ssim():
     
     Hazy_Images_Path = '/home/jianan/Incoming/dongqin/Hazy_Images'
     Clear_Images_Path = '/home/jianan/Incoming/dongqin/Clear_Images'
-    DCP_Dehazed_Path = '/home/jianan/Incoming/dongqin/DCP_Dehazed'
+    DCP_Dehazed_Path_1 = '/home/jianan/Incoming/dongqin/DCP_Dehazed'
+    DCP_Dehazed_Path_2 = '/home/jianan/Incoming/dongqin/DCP_Dehazed_1'
     AOD_Dehazed_Path = '/home/jianan/Incoming/dongqin/AOD_Dehazed'
     MSCNN_Dehazed_Path = '/home/jianan/Incoming/dongqin/MSCNN_Dehazed'
     DehazeNet_Dehazed_Path = '/home/jianan/Incoming/dongqin/DehazeNet_Dehazed'
@@ -139,6 +141,8 @@ def compute_psnr_ssim():
     
     DCP_PSNR = []
     DCP_SSIM = []
+    DCP_2_PSNR = []
+    DCP_2_SSIM = []
     AOD_PSNR = []
     AOD_SSIM = []
     MSCNN_PSNR = []
@@ -153,13 +157,16 @@ def compute_psnr_ssim():
         hazy_image = cv2.imread(testdata_path + '/' + test_data)
         clear_image = cv2.imread(testlabel_path + '/' + test_label)
         
-        DCP_Dehazed = DCP(hazy_image)
+        DCP_Dehazed_1 = DCP_1(hazy_image)
+        DCP_Dehazed_2 = DCP_2(hazy_image)
         AOD_Dehazed = AOD_Net(model_aod, hazy_image)
         DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
         MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
         
-        DCP_PSNR.append(PSNR(clear_image, DCP_Dehazed))
-        DCP_SSIM.append(SSIM(clear_image, DCP_Dehazed))
+        DCP_PSNR.append(PSNR(clear_image, DCP_Dehazed_1))
+        DCP_SSIM.append(SSIM(clear_image, DCP_Dehazed_1))
+        DCP_2_PSNR.append(PSNR(clear_image, DCP_Dehazed_2))
+        DCP_2_SSIM.append(SSIM(clear_image, DCP_Dehazed_2))
         AOD_PSNR.append(PSNR(clear_image, AOD_Dehazed))
         AOD_SSIM.append(SSIM(clear_image, AOD_Dehazed))
         MSCNN_PSNR.append(PSNR(clear_image, MSCNN_Dehazed))
@@ -169,19 +176,19 @@ def compute_psnr_ssim():
         
         cv2.imwrite(Hazy_Images_Path + '/Hazy_%d.jpg' % image_count, hazy_image)
         cv2.imwrite(Clear_Images_Path + '/Clear_%d.jpg' % image_count, clear_image)
-        cv2.imwrite(DCP_Dehazed_Path + '/DCP_%d.jpg' % image_count, DCP_Dehazed)
+        cv2.imwrite(DCP_Dehazed_Path_1 + '/DCP_%d.jpg' % image_count, DCP_Dehazed_1)
+        cv2.imwrite(DCP_Dehazed_Path_2 + '/DCP_%d.jpg' % image_count, DCP_Dehazed_2)
         cv2.imwrite(AOD_Dehazed_Path + '/AOD_%d.jpg' % image_count, AOD_Dehazed)
         cv2.imwrite(MSCNN_Dehazed_Path + '/MSCNN_%d.jpg' % image_count, MSCNN_Dehazed)
         cv2.imwrite(DehazeNet_Dehazed_Path + '/DehazeNet_%d.jpg' % image_count, DehazeNet_Dehazed)
         
         image_count += 1
         
-    return np.mean(DCP_PSNR), np.mean(DCP_SSIM), np.mean(AOD_PSNR), np.mean(AOD_SSIM), np.mean(MSCNN_PSNR), np.mean(MSCNN_SSIM), np.mean(DehazeNet_PSNR), np.mean(DehazeNet_SSIM)      
-            
+    return np.mean(DCP_PSNR), np.mean(DCP_SSIM), np.mean(DCP_2_PSNR), np.mean(DCP_2_SSIM), np.mean(AOD_PSNR), np.mean(AOD_SSIM), np.mean(MSCNN_PSNR), np.mean(MSCNN_SSIM), np.mean(DehazeNet_PSNR), np.mean(DehazeNet_SSIM) 
 
 if __name__ =="__main__":
     
-    dcp_psnr, dcp_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
+    dcp_psnr, dcp_ssim, dcp_2_psnr, dcp_2_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
 
 
 
