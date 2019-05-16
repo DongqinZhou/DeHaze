@@ -38,7 +38,7 @@ def load_data(data_files,label_files, patch_size = 16):
                 data.append(hazy_patch)
                 label.append(np.mean(trans_patch))
     
-    data = np.asarray(data) # whether to normalize?
+    data = np.asarray(data) / 255.0 # whether to normalize?
     label = np.asarray(label).reshape(len(label), 1, 1, 1) / 255.0
     
     return data, label
@@ -151,7 +151,7 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 40, nb_epochs = 50):
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 100, nb_epochs = 50):
     
     def scheduler(epoch):
         if epoch % 10 == 0 and epoch != 0:

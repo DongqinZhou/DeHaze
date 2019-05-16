@@ -80,13 +80,12 @@ def video_dehaze(fps, width, height):
     dehazed_videos_path = '/home/jianan/Incoming/dongqin'
     
     AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
-    MSCNN_Coarse_Weights = '/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5'
-    MSCNN_Fine_Weights = '/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5'
+    MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
     DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
     
     model_aod = load_aodnet(AOD_Net_Weights)
     model_dehazenet = load_dehazenet(DehazeNet_Weights)
-    model_mscnn = load_mscnn(MSCNN_Coarse_Weights, MSCNN_Fine_Weights)
+    model_mscnn = load_mscnn(MSCNN_Weights)
     
     hazy_images = extract_video_frames(video_path, video_frames_path)
     image_count = 1
@@ -120,13 +119,12 @@ def compute_psnr_ssim():
     testlabel_path = '/home/jianan/Incoming/dongqin/testlabel'
     
     AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
-    MSCNN_Coarse_Weights = '/home/jianan/Incoming/dongqin/DeHaze/coarseNet.h5'
-    MSCNN_Fine_Weights = '/home/jianan/Incoming/dongqin/DeHaze/fineNet.h5'
+    MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
     DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
     
     model_aod = load_aodnet(AOD_Net_Weights)
     model_dehazenet = load_dehazenet(DehazeNet_Weights)
-    model_mscnn = load_mscnn(MSCNN_Coarse_Weights, MSCNN_Fine_Weights)
+    model_mscnn = load_mscnn(MSCNN_Weights)
     
     Hazy_Images_Path = '/home/jianan/Incoming/dongqin/Hazy_Images'
     Clear_Images_Path = '/home/jianan/Incoming/dongqin/Clear_Images'
