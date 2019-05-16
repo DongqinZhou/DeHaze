@@ -10,7 +10,7 @@ from DehazeNet import usemodel as DehazeNet
 from DehazeNet import Load_model as load_dehazenet
 from AOD_Net import usemodel as AOD_Net
 from AOD_Net import Load_model as load_aodnet
-from DCP import use_dcp as DCP
+from DCP import dehaze as DCP
 from skimage.measure import compare_ssim as ssim
 from skimage.measure import compare_psnr as psnr
 

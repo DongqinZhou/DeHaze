@@ -18,17 +18,17 @@ def load_data(data_files,label_files, height, width):
     
     for data_file in data_files:
         hazy_image = cv2.imread(data_path + "/" + data_file)
-        if hazy_image.shape != (height, width, 3):
-            hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]
         trans_map = cv2.imread(label_path + "/" + label_file, 0)
-        if trans_map.shape != (height, width):
+        
+        if hazy_image.shape != (height, width, 3):
+            hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
             trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
-        #np.reshape(trans_map,(height, width,1))
+            
         data.append(hazy_image)
         label.append(trans_map)
     
-    data = np.asarray(data) 
+    data = np.asarray(data) # whether to normalize
     label = np.asarray(label).reshape(len(label), height, width, 1) / 255.0
     
     return data, label
@@ -78,12 +78,15 @@ def get_airlight(hazy_image, trans_map, p):
     return np.max(flat_image.take(searchidx, axis=0), axis = 0)
 
 def get_radiance(hazy_image, airlight, trans_map, L):
+    
     tiledt = np.zeros_like(hazy_image)
     tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
     min_t = np.ones_like(hazy_image) * 0.1
     t = np.maximum(tiledt, min_t)
+    
     hazy_image = hazy_image.astype(int)
     airlight = airlight.astype(int)
+    
     clear_ = (hazy_image - airlight) / t + airlight
     clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
     
@@ -128,17 +131,17 @@ def fineNet(coarseNet):
     return model
 
 def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, decay=5e-4, p_train = 0.8, 
-                width = 320, height = 240, batch_size = 10, nb_epochs = 15):
+                width = 320, height = 240, batch_size = 48, nb_epochs = 40):
     
     def c_scheduler(epoch):
-        if epoch % 5 == 0 and epoch != 0:
+        if epoch % 10 == 0 and epoch != 0:
             lr = K.get_value(c_sgd.lr)
             K.set_value(c_sgd.lr, lr * 0.1)
             print("lr changed to {}".format(lr * 0.1))
         return K.get_value(c_sgd.lr)
     
     def f_scheduler(epoch):
-        if epoch % 5 == 0 and epoch != 0:
+        if epoch % 10 == 0 and epoch != 0:
             lr = K.get_value(f_sgd.lr)
             K.set_value(f_sgd.lr, lr * 0.1)
             print("lr changed to {}".format(lr * 0.1))
@@ -157,6 +160,7 @@ def train_model(data_path, label_path, weights_path, lr=0.001, momentum=0.9, dec
     
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
+    data_files = data_files[0:30000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     if len(x_train) % batch_size == 0:
@@ -207,6 +211,8 @@ def usemodel(f_net, hazy_image):
     
     height = hazy_image.shape[0]
     width = hazy_image.shape[1]
+    channel = hazy_image.shape[2]
+    
     p = 0.001
     L = 256
         
@@ -214,9 +220,8 @@ def usemodel(f_net, hazy_image):
         height = hazy_image.shape[0] // 2 * 2
     if width % 2 != 0:
         width = hazy_image.shape[1] // 2 * 2
-    hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
     
-    channel = hazy_image.shape[2]
+    hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
     hazy_input = np.reshape(hazy_image, (1, height, width, channel))
     trans_map = f_net.predict(hazy_input)
     trans_map = np.reshape(trans_map, (height, width))
@@ -226,29 +231,21 @@ def usemodel(f_net, hazy_image):
     return clear_image
 
 if __name__ =="__main__":
+    '''
+    Possible modification:
+        code MSCNN as a single network -- this one could be most helpful
+        normalize the images
+        set batch_size to 100
+        nb_epochs = 70
+        change lr every 20 epochs
+    '''
+    data_path = ''
+    label_path = ''
+    weights_path = ''
+    coarse_weights, fine_weights = train_model(data_path, label_path, weights_path)
     
-    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\haze'
-    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\trans'
+    im_path = ''
+    f_net = Load_model(coarse_weights, fine_weights)
     
-    data_files = os.listdir(data_path) 
-    label_files = os.listdir(label_path)
-
-    data, label = load_data(data_files, label_files, 240, 320) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    im = cv2.imread(im_path)
+    im_dehaze = usemodel(f_net, im)

@@ -67,8 +67,10 @@ def get_radiance(hazy_image, airlight, trans_map, L):
     tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
     min_t = np.ones_like(hazy_image) * 0.1
     t = np.maximum(tiledt, min_t)
+    
     hazy_image = hazy_image.astype(int)
     airlight = airlight.astype(int)
+    
     clear_ = (hazy_image - airlight) / t + airlight
     clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
     
@@ -136,6 +138,7 @@ class MaxoutConv2D(Layer):
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
     get_custom_objects().update({'BReLU':Activation(BReLu)})
     input_image = Input(shape = (None, None, 3), name = 'input')
+    
     convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
     conv1 = Conv2D(16, (3, 3), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
     conv2 = Conv2D(16, (5, 5), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
@@ -148,7 +151,7 @@ def DehazeNet(): #### carefully inspect the weights! this and all other networks
     
     return model
 
-def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 40, nb_epochs = 40):
+def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, decay=5e-4, p_train = 0.8, batch_size = 40, nb_epochs = 50):
     
     def scheduler(epoch):
         if epoch % 10 == 0 and epoch != 0:
@@ -175,6 +178,7 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     data_files = data_files[0:10000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
+    
     if len(x_train) % batch_size == 0:
         steps_per_epoch = len(x_train) // batch_size
     else:
@@ -208,8 +212,9 @@ def usemodel(dehazenet, hazy_image):
     p = 0.001
     L = 256
     
-    width = hazy_image.shape[1]
     height = hazy_image.shape[0]
+    width = hazy_image.shape[1]
+    channel = hazy_image.shape[2]
     
     if height % patch_size != 0:
         height = height // patch_size * patch_size
@@ -217,8 +222,6 @@ def usemodel(dehazenet, hazy_image):
         width = width // patch_size * patch_size
         
     hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-    
-    channel = hazy_image.shape[2]
     trans_map = np.zeros((height, width))
     
     for i in range(height // patch_size):
@@ -234,33 +237,20 @@ def usemodel(dehazenet, hazy_image):
     Airlight = get_airlight(hazy_image, refined_trans_map, p)
     clear_image = get_radiance(hazy_image, Airlight, refined_trans_map, L)
     
-    
     return clear_image
 
 if __name__ =="__main__":
+    '''
+    Possible modifications:
+        normalize the image patchs
+        increase batch size
+    '''
+    data_path = ''
+    label_path = ''                      
+    weights_path = ''
+    im_path = ''
     
-    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\haze'
-    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\ITS_eg\trans'
-    
-    data_files = os.listdir(data_path) 
-    label_files = os.listdir(label_path)
-
-    data, label = load_data(data_files, label_files)                      
-    
-
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
+    weights = train_model(data_path, label_path, weights_path)
+    dehazenet = Load_model(weights_path)
+    im = cv2.imread(im_path)
+    im_dehaze = usemodel(dehazenet, im)

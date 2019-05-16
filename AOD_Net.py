@@ -16,12 +16,13 @@ def load_data(data_files,label_files, height, width):
     
     for data_file in data_files:
         hazy_image = cv2.imread(data_path + "/" + data_file)
-        if hazy_image.shape != (height, width, 3):
-            hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
         label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])]
         clear_image = cv2.imread(label_path + "/" + label_file)
-        if clear_image.shape != (height, width, 3):
+        
+        if hazy_image.shape != (height, width, 3):
+            hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
             clear_image = cv2.resize(clear_image, (width, height), interpolation = cv2.INTER_AREA)
+        
         data.append(hazy_image)
         label.append(clear_image)
     
@@ -71,6 +72,7 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
     label_files = os.listdir(label_path)
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files)  
+    data_files = data_files[0:40000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     if len(x_train) % batch_size == 0:
@@ -88,7 +90,7 @@ def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0)
-    model.save_weights(weights_path + '/aodnet.h5')
+    model.save_weights('aodnet.h5')
     print('model generated')
     return weights_path + '/aodnet.h5'
 
@@ -104,7 +106,7 @@ def usemodel(model, hazy_image):
     channel = hazy_image.shape[2]
     hazy_input = np.reshape(hazy_image, (1, height, width, channel)) / 255.0
     clear_ = model.predict(hazy_input)
-    clear_image = np.floor(np.reshape(clear_, (height, width, channel)) * 255).astype(np.uint8)
+    clear_image = np.floor(np.reshape(clear_, (height, width, channel)) * 255.0).astype(np.uint8)
     
     return clear_image
 
@@ -124,48 +126,13 @@ if __name__ =="__main__":
     Parameter tuning:
         Changeable values are given in default, namely, lr, batch_size, p_train, nb_epochs
     '''
+    im_path = ''
+    data_path = ''
+    label_path = ''
+    weights_path = ''
     
-    data_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_data_2'
-    label_path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\test_images_label_2'
-    #weights_path = '/home/jianan/Incoming/dongqin/DeHaze'
-    
-    data_files = os.listdir(data_path) 
-    label_files = os.listdir(label_path)
-    
-    data, label = load_data(data_files, label_files, 240, 320)
-    
-    #weights = train_model(data_path, label_path, weights_path)
-    
-    
-    
-    
-    
+    aod_weights = train_model(data_path, label_path, weights_path)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    aodnet = Load_model(aod_weights)    
+    im = cv2.imread(im_path)
+    im_dehaze = usemodel(aodnet, im)
