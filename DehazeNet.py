@@ -63,13 +63,14 @@ def get_airlight(hazy_image, trans_map, p):
     return np.max(flat_image.take(searchidx, axis=0), axis = 0)
 
 def get_radiance(hazy_image, airlight, trans_map, L):
-    tiledt = np.zeros_like(hazy_image)
+    tiledt = np.ones_like(hazy_image) * 0.1
     tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
-    min_t = np.ones_like(hazy_image) * 0.1
+    min_t = np.ones_like(hazy_image) * 0.2
     t = np.maximum(tiledt, min_t)
     
     hazy_image = hazy_image.astype(int)
     airlight = airlight.astype(int)
+	airlight = np.minimum(airlight, 220)
     
     clear_ = (hazy_image - airlight) / t + airlight
     clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
@@ -227,7 +228,7 @@ def usemodel(dehazenet, hazy_image):
     for i in range(height // patch_size):
         for j in range(width // patch_size):
             hazy_patch = hazy_image[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16), :]
-            hazy_input = np.reshape(hazy_patch, (1, patch_size, patch_size, channel))
+            hazy_input = np.reshape(hazy_patch, (1, patch_size, patch_size, channel)) / 255.0
             trans = dehazenet.predict(hazy_input)
             trans_map[(i * 16) : (16 * i + 16), (j * 16) : (j * 16 + 16)] = trans
     

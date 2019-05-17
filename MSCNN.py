@@ -79,13 +79,14 @@ def get_airlight(hazy_image, trans_map, p):
 
 def get_radiance(hazy_image, airlight, trans_map, L):
     
-    tiledt = np.zeros_like(hazy_image)
+    tiledt = np.ones_like(hazy_image) * 0.1
     tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
-    min_t = np.ones_like(hazy_image) * 0.1
+    min_t = np.ones_like(hazy_image) * 0.2
     t = np.maximum(tiledt, min_t)
     
     hazy_image = hazy_image.astype(int)
     airlight = airlight.astype(int)
+	airlight = np.minimum(airlight, 220)
     
     clear_ = (hazy_image - airlight) / t + airlight
     clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
@@ -197,7 +198,7 @@ def usemodel(mscnn, hazy_image):
         width = hazy_image.shape[1] // 2 * 2
     
     hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-    hazy_input = np.reshape(hazy_image, (1, height, width, channel))
+    hazy_input = np.reshape(hazy_image, (1, height, width, channel)) / 255.0
     trans_map = mscnn.predict(hazy_input)
     trans_map = np.reshape(trans_map, (height, width))
     Airlight = get_airlight(hazy_image, trans_map, p)
