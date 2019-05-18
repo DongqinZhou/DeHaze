@@ -7,6 +7,10 @@
 \usepackage{xeCJK}% for chinese input
 \usepackage{setspace} % for line spacing
 \usepackage{anyfontsize}% set font size
+\usepackage{titlesec} % set chapter style
+\usepackage{CJKnumb} % for chinese number
+\usepackage{titletoc} % title in TOC
+
 
 
 %%% font settings
@@ -26,8 +30,14 @@
 \newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
 \renewcommand{\contentsname}{\centerline{ \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 } }
 \renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftdot}{$\cdot$}
 \renewcommand{\cftdotsep}{1}
+\setlength{\cftbeforechapskip}{12pt}
+\newcommand{\acknowledgementtitle}{致\qquad 谢}
+\newcommand{\acknowledgementtitletoc}{致谢}
 
+
+%%% 中文摘要
 \renewenvironment{abstract}[1]
 {
 \newcommand{\keywords}{#1}
@@ -44,6 +54,7 @@
   关键词： \keywords
 }
 
+%%% 英文摘要
 \newenvironment{englishabstract}[1]
 {
 \newcommand{\keywords}{#1}
@@ -60,13 +71,32 @@ Abstract
 KEY WORDS: \keywords
 }
 
+%%% 章节格式
+\titleformat
+{\chapter} % command
+{\centering \heiti \fontsize{15}{18} \selectfont} % format
+{第\CJKnumber{\thechapter}章} % label
+{0.1ex} % sep
+{
+   \centering
+} % before-code
 
+%%% 目录中章节
+\newcommand{\titlecontentschapter}{%
+\titlecontents{chapter}[0pt]{\vspace{.5\baselineskip}\normalfont}
+{第\CJKnumber{\thecontentslabel}章\quad}{}
+{\hspace{.5em}\titlerule*[4pt]{$\cdot$}\contentspage}
+}
 
+%%% 致谢
+\newenvironment{Acknowledgement}[1][\acknowledgementtitle]
+{%
+  
+  \phantomsection
+  \addcontentsline{toc}{chapter}{\acknowledgementtitletoc}
+  \chapter*{#1}
 
-
-
-
-
+}{\par}
 
 
 
@@ -152,6 +182,7 @@ KEY WORDS: \keywords
 
 %%% 正文
 \pagenumbering{arabic}
+\titlecontentschapter   % 在这里才启用前面定义的目录章节格式，不在前面启用，因为摘要也算作章节，牛逼！
 \chapter{绪论\quad}
 \section{研究背景和意义\quad}
 信息化时代的一大特征即是海量数据的存储，例如图片、视频、音频、文本数据等。以图片数据为例，绝大部分的图片都采集于室外，但室外采集的图片相比于室内图片，更容易受到空中浑浊物，如水滴、悬浮颗粒的降质影响。降质图片无法反映原景物的对比度和真实颜色，降低观赏性，某些图片还会丢失重要信息，如交叉口抓拍图片。
@@ -165,12 +196,23 @@ KEY WORDS: \keywords
 \subsection{测试\quad}
 嘿， 你好啊
 
+\chapter{基于先验知识的去雾算法研究\quad}
+本章以暗通道法为例介绍基于先验知识的去雾算法，并对该算法进行描述性的评价。先验知识为不对问题进行具体处理即可知道的知识，即先于经验之前的知识。与之对应的是后验知识，即在有经验之后的知识。去雾处理中的先验知识，即不对图像进行去雾，只凭观察对比含雾图像或去雾图像就能获得的知识。在应用神经网络的去雾方法变得较为流行之前，单幅图像的去雾方法主要是基于不同的先验知识，如本章介绍的暗通道先验。
+\section{按通道\quad }
+
+潇洒潇洒下
+
+\subsection{测试啊\quad }
+潇洒洒下
 
 
 
 
 
 
+\begin{Acknowledgement}{}
+啦啦啦
+\end{Acknowledgement}
 
 
 
