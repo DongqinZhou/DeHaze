@@ -28,7 +28,7 @@ def load_data(data_files,label_files, height, width):
         data.append(hazy_image)
         label.append(trans_map)
     
-    data = np.asarray(data) / 255.0 # whether to normalize
+    data = np.asarray(data) # whether to normalize
     label = np.asarray(label).reshape(len(label), height, width, 1) / 255.0
     
     return data, label
@@ -198,7 +198,7 @@ def usemodel(mscnn, hazy_image):
         width = hazy_image.shape[1] // 2 * 2
     
     hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-    hazy_input = np.reshape(hazy_image, (1, height, width, channel)) / 255.0
+    hazy_input = np.reshape(hazy_image, (1, height, width, channel)) 
     trans_map = mscnn.predict(hazy_input)
     trans_map = np.reshape(trans_map, (height, width))
     Airlight = get_airlight(hazy_image, trans_map, p)

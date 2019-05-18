@@ -38,7 +38,7 @@ def load_data(data_files,label_files, patch_size = 16):
                 data.append(hazy_patch)
                 label.append(np.mean(trans_patch))
     
-    data = np.asarray(data) / 255.0 # whether to normalize?
+    data = np.asarray(data) # whether to normalize?
     label = np.asarray(label).reshape(len(label), 1, 1, 1) / 255.0
     
     return data, label
@@ -63,6 +63,7 @@ def get_airlight(hazy_image, trans_map, p):
     return np.max(flat_image.take(searchidx, axis=0), axis = 0)
 
 def get_radiance(hazy_image, airlight, trans_map, L):
+
     tiledt = np.ones_like(hazy_image) * 0.1
     tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
     min_t = np.ones_like(hazy_image) * 0.2
