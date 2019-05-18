@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import cv2
+import time
 import random
 import numpy as np
 
@@ -72,43 +73,43 @@ def frame_to_video(video_path, frame_path, fps = 30, shape = (1280, 720)):
     video_writer.release()
     
 def video_dehaze(fps, width, height):
-    video_path = '/home/jianan/Incoming/dongqin/Dashcam Captures Shocking Motorway Pile-Up In Fog_Trim.mp4'
-    video_frames_path = '/home/jianan/Incoming/dongqin/video_3_frames'
-    DCP_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DCP_dehazed_frames_path'
-    AOD_dehazed_frames_path = '/home/jianan/Incoming/dongqin/AOD_dehazed_frames_path'
-    MSCNN_dehazed_frames_path = '/home/jianan/Incoming/dongqin/MSCNN_dehazed_frames_path'
-    DehazeNet_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DehazeNet_dehazed_frames_path'
+    video_path = '/home/jianan/Incoming/dongqin/Dashcam Captures Shocking Motorway Pile-Up In Fog.mp4'
+    video_frames_path = '/home/jianan/Incoming/dongqin/video_2_frames'
+    #DCP_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DCP_dehazed_frames_path'
+    AOD_dehazed_frames_path = '/home/jianan/Incoming/dongqin/AOD_dehazed_frames_path_2'
+    #MSCNN_dehazed_frames_path = '/home/jianan/Incoming/dongqin/MSCNN_dehazed_frames_path'
+    #DehazeNet_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DehazeNet_dehazed_frames_path'
     dehazed_videos_path = '/home/jianan/Incoming/dongqin'
     
     AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
-    MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
-    DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    #MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
+    #DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
     
     model_aod = load_aodnet(AOD_Net_Weights)
-    model_dehazenet = load_dehazenet(DehazeNet_Weights)
-    model_mscnn = load_mscnn(MSCNN_Weights)
+    #model_dehazenet = load_dehazenet(DehazeNet_Weights)
+    #model_mscnn = load_mscnn(MSCNN_Weights)
     
     hazy_images = extract_video_frames(video_path, video_frames_path)
     image_count = 1
     
     for hazy_image in hazy_images:
-        DCP_Dehazed = DCP_2(hazy_image)
+        #DCP_Dehazed = DCP_2(hazy_image)
         AOD_Dehazed = AOD_Net(model_aod, hazy_image)
-        DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
-        MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
+        #DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
+        #MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
         
-        cv2.imwrite(video_frames_path + '/Hazy_%d.jpg' % image_count, hazy_image)
-        cv2.imwrite(DCP_dehazed_frames_path + '/DCP_%d.jpg' % image_count, DCP_Dehazed)
+        #cv2.imwrite(video_frames_path + '/Hazy_%d.jpg' % image_count, hazy_image)
+        #cv2.imwrite(DCP_dehazed_frames_path + '/DCP_%d.jpg' % image_count, DCP_Dehazed)
         cv2.imwrite(AOD_dehazed_frames_path + '/AOD_%d.jpg' % image_count, AOD_Dehazed)
-        cv2.imwrite(MSCNN_dehazed_frames_path + '/MSCNN_%d.jpg' % image_count, MSCNN_Dehazed)
-        cv2.imwrite(DehazeNet_dehazed_frames_path + '/DehazeNet_%d.jpg' % image_count, DehazeNet_Dehazed)
+        #cv2.imwrite(MSCNN_dehazed_frames_path + '/MSCNN_%d.jpg' % image_count, MSCNN_Dehazed)
+        #cv2.imwrite(DehazeNet_dehazed_frames_path + '/DehazeNet_%d.jpg' % image_count, DehazeNet_Dehazed)
         
         image_count += 1
     
-    frame_to_video(dehazed_videos_path + '/DCP_Dehazed_Video.avi', DCP_dehazed_frames_path, fps = fps, shape = (width, height))
-    frame_to_video(dehazed_videos_path + '/AOD_Dehazed_Video.avi', AOD_dehazed_frames_path, fps = fps, shape = (width, height))
-    frame_to_video(dehazed_videos_path + '/MSCNN_Dehazed_Video.avi', MSCNN_dehazed_frames_path, fps = fps, shape = (width, height))
-    frame_to_video(dehazed_videos_path + '/DehazeNet_Dehazed_Video.avi', DehazeNet_dehazed_frames_path, fps = fps, shape = (width, height))
+    #frame_to_video(dehazed_videos_path + '/DCP_Dehazed_Video.avi', DCP_dehazed_frames_path, fps = fps, shape = (width, height))
+    frame_to_video(dehazed_videos_path + '/AOD_Dehazed_Video_2.avi', AOD_dehazed_frames_path, fps = fps, shape = (width, height))
+    #frame_to_video(dehazed_videos_path + '/MSCNN_Dehazed_Video.avi', MSCNN_dehazed_frames_path, fps = fps, shape = (width, height))
+    #frame_to_video(dehazed_videos_path + '/DehazeNet_Dehazed_Video.avi', DehazeNet_dehazed_frames_path, fps = fps, shape = (width, height))
     
 
 def compute_psnr_ssim():
@@ -186,11 +187,57 @@ def compute_psnr_ssim():
         
     return np.mean(DCP_PSNR), np.mean(DCP_SSIM), np.mean(DCP_2_PSNR), np.mean(DCP_2_SSIM), np.mean(AOD_PSNR), np.mean(AOD_SSIM), np.mean(MSCNN_PSNR), np.mean(MSCNN_SSIM), np.mean(DehazeNet_PSNR), np.mean(DehazeNet_SSIM) 
 
+def run_time():
+    data_path = ''
+    data_files = os.listdir(data_path)
+    
+    AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
+    MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
+    DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    
+    model_aod = load_aodnet(AOD_Net_Weights)
+    model_dehazenet = load_dehazenet(DehazeNet_Weights)
+    model_mscnn = load_mscnn(MSCNN_Weights)
+    
+    images = []
+    
+    for data_file in data_files:
+        im = cv2.imread(data_path + '/' + data_file)
+        images.append(im)
+    
+    dcp = time.clock()
+    for i in range(len(images)):
+        _ = DCP_2(images[i])
+    dcp_average = (time.clock() - dcp) / len(images)
+    
+    print('DCP average time per image: ', dcp_average)
+    
+    dehazenet = time.clock()
+    for i in range(len(images)):
+        _ = DehazeNet(model_dehazenet, images[i])
+    dehazenet_average = (time.clock() - dehazenet) / len(images)
+    
+    print('DehazeNet average time per image: ', dehazenet_average)
+    
+    mscnn = time.clock()
+    for i in range(len(images)):
+        _ = MSCNN(model_mscnn, images[i])
+    mscnn_average = (time.clock() - mscnn) / len(images)
+    
+    print('MSCNN average time per image: ', mscnn_average)
+    
+    aod = time.clock()
+    for i in range(len(images)):
+        _ = AOD_Net(model_aod, images[i])
+    aod_average = (time.clock() - aod) / len(images)
+    
+    print('AOD average time per image: ', aod_average)
+    
+
 if __name__ =="__main__":
     
-    dcp_psnr, dcp_ssim, dcp_2_psnr, dcp_2_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
-
-
+    #dcp_psnr, dcp_ssim, dcp_2_psnr, dcp_2_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
+    video_dehaze(30,1280,720)
 
 
 
