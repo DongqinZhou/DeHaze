@@ -10,7 +10,9 @@
 \usepackage{titlesec} % set chapter style
 \usepackage{CJKnumb} % for chinese number
 \usepackage{titletoc} % title in TOC
-
+\usepackage{amsmath} % for mathematical expressions, such as matrix
+\usepackage{caption} % captipon setting
+%\usepackage{color,soul} % highlight text
 
 
 %%% font settings
@@ -18,8 +20,8 @@
 \setmainfont{Times New Roman}
 %\newCJKfontfamily[mingliu]\mlu{MingLiU}
 
-%%% TOC setting
-
+\captionsetup{labelsep=space} % remove colon in caption
+\captionsetup[table]{labelsep=space}
 
 %%% format settings
 % 要注意，latex的字号变动会覆盖baselineskip
@@ -174,7 +176,7 @@ KEY WORDS: \keywords
 \newpage
 
 %%% 目录
-\vspace*{24pt}
+\vspace*{12pt}
 {\fontsize{12pt}{18pt} \selectfont
 \tableofcontents
 }\thispagestyle{empty}
@@ -244,8 +246,197 @@ Tan [11] 等人观察到无雾图像比其对应有雾图像的对比度高，�
 \begin{equation}
 \min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c})) = \tilde{t}(x)\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf J}^c({\bf y})}{{\bf A}^c})) + (1-\tilde{t}(x))
 \end{equation}
+根据暗通道先验有
+\begin{equation}
+{\bf J}^{dark}{\bf (x)} = \min_c(\min_{{\bf y} \in \Omega({\bf x})}(\bf J^c(y))) = 0
+\end{equation}
+而大气光值$A^c$恒为正值，则有
+\begin{equation}
+\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf J}^c({\bf y})}{{\bf A}^c})) = 0
+\end{equation}
+联式(2.4)和(2.6)有
+\begin{equation}
+\tilde{t}(x) = 1 - \min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c}))
+\end{equation}
 
+在含雾图片中，天空区域的颜色和大气光值很相近，因此由(2.7)计算出天空区域透射率为
+$$\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c})) \rightarrow 1,\ \tilde{t}(x) \rightarrow 0$$
+而天空是在无限远处的，透射率应当为0，这一结果与(2.7)式计算结果一致，因此计算透射率时无需区分开天空区域和非天空区域。
 
+在实际中，即便是无雾天气空中也会存在小颗粒，在远眺时图像仍会被降质。而倘使将小颗粒全部去除，即令$\tilde{t}(x) = 0$，则人眼无法感知景物深度，使看到的景物不真实，因此可在(2.7)中引入一个常数$\omega$以保留空中的部分颗粒，结果如下
+\begin{equation}
+\tilde{t}(x) = 1 - \omega\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c}))
+\end{equation}
+其中，$\omega$取值为0.95。
+
+\section{引导滤波\quad}
+He等人初始提出暗通道法时，采用的是软抠图方法对(2.8)计算出的透射图进行优化，但该方法计算效率太低，难以应对快速的去雾处理。其在2013年提出的引导滤波[13]方法能够较好地提升计算效率，同时保持了暗通道法较好的去雾效果。
+
+\subsection{滤波\quad}
+一张图片可以视作一个函数，自变量为图片中像素点的位置，因变量为像素值的大小，由此我们可以得到与每张图片唯一对应的一个函数。如是灰度图片，自变量为二元坐标值(x, y)，因变量$f(x, y)$则为处于0-255之间的一个整数值；如是彩色图片，自变量仍为二元坐标值(x, y)，因变量则为$3\times 1$的向量，该向量分量值为每个颜色通道的像素值（0-255之间的整数）
+$$ f(x. y) = 
+\begin{vmatrix}
+  r(x, y) \\
+  g(x, y) \\
+  b(x, y)  
+\end{vmatrix}
+$$
+
+滤波的作用即改变像素点位置对应的像素值，即$f(x,y)$，但不改变像素点的位置(x,y)，是常用的图像增强、提取图像信息的手段。常用滤波器有线性时不变滤波器，如均值滤波、中值滤波、高斯滤波，这类滤波器有显式声明的核函数，不因图片内容产生变化。例如，均值滤波会用每个像素点周围窗口内像素值的平均值取代该像素点原值：
+$$g(x) = \frac{1}{|\Omega(x)|}\sum_{y \in \Omega(x)}f(y)$$
+式中$\Omega(x)$为以x为中心的窗口大小，该大小可自定义，$|\Omega(x)|$为该窗口内像素点的个数。图2.1是含有高斯噪声的图片，我们使用均值滤波对该图片去噪，窗口大小选择为$7\times 7$，去噪效果如图2.2所示。
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=8cm]{noisy}
+\caption{含噪图片}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=8cm]{de-noisy}
+\caption{去噪图片}
+\end{minipage}
+\end{figure}
+均值滤波算法简单，对图像处理速度较快，但在降低噪声的同时容易使图像变模糊，尤其是图像边缘部分。此外，均值滤波较适合高斯噪声的去噪，对椒盐噪声处理效果较差。除线性时不变滤波器之外，有时候我们想利用图片的信息进行对图片进行滤波处理，因而需要使用一张引导图像，即引导滤波。
+
+\subsection{引导滤波\quad}
+引导滤波的输入为引导图像I，被引导图像p，滤波器半径大小r，正则化参数$\epsilon$，输出为滤波处理后的图像q。引导滤波的关键假设是引导图像I与滤波输出q之间存在线性关系，在以像素点k为中心的窗口$\omega_k$中，滤波输出是引导图像的线性转换
+\begin{equation}
+q_i = a_k I_i + b_k, \forall i \in \omega_k
+\end{equation}
+其中，$(a_k, b_k)$是在窗口$\omega_k$中为常数的线性系数。此滤波器使用以r为半径大小的窗口。
+
+我们通过最小化滤波器输入p与输出q之间的差异来确定线性系数的大小，由此定义的损失函数为
+\begin{equation}
+E(a_k, b_k) = \sum_{i\in \omega_k}((a_k I_i + b_k - p_i) + \epsilon a_k^2)
+\end{equation}
+其中$\epsilon$是正则化系数，用以惩罚过大的系数$a_k$。最小化上述损失函数，得
+\begin{equation}
+a_k = \frac{\frac{1}{|\omega|}\sum_{i\in \omega_k}I_ip_i - \mu_k\bar{p_k}}{\sigma_k^2 + \epsilon}
+\end{equation}
+
+\begin{equation}
+b_k = \bar{p_k} - a_k \mu_k
+\end{equation}
+其中，$\mu_k$和$\sigma_k^2$是引导图像在窗口$\omega_k$中的均值和方差，$|\omega|$是窗口内像素点的个数，而$\bar{p_k} = \frac{1}{|\omega|}\sum_{i\in \omega_k}p_i$是窗口内被引导图像的均值。得到线性系数$(a_k, b_k)$值后，我们即可通过(2.9)式计算滤波器输出。
+
+值得注意的是，图片中某个像素点i不为某一个窗口专属，因此在不同窗口下根据(2.9)式计算出的$q_i$并不一样。对此，一个较为简单可行的方法是对$q_i$所有可能值取平均。因此，在计算出每个窗口中的线性系数之后，我们可以通过下式计算滤波器输出
+\begin{equation}
+q_i = \frac{1}{|\omega|}\sum_{k|i\in \omega_k}(a_k I_i + b_k)
+\end{equation}
+也即
+\begin{equation}
+q_i = \bar{a_i}I_i + \bar{b_i}
+\end{equation}
+其中，$\bar{a_i} = \frac{1}{|\omega|}\sum_{k\in \omega_i}a_k$和$\bar{b_i} = \frac{1}{|\omega|}\sum_{k\in \omega_i}b_k$是包含像素点i的所有窗口中线性系数的均值。式(2.11), (2.12), (2.14)即是引导滤波的定义。由以上介绍的算法，我们可以对2.2节中估计出的透射图进行优化，以此得到更精确的透射图。
+
+\section{大气光估计\quad}
+He等人提出的{\Large 暗通道可用以估计图片中雾的厚度}：暗通道中亮度值越高，表明原图中该区域雾越厚。由此，He等人提出，先选取暗通道中前0.1\%亮度值最高的像素点，在这些像素点中选取原图中的最高亮度值作为大气光A。
+
+\section{无雾图像计算\quad}
+如前所述，根据大气散射模型(1.1)进行图像去雾处理，最关键步骤是计算出透射图和大气光。值得注意的是，在介质透射率较小甚至趋近于0时，根据模型获取的无雾图像易产生较大噪声，因此需要对透射率最小值进行限制，可由下式进行无雾图像的计算
+\begin{equation}
+{\bf J(x)} = \frac{\bf I(x) - A}{max(t({\bf x}), t_0)} + {\bf A}
+\end{equation}
+其中，$t_0$取值0.1。
+
+\section{算法评价\quad}
+He等人提出的暗通道法毫无疑问是单幅图像去雾的标志性工作。该方法原理非常简单，但是去雾效果非常好。在暗通道法提出后，许多学者对此方法表现出极大兴趣，并致力于改进该算法，以使其更好的适用于天空区域。
+
+与此同时，我们也应当意识到这一方法的局限性，其一，是多次提到过的，该方法不适用于存在和天空颜色较为相似的物体的图片，因为在此类图片中，暗通道会失效。其二，是所有基于大气散射模型的去雾算法共有的局限性——该大气散射模型也许无法准确描述含雾图片的生成。
+
+\chapter{基于神经网络的去雾算法研究\quad}
+本章着重介绍几种广为人知的基于神经网络的去雾算法，DehazeNet, MSCNN, AOD-Net。神经网络以其强大的非线性拟合能力在学界掀起了一股热潮，而卷积神经网络以其对图像的卓越处理能力成为了计算机视觉领域的标志性算法。本章将先介绍卷积神经网络的基本结构，如卷积层、池化层等，再深入讲解以卷积神经网络为基础的去雾算法。
+
+\section{卷积神经网络\quad}
+卷积神经网络最早是由Yang LeCun提出的，但当时并未引起较大注意。之后的十几年，计算能力显著提高，CPU越来越快，GPU成为常用的计算工具，智能手机、摄像头的广泛应用使人们可以获取海量数据，大量的数据和不断提高的计算能力让神经网络的训练变得越来越易行。2012年由Alex Krizhevsky提出的AlexNet在ImageNet图像识别比赛中大幅获胜，激起了卷积神经网络的热潮，并由此拉开了深度学习的时代序幕。自那时起，卷积神经网络便成为了深度学习的一把利器。
+
+典型的卷积神经网络一般含有卷积层、池化层和全连接层。
+
+\subsection{卷积层\quad}
+卷积操作和上述线性时不变滤波器对图片进行的操作是类似的，如图3.1所示，其中I为需进行卷积操作的图层，K为卷积核，卷积结果为I * K（也常记为$I\otimes K$）。卷积层一般用于提取前一层的局部特征，卷积核即特征提取器。
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{convolution}
+\caption{卷积操作}
+\end{figure}
+以彩色图片为输入层时，其大小为M * N * D，其中M为图片高度，N为图片宽度，D为图片深度，即颜色通道个数，彩色图片通道个数为3（D = 3）。不失一般性，不妨假设输入卷积层的张量大小为M * N * D，记为X，进行卷积操作后输出层张量大小为 $M^{\prime} * N^{\prime} * P$，记为Y，则卷积核张量大小为m * n * D * P，记为W，其中，m，n为二维卷积核大小，P为输出特征图的个数。
+
+卷积层计算输出特征图$Y_p$时，用卷积核$W_p$（大小为m * n * D）对输入张量X进行卷积操作，加上偏置标量$b_p$即得到卷积层的净输入$Z_p$，$Z_p$经过激活函数得到特征图$Y_p$。其计算过程如下
+\begin{equation}
+Z^p = W^p \otimes X + b^p = \sum_{d = 1}^D W^{p, d} \otimes X^d + b^p
+\end{equation}
+
+\begin{equation}
+Y^p = f(Z^p)
+\end{equation}
+其中，f为激活函数，常用的激活函数有tanh, ReLU, sigmoid, Leaky ReLU。一个卷积层需要P * D * （m * n） + P个参数。
+
+\subsection{池化层\quad}
+池化层，又叫下采样层，一般置于卷积层之后，目的是进行特征选择，减少特征数量。常用的池化函数有最大池化和平均池化，两者作用原理如图3.2所示。
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{pool}
+\caption{池化操作}
+\end{figure}
+池化层的一般操作是将每张特征图划分为2*2的不重叠区域，对每个区域使用最大池化或平均池化函数。其中，划分区域及池化函数可以自定义，但过大的划分区域会导致信息的过分损失。
+
+\subsection{上采样层\quad}
+上采样层与池化层对应，类似于池化层的逆操作，即将一个像素点的值扩充至以该像素点为中心的窗口，窗口大小可以自己定义，一般选择$2\times 2$的窗口。其过程如图3.3所示，此图选择的窗口大小为 $3 \times 3$。
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{upsample}
+\caption{上采样操作}
+\end{figure}
+
+\section{DehazeNet\quad}
+由大气散射模型可知，图片去雾最关键步骤在于透射图的估计，由是Cai[16]等人提出了一个端到端预测透射率的系统，该网络架构如图3.4所示。值得注意的是，该网络输入层是大小为16 * 16 * 3的图片块，输出结果是该图片块的透射率，这一性质将在第四章详细讨论。
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{DehazeNet}
+\caption{DehazeNet网络结构}
+\end{figure}
+
+\subsection{特征提取层\quad}
+特征提取层通过卷积操作和非线性激活函数实现。卷积操作使用16个大小为5 * 5 * 3的卷积核，不同于一般使用ReLU或tanh激活函数，这一层使用Maxout [19] 激活函数，并设置其参数为k=4。以下使用一个简单的例子讲解Maxout激活函数。
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{Maxout}
+\caption{传统激活函数与Maxout激活函数}
+\end{figure}
+上图中，(a)表示传统的激活函数，(b)表示Maxout激活函数。(a)中，我们有$$Y = f(W \otimes X + b)$$
+其中，f为常用的激活函数，如tanh，ReLU，sigmoid，参数个数为 2 + 1 = 3个。(b)中，我们有
+\begin{equation}
+Y = \max\{W_1 \otimes X + b_1, W_2 \otimes X + b_2, W_3 \otimes X + b_3, W_4 \otimes X + b_4, W_5 \otimes X + b_5\}
+\end{equation}
+其中参数个数有 (2 + 1) * 4 = 12个。由此知，Maxout单元会成倍的增加参数个数，成倍因子为Maxout单元的参数k。
+
+由式(3.3)可知，Maxout激活单元是分段的线性函数，因而可以拟合任意的凸函数，如图3.6所示。
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{Maxout-fitting}
+\caption{Maxout激活单元}
+\end{figure}
+
+\subsection{多尺度映射\quad}
+多尺度特征在图像去雾上被证明是较为有效的，于是本网络也采用了多尺度卷积。具体而言，三个尺度的卷积核大小分别为$3\times 3$， $5\times 5$， $7\times 7$，每个尺度均选用16个卷积核。由于上一层输出特征组中有四张特征图，因此每个卷积核的深度均为4。
+
+\subsection{局部极值\quad}
+局部极值采用最大池化，窗口大小为$7\times 7$。上一层输出特征组有16 * 3 = 48张特征图，大小均为12 * 12。因此本层局部极值的输出大小为48 * 6 * 6。
+
+\subsection{非线性回归\quad}
+本层在卷积操作之后采用双边线性整流函数(BReLU)作为激活函数。一方面，sigmoid激活函数容易导致梯度消失，进而导致较慢的收敛速度和不理想的局部极值；另一方面，ReLU激活函数比较适用于分类问题，不是非常适合回归问题，如这里的图像复原。受sigmoid函数和ReLU函数启发，DehazeNet提出使用BReLU激活函数，该函数可以保持双边约束以及局部线性。下图为BReLU和ReLU激活函数图像对比，在本方法中，$t_{min}$和$t_{max}$分别取值为0和1。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{BReLU}
+\caption{ReLU和BReLU激活单元对比}
+\end{figure}
+本层仅使用一个卷积核，其大小为6 * 6，因而输出张量大小为1 * 1，经过BReLU激活函数之后输出一个0-1之间的标量值，即为该图片块的透射率值。
+
+\subsection{网络参数\quad}
+下表显示了DehazeNet中各层的参数设置。在本网络中，卷积层的偏置恒为0，只设置权重参数，该网络中可训练参数共有16 * 4 * 5 * 5 + 16 * 4 * （3 * 3 + 5 * 5 + 7 * 7） + 48 * 6 * 6 = 8240个。
 
 
 
@@ -275,7 +466,7 @@ what the hell is going on
 {\fontsize{50}{60}\selectfont Foo}
 
 
-
+给公式、图片、目录加超链接？
 
 
 
