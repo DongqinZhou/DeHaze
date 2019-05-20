@@ -39,8 +39,9 @@
 \setlength{\cftbeforechapskip}{12pt}
 \newcommand{\acknowledgementtitle}{致\qquad 谢}
 \newcommand{\acknowledgementtitletoc}{致谢}
-\renewcommand{\arraystretch}{1.5}
+\renewcommand{\arraystretch}{1.5} % table stretch
 \renewcommand{\labelenumi}{\roman{enumi}) }
+\setcounter{secnumdepth}{3}% Number \subsubsection https://tex.stackexchange.com/questions/146304/subsubsection-in-a-report-style-document/146307 Very good information about the toc and numbering for reports
 
 %%% 中文摘要
 \renewenvironment{abstract}[1]
@@ -85,6 +86,17 @@ KEY WORDS: \keywords
 {
    \centering
 } % before-code
+
+%%% subsubsection格式
+\titleformat
+{\subsubsection} % command
+{\normalfont \bfseries} % format
+{\thesubsubsection \ } % label
+{0.1ex} % sep
+{
+   \normalsize
+} % before-code
+
 
 %%% 目录中章节
 \newcommand{\titlecontentschapter}{%
@@ -591,25 +603,111 @@ AOD-Net使用MSE作为损失函数，使用随机梯度下降优化器，其中m
 	
 网络训练好之后，即可直接对测试图片进行去雾。由于该网络是全卷积网络，因此不用调整图片大小。
 
+\section{算法评估\quad}
+本节我们对上述介绍的算法进行评估。我们从SOTS数据集中indoor、outdoor子集各随机采样50张共100张含雾图片及其对应无雾图片对各算法进行测试，分析对比由算法计算出的各指标，之后观察各算法在实拍图片上的效果，计算指标。最后，我们将各算法应用于行车记录仪拍摄视频，以观察应用效果。
+
+\subsection{图像质量评价指标\quad}
+图片在获取、处理、压缩、储存或传输时都有可能引入噪声，本论文研究的雾属于噪声的一种。本论文对图片的处理最终是以人为受众的，因此处理效果由由受众主观评价最为准确。然而，主观评价需要花费大量的时间精力，且评价结果极易收到评价者的影响（如同一评价者在不同的环境下有可能对同一张图片给出不同的评价结果），因而主观评价是不稳定的。
+
+由此，学者们展开了客观评价指标的研究。图像质量评估（Image Quality Assessment, IQA）中的客观指标可以分为三类[24]：全参考(Full-Reference, FR)指标，即可以获得真实图片时对处理图片进行评价的指标；部分参考(Reduced-Reference, RR)指标，旨在能获取部分真实图片信息时对处理后图片进行评价；无参考(No-Reference, NR)指标，即无法获取真实图片时进行评价的指标。NR-IQA方法通常分为两类，一类是单一用途质量评估方法，这类方法需要先知道降质类型，如噪声、模糊等；另一类是基于训练和学习的通用质量评估方法，此类方法先自动对图片所含噪声类型进行判断分类，之后针对降质类型计算评价指标。此类方法不受限于某一特定的图片降质原因，因而具有更广的应用前景。除传统方法之外，也有学者应用深度学习进行图像质量评价，神经网络有复杂的结构和强大的非线性拟合能力，因而性能会超过传统方法，但该方法需要大量的数据进行训练，且网络设计和训练极度强调技巧，本文暂不深入研究。本论文中，我们采用全参考指标PSNR，SSIM和通用型的无参考指标SSEQ，BRISQUE对各算法去雾效果进行评价。下面对各指标逐一介绍。
 
 
 
+\subsubsection{峰值信噪比PSNR}
 
+在通信领域，信噪比是指信号功率与噪声功率之比，峰值信噪比表示信号最大可能功率与噪声功率之比值。在图像处理领域，峰值信噪比则通过均方误差MSE进行定义，即像素点最大像素值与MSE的比值。
 
+假设有一张去雾图像I和其对应的无雾真实图像J，其大小为m * n * 3，其中3是颜色通道个数。则均方误差定义为
+\begin{equation}
+MSE = \frac{1}{3mn}\sum_{i = 0}^{m - 1}\sum_{j = 0}^{n - 1}{[I(i, j) - J(i, j)] }^2
+\end{equation}
+峰值信噪比为
+\begin{equation}
+PSNR = 10 log_{10}(\frac{MAX_I^2}{MSE})
+\end{equation}
+其中，$MAX_I$表示图像点像素最大值。由上可知，峰值信噪比越大，图像失真越小，去雾效果越好，PSNR指标值通常在0-100之间。
+	
+MSE和PSNR的计算非常简便，也具有清晰的物理含义，因此被广泛应用于重建图像的评估，但这两个指标对图像的的评价结果与人眼的评价结果不完全一致，因此存在应用的局限性。
 
+\subsubsection{结构相似性SSIM}
+与PSNR不一样，SSIM更强调与评价指标与人眼判断具有较好的一致性。人眼在观看图片时，会潜意识将图片内容结构化，也即认为相邻像素之间是存在关联的，因此Wang[24]等人在设计SSIM时着重考虑了图片间的结构性信息。
+	
+Wang[24]等人设计的SSIM系统将图像相似性的测量分为亮度、对比度以及结构的测量，按照下式进行SSIM的计算
+\begin{equation}
+SSIM(x, y) = {[l{\bf (x, y)}]}^{\alpha}\cdotp {[c{\bf (x, y)}]}^{\beta}\cdotp {[s{\bf (x, y)}]}^{\gamma} 
+\end{equation}
+其中
+\begin{equation}
+l{\bf (x, y)} = \frac{2\mu_x\mu_y + C_1}{\mu_x^2 + \mu_y^2 + C_1}
+\end{equation}
+\begin{equation}
+c{\bf (x, y)} = \frac{2\sigma_x\sigma_y + C_2}{\sigma_x^2 + \sigma_y^2 + C_2}
+\end{equation}
+\begin{equation}
+s{\bf (x, y)} = \frac{\sigma_{xy}+ C_3}{\sigma_x\sigma_y + C_3}
+\end{equation}
 
+$l{\bf (x, y)}$比较x和y的亮度，$c{\bf (x, y)}$比较x和y的对比度，$s{\bf (x, y)}$比较x和y的结构，$\alpha > 0, \beta > 0, \gamma > 0$为调整三者相对重要性的参数，$C_1, C_2, C_3$为维持三者稳定性的常数，$\mu_x, \sigma_x, \mu_y, \sigma_y$分别为x和y的平均值和标准差，$\sigma_{xy}$为x和y的协方差。
 
+SSIM指标值在0-1之间，用SSIM评估图像相似度时，计算的SSIM越大，则两张图片相似度越高。在实际使用时，为简化上述表达式，一般令$\alpha = \beta = \gamma = 1$并使$C_3 = 3/2 C_2$，得
+\begin{equation}
+SSIM({\bf x, y}) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy}+ C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
+\end{equation}
+此外，由于视觉的局部性，我们使用固定大小的窗口在图片上滑动，计算每个窗口的SSIM值，并使用高斯加权函数对每个窗口值进行加权平均以防止出现块状现象。
 
+\subsubsection{SSEQ}
+SSEQ [25, Spatial-Spectral Entropy-based Quality]采用位置熵和谱熵来表征图片的结构性及像素之间的相关性。SSEQ方法首先计算图像中的位置熵特征以及谱熵特征，之后采用一个两步框架来分辨降质类型并评估图片质量。其中，SSEQ方法使用支持向量机进行降质类型预测，使用支持向量回归用于图片质量评估。本方法由Liu[26]等人实现并公开。SSEQ指标值通常在0-100之间，0表示图片质量最高。
 
+\subsubsection{BRISQUE}
+To do here.
 
+\subsection{算法评估\quad}
+本论文中，所有算法均用python/keras实现，在同一台Linux机器上运行，机器配置为Intel(R) Core(TM) i7-6700k 4GHz, 24GB RAM，Nvidia GeForce GTX 1080 Ti GPU, 8G显存。
 
+\subsubsection{基于SOTS数据集的客观评价}
+我们首先比较DCP、DehazeNet、MSCNN、AOD-Net在SOTS数据集上的去雾效果，评价指标为PSNR、SSIM、SSEQ、BRISQUE。各算法得分如表4.1所示、
 
+\begin{table}[htbp]
+  \centering
+  \caption{算法得分表}
+    \begin{tabular}{c|c|c|c|c}
+    \hline
+         & DCP    & DehazeNet  & MSCNN    & AOD-Net  \\
+    \hline
+    	PSNR	 & 17.73    & 13.62 & 16.14    & 19.55 \\
+	\hline
+     SSIM     & 0.85 & 0.75 & 0.72     & 0.85     \\
+	\hline
+    SSEQ &   &  &     &  \\
+    \hline
+     BRISQUE     &       &       &   & \\
+     \hline
+  
+    \end{tabular}%
+  \label{tab:4.1}%
+\end{table}%
 
+\subsubsection{基于实际图片的评价}
+	我们通过实地拍摄及在RTTS数据集中随机采样，共选取了100张实际的含雾图片。下图显示了四种算法在实际图片上的去雾效果。
 
+\subsubsection{视频去雾评价}
+自动驾驶巨头特斯拉CEO马斯克及其团队曾说激光雷达在自动驾驶领域已经走到尽头，人们在驾驶的时候就是只凭视觉的，所以马斯克团队说未来的自动驾驶也应该只靠视觉。将去雾算法应用到自动驾驶车辆，则该车辆行驶时能获取的信息增多，自动驾驶的应用面会更广泛，其可靠性也会上升。
 
-
-
-
+\subsubsection{去雾速率}
+表4.3展示了各算法单幅图片去雾时间。由此可知。。。，在应用时，我们要求能够快速乃至实时对获取图片进行去雾，因此各方法去雾速率还有待提升。
+\begin{table}[htbp]
+\centering
+\caption{各算法去雾速率对比}
+\begin{tabular}{c|c|c|c|c}
+\hline
+图片大小 & DCP & DehazeNet	& MSCNN	& AOD-Net \\
+\hline
+$480\times  640$ & 21.993 & 20.631 & 0.053 & 0.017\\
+\hline
+\end{tabular}
+\label{tab: 4.3}
+\end{table}
+耗时较多，因为有引导滤波，且dehazenet要对图片循环处理。
 
 
 
