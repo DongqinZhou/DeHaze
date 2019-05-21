@@ -39,6 +39,8 @@
 \setlength{\cftbeforechapskip}{12pt}
 \newcommand{\acknowledgementtitle}{致\qquad 谢}
 \newcommand{\acknowledgementtitletoc}{致谢}
+\newcommand{\referencetitle}{参考文献}
+\newcommand{\referencetitletoc}{参考文献}
 \renewcommand{\arraystretch}{1.5} % table stretch
 \renewcommand{\labelenumi}{\roman{enumi}) }
 \setcounter{secnumdepth}{3}% Number \subsubsection https://tex.stackexchange.com/questions/146304/subsubsection-in-a-report-style-document/146307 Very good information about the toc and numbering for reports
@@ -114,10 +116,17 @@ KEY WORDS: \keywords
   \addcontentsline{toc}{chapter}{\acknowledgementtitletoc}
   \chapter*{#1}
 
-}{\par}
+}
 
+%%% 参考文献
+\newenvironment{References}[1][\referencetitle]
+{%
+  
+  \phantomsection
+  \addcontentsline{toc}{chapter}{\referencetitletoc}
+  \chapter*{#1}
 
-
+}
 
 
 
@@ -748,7 +757,6 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 神经网络的训练需要大量数据，尤其是含雾—无雾图片对。由此，本文介绍了领域中基准性数据集RESIDE。此外，我们具体讲解了各算法实现及其参数设置。本文采用全参考指标PSNR，SSIM和无参考指标SSEQ、BRISQUE对图像质量进行评价，我们发现。。。我们也将各算法应用于实际图片，发现。。。考虑到去雾算法的应用价值，我们将各算法应用于雾天视频，并得出。。。同时，我们发现各算法速率。。。
 	
 \section{展望\quad}
-（研究改进 + 应用前景）
 图像去雾化是图像处理中较为热门的领域。许多学者致力于提出高效、快速、通用的去雾方法，但由于单幅图像去雾是一个病态的问题，这一通用方法仍未被发现。研究过程中，我们注意到，现行的去雾方法都是基于大气散射模型的，也即我们是按照给出I求解J的思路进行去雾的。但我们实验发现，从合成图像上训练出的去雾模型在实际图像中表现并不好，说明通过这一模型合成出的含雾图像与实际的含雾图像存在较大差距。是否存在一个更为合理的描述含雾图片生成的模型，我们不得而知。
 
 此外，神经网络模型在训练时遇到的最大困难，便是样本的获取。实际生活中，我们几乎不可能获取到含雾—无雾图片对，因此极大的限制了神经网络模型的泛化能力。如果能获取到真实的含雾—无雾图像对，神经网络的优越性便会充分体现。在图像质量评价时，我们意识到现行的IQA方法不能很好的适用于去雾图片的质量评价，全参考指标和无参考指标得出的结论并不一致，我们认为可以应用深度学习的方法对去雾效果进行评价。
@@ -768,10 +776,25 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 
 
 \begin{Acknowledgement}{}
-啦啦啦
+\par To my family, friends, and tearchers.
+\par 从家庭中获得了最多的养分，也对家庭亏欠得最多。Luckily, I have a whole life to pay you back, and I will pay you back.
+\par 饺子姐，how you doing? 你是对我的大学乃至以后的人生都有关键影响的人，大二大三两年如果没有你，我可能会步入温水，become nobody. You are the first one that pops up in my mind when I recall my undergraduate years.
+\par 感谢远在长春的基友，感谢你陪我扯犊子，谈天论地，挥斥方遒，指点江山。我乐于领略你的讲话精神，享受互损互吹，you are my shaper.
+\par 感谢小魏同学，you are a dear friend of mine, always.
+\par 感谢富婆瑾神，情圣阿曾，天才凡仔仔，you brought me laughter. You stood with me when I broke down.
+\par 感谢建安和文强，你们教会了我太多太多。I don't know what will become of me if I confined myself to this tiny world, but I know I'll hate him badly.
+\par 感谢Sunny, you are my drive and my comfort. You are the goodness I'd love to think about when I am down.
+\par 感谢Martin \& Soffia, your kindness will stay with me in my life to come.
+\par 感谢Janet \& Kaitlyn, I could never come here without your support.
+\par 感谢刘老师，带我进行科研训练，让我受益良多。感谢李老师，细致的指导让我体会到何为学者风范。感谢罗老师，从工作、生活、人生各方面指引我。You are remembered.
+\par 感谢何老师，为我提供悉心的毕设资源和指导，让我能够安心地完成毕业设计。感谢吕学长和江学长，在我毕设过程中不嫌烦扰的为我答疑解惑。 
+\par Finally, thanks to those who forced me to realize the cruelty of life. I am still alive, so I guess I am stronger :).
+
 \end{Acknowledgement}
 
+\begin{References}
 
+\end{References}
 
 \newpage
 
