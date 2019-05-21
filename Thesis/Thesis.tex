@@ -17,6 +17,7 @@
 \usepackage[nottoc]{tocbibind} % add bibliography to toc
 
 
+
 %%% font settings
 \setCJKmainfont{SimSun}
 \setmainfont{Times New Roman}
@@ -39,12 +40,15 @@
 \setlength{\cftbeforechapskip}{12pt}
 \newcommand{\acknowledgementtitle}{\heiti \fontsize{14}{17} \selectfont 致\quad 谢}
 \newcommand{\acknowledgementtitletoc}{致谢}
-%\newcommand{\referencetitle}{参考文献}
+%\newcommand{\referencetitle}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
 %\newcommand{\referencetitletoc}{参考文献}
 \renewcommand{\arraystretch}{1.5} % table stretch
 \renewcommand{\labelenumi}{\roman{enumi}) } % change enumeratior index
 %\setcounter{secnumdepth}{3}% Number \subsubsection https://tex.stackexchange.com/questions/146304/subsubsection-in-a-report-style-document/146307 Very good information about the toc and numbering for reports
 %\setcounter{tocdepth}{3}
+%\renewcommand{\bibname}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
+\renewcommand{\bibname}{\protect\leftline{参考文献}}
+
 
 %%% 中文摘要
 \renewenvironment{abstract}[1]
@@ -207,7 +211,7 @@ KEY WORDS: \keywords
 %%% 目录
 \begingroup
 \renewcommand{\leftline}{}
-%\renewcommand{\bibname}{\kaishu \Huge 参考文献}
+\renewcommand{\bibname}{}
 
 {\fontsize{12pt}{18pt} \selectfont
 \tableofcontents
@@ -674,10 +678,10 @@ SSIM({\bf x, y}) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy}+ C_2)}{(\mu_x^2 + \mu_
 此外，由于视觉的局部性，我们使用固定大小的窗口在图片上滑动，计算每个窗口的SSIM值，并使用高斯加权函数对每个窗口值进行加权平均以防止出现块状现象。
 
 \subsection{SSEQ\quad}
-SSEQ\cite{ref25}(Spatial-Spectral Entropy-based Quality)采用位置熵和谱熵来表征图片的结构性及像素之间的相关性。SSEQ方法首先计算图像中的位置熵特征以及谱熵特征，之后采用一个两步框架来分辨降质类型并评估图片质量。其中，SSEQ方法使用支持向量机进行降质类型预测，使用支持向量回归用于图片质量评估。本方法由Liu\cite{ref26}等人实现并公开。SSEQ指标值通常在0-100之间，0表示图片质量最高。
+SSEQ\cite{ref25}(Spatial-Spectral Entropy-based Quality)采用位置熵和谱熵来表征图片的结构性及像素之间的相关性。SSEQ方法首先计算图像中的位置熵特征以及谱熵特征，之后采用一个两步框架来分辨降质类型并评估图片质量。其中，SSEQ方法使用支持向量机进行降质类型预测，使用支持向量回归用于图片质量评估。本方法由Liu等人实现并公开。SSEQ指标值通常在0-100之间，0表示图片质量最高。
 
 \subsection{BRISQUE\quad}
-To do here.
+To do here\cite{ref26}.
 
 \section{算法评估\quad}
 本节我们对上述介绍的算法进行评估。我们从SOTS数据集中indoor、outdoor子集各随机采样50张共100张含雾图片及其对应无雾图片对各算法进行测试，分析对比由算法计算出的各指标，之后观察各算法在实拍图片上的效果，计算指标。最后，我们将各算法应用于行车记录仪拍摄视频，以观察应用效果。
@@ -741,7 +745,7 @@ To do here.
 
 \begin{table}[htbp]
 \centering
-\caption{各算法去雾速率对比}
+\caption{各算法去雾速率对比 (单位: s)}
 \begin{tabular}{c|c|c|c|c}
 \hline
 图片大小 & DCP & DehazeNet	& MSCNN	& AOD-Net \\
@@ -755,7 +759,7 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 \subsection{视频去雾评价\quad}
 自动驾驶巨头特斯拉CEO马斯克及其团队曾说激光雷达在自动驾驶领域已经走到尽头，人们在驾驶的时候就是只凭视觉的，所以马斯克团队说未来的自动驾驶也应该只靠视觉。将去雾算法应用到自动驾驶车辆，则该车辆行驶时能获取的信息增多，自动驾驶的应用面会更广泛，其可靠性也会上升。
 
-考虑到AOD-Net极高的计算速率，我们应用其对视频文件进行去雾。雾天视频来源于YouTube\cite{ref29}。图4.7展示了算法对该视频的去雾效果。由此可知to do here具有一定的应用前景。
+考虑到AOD-Net极高的计算速率，我们应用其对视频文件进行去雾。雾天视频来源于YouTube\cite{ref27}。图4.7展示了算法对该视频的去雾效果。由此可知to do here具有一定的应用前景。
 
 \section{本章小结\quad}
 本章我们详细介绍了RESIDE数据集中含雾图片的合成以及该数据集的组成，而后讲解了我们在研究过程中对DCP、DehazeNet、MSCNN、AOD-Net的具体实现及参数设置。最后，我们具体介绍了图像质量评估领域的全参考指标PSNR、SSIM和无参考指标SSEQ、BRISQUE，并从合成图片去雾评价、实际图片去雾评价、去雾速率对比以及视频处理去雾评价四个方面对各算法进行了评估。综合而言，我们认为基于神经网络的去雾算法具有更强的去雾能力和更广阔的应用前景。
@@ -803,40 +807,37 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 \end{Acknowledgement}
 
 %\begin{References}
-
 %\end{References}
 
 \begin{thebibliography}{99}  
-\renewcommand{\bibname}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
-\bibitem{ref1} K. He, J. Sun, and X. Tang, “Single image haze removal using dark channel prior,” in IEEE Conference on Computer Vision and Pattern Recognition, 2009.
-\bibitem{ref2} E. J. McCartney, “Optics of the atmosphere: scattering by molecules and particles,” New York, John Wiley and Sons, Inc., 1976
-\bibitem{ref3} S. G. Narasimhan and S. K. Nayar. Chromatic framework for vision in bad weather. In Computer Vision and Pattern Recognition, 2000. Proceedings. IEEE Conference on, volume 1, pages 598-605. IEEE, 2000.
-\bibitem{ref4} S. G. Narasimhan and S. K. Nayar. Vision and the atmosphere. International Journal of Computer Vision, 48(3):233-254, 2002.
-\bibitem{ref5} S. G. Narasimhan and S. K. Nayar. Contrast restoration of weather degraded images. PAMI, 25:713–724, 2003.
-\bibitem{ref6} S. K. Nayar and S. G. Narasimhan. Vision in bad weather. ICCV, page 820, 1999.
-\bibitem{ref7} Y. Y. Schechner, S. G. Narasimhan, and S. K. Nayar. Instant dehazing of images using polarization. CVPR, 1:325, 2001.
-\bibitem{ref8} S. Shwartz, E. Namer, and Y. Y. Schechner. Blind haze separation. CVPR, 2:1984–1991, 2006.
-\bibitem{ref9} Kim J Y, Kim L S, Hwang S H. An advanced contrast enhancement using partially overlapped sub-block histogram equalization. IEEE Transactions on Circuits and Systems for Video Technology, 2001, 11(4): 475−484
-\bibitem{ref10} Parthasarathy S, Sankaran P. A RETINEX based haze removal method[C]//2012 IEEE 7th International Conference on Industrial and Information Systems (ICIIS). IEEE, 2012: 1-6.
-\bibitem{ref11} R.Tan. Visibility in bad weather from a single image. CVPR, 2008.
-\bibitem{ref12} Fattal R. Single image dehazing [J]. ACM transactions on graphics (TOG), 2008, 27(3): 72.
-\bibitem{ref13} He K, Sun J, Tang X. Guided image filtering [J]. IEEE transactions on pattern analysis and machine intelligence, 2013, 35(6): 1397-1409.
-\bibitem{ref14} Q. Zhu, J. Mai, and L. Shao, “A fast single image haze removal algorithm using color attenuation prior,” IEEE Transactions on Image Processing, vol. 24, no. 11, pp. 3522–3533, 2015.
-\bibitem{ref15} D. Berman, S. Avidan et al., “Non-local image dehazing,” in IEEE Conference on Computer Vision and Pattern Recognition, 2016.
-\bibitem{ref16} B. Cai, X. Xu, K. Jia, C. Qing, and D. Tao, “Dehazenet: An end-to-end system for single image haze removal,” IEEE Transactions on Image Processing, vol. 25, no. 11, pp. 5187–5198, 2016.
-\bibitem{ref17} W. Ren, S. Liu, H. Zhang, J. Pan, X. Cao, and M.-H. Yang, “Single image dehazing via multi-scale convolutional neural networks,” in European Conference on Computer Vision, 2016.
-\bibitem{ref18} B. Li, X. Peng, Z. Wang, J. Xu, and D. Feng, “Aod-net: All-in-one dehazing network,” in IEEE International Conference on Computer Vision, 2017.
-\bibitem{ref19} I. Goodfellow, D. Warde-farley, M. Mirza, A. Courville, and Y. Bengio, “Maxout networks,” in Proceedings of the 30th International Conference on Machine Learning (ICML-13), 2013, pp. 1319–1327.
-\bibitem{ref20} K. Tang, J. Yang, and J. Wang, “Investigating haze-relevant features in a learning framework for image dehazing,” in IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2014, pp. 2995– 3002.
-\bibitem{ref21} B. Li et al., "Benchmarking Single-Image Dehazing and Beyond," in IEEE Transactions on Image Processing, vol. 28, no. 1, pp. 492-505, Jan. 2019.
-\bibitem{ref22} N. Silberman, D. Hoiem, P. Kohli, and R. Fergus, “Indoor segmentation and support inference from rgbd images,” in European Conference on Computer Vision. Springer, 2012, pp. 746–760.
-\bibitem{ref23} D. Scharstein and R. Szeliski, “High-accuracy stereo depth maps using structured light,” in Computer Vision and Pattern Recognition, 2003. Proceedings. 2003 IEEE Computer Society Conference on,vol.1. IEEE, 2003, pp. I–I.
-\bibitem{ref24} Z. Wang, A. C. Bovik, H. R. sheikh, and E. P. Simoncelli. Image quality assessment: From error visibility to structural similarity. IEEE Transaction on Image Processing, 2004, 13(4):600–612
-\bibitem{ref25} L. Liu, B. Liu, H. Huang, and A. C. Bovik, “No-reference image quality assessment based on spatial and spectral entropies,” Signal Processing: Image Communication, vol. 29, no. 8, pp. 856–863, 2014.
-\bibitem{ref26} Lixiong Liu, Bao Liu, Hua Huang, and Alan Conrad Bovik, "SSEQ Software Release", URL: \url{http://live.ece.utexas.edu/research/quality/SSEQ_release.zip}, 2014
-\bibitem{ref27} M. A. Saad, A. C. Bovik, and C. Charrier, “Blind image quality assessment: A natural scene statistics approach in the dct domain,” IEEE transactions on Image Processing, vol. 21, no. 8, pp. 3339–3352, 2012.
-\bibitem{ref28} M.A. Saad, A. C. Bovik, and C. Charrier, "DCT Statistics Model-Based Blind Image Quality Assessment," Proceedings of the IEEE International Conference on image Processing (ICIP) , pp. 3093-3096, Sep. 2011.
-\bibitem{ref29} Fog accident in San Antonio TX. (2017, February 1st). Retrieved May 14, 2019, from: YouTube. 
+\setlength{\itemsep}{0pt}
+\bibitem{ref1} He, K., Sun, J., \& Tang, X. (2010). Single image haze removal using dark channel prior. IEEE transactions on pattern analysis and machine intelligence, 33(12), 2341-2353.
+\bibitem{ref2} McCartney, E. J. (1976). Optics of the atmosphere: scattering by molecules and particles. New York, John Wiley and Sons, Inc., 1976. 421 p.
+\bibitem{ref3} Narasimhan, S. G., \& Nayar, S. K. (2000). Chromatic framework for vision in bad weather. In Proceedings IEEE Conference on Computer Vision and Pattern Recognition. CVPR 2000 (Cat. No. PR00662) (Vol. 1, pp. 598-605). IEEE.
+\bibitem{ref4} Narasimhan, S. G., \& Nayar, S. K. (2002). Vision and the atmosphere. International journal of computer vision, 48(3), 233-254.
+\bibitem{ref5} Narasimhan, S. G., \& Nayar, S. K. (2003). Contrast restoration of weather degraded images. IEEE Transactions on Pattern Analysis \& Machine Intelligence, (6), 713-724.
+\bibitem{ref6} Nayar, S. K., \& Narasimhan, S. G. (1999). Vision in bad weather. In Proceedings of the Seventh IEEE International Conference on Computer Vision (Vol. 2, pp. 820-827). IEEE.
+\bibitem{ref7} Schechner, Y. Y., Narasimhan, S. G., \& Nayar, S. K. (2001, December). Instant dehazing of images using polarization. In CVPR (1) (pp. 325-332).
+\bibitem{ref8} Shwartz, S., Namer, E., \& Schechner, Y. Y. (2006). Blind haze separation. In 2006 IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR'06) (Vol. 2, pp. 1984-1991). IEEE.
+\bibitem{ref9} Kim, J. Y., Kim, L. S., \& Hwang, S. H. (2001). An advanced contrast enhancement using partially overlapped sub-block histogram equalization. IEEE transactions on circuits and systems for video technology, 11(4), 475-484.
+\bibitem{ref10} Parthasarathy, S., \& Sankaran, P. (2012, August). A RETINEX based haze removal method. In 2012 IEEE 7th International Conference on Industrial and Information Systems (ICIIS) (pp. 1-6). IEEE.
+\bibitem{ref11} Tan, R. T. (2008, June). Visibility in bad weather from a single image. In 2008 IEEE Conference on Computer Vision and Pattern Recognition (pp. 1-8). IEEE.
+\bibitem{ref12} Fattal, R. (2008). Single image dehazing. ACM transactions on graphics (TOG), 27(3), 72.
+\bibitem{ref13} He, K., Sun, J., \& Tang, X. (2012). Guided image filtering. IEEE transactions on pattern analysis and machine intelligence, 35(6), 1397-1409.
+\bibitem{ref14} Zhu, Q., Mai, J., \& Shao, L. (2015). A fast single image haze removal algorithm using color attenuation prior. IEEE transactions on image processing, 24(11), 3522-3533.
+\bibitem{ref15} Berman, D., \& Avidan, S. (2016). Non-local image dehazing. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 1674-1682).
+\bibitem{ref16} Cai, B., Xu, X., Jia, K., Qing, C., \& Tao, D. (2016). Dehazenet: An end-to-end system for single image haze removal. IEEE Transactions on Image Processing, 25(11), 5187-5198.
+\bibitem{ref17} Ren, W., Liu, S., Zhang, H., Pan, J., Cao, X., \& Yang, M. H. (2016, October). Single image dehazing via multi-scale convolutional neural networks. In European conference on computer vision (pp. 154-169). Springer, Cham.
+\bibitem{ref18} Li, B., Peng, X., Wang, Z., Xu, J., \& Feng, D. (2017). Aod-net: All-in-one dehazing network. In Proceedings of the IEEE International Conference on Computer Vision (pp. 4770-4778).
+\bibitem{ref19} Goodfellow, I. J., Warde-Farley, D., Mirza, M., Courville, A., \& Bengio, Y. (2013). Maxout networks. arXiv preprint arXiv:1302.4389.
+\bibitem{ref20} Tang, K., Yang, J., \& Wang, J. (2014). Investigating haze-relevant features in a learning framework for image dehazing. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 2995-3000).
+\bibitem{ref21} Li, B., Ren, W., Fu, D., Tao, D., Feng, D., Zeng, W., \& Wang, Z. (2019). Benchmarking single-image dehazing and beyond. IEEE Transactions on Image Processing, 28(1), 492-505.
+\bibitem{ref22} Silberman, N., Hoiem, D., Kohli, P., \& Fergus, R. (2012, October). Indoor segmentation and support inference from rgbd images. In European Conference on Computer Vision (pp. 746-760). Springer, Berlin, Heidelberg.
+\bibitem{ref23} Scharstein, D., \& Szeliski, R. (2003, June). High-accuracy stereo depth maps using structured light. In 2003 IEEE Computer Society Conference on Computer Vision and Pattern Recognition, 2003. Proceedings. (Vol. 1, pp. I-I). IEEE.
+\bibitem{ref24} Wang, Z., Bovik, A. C., Sheikh, H. R., \& Simoncelli, E. P. (2004). Image quality assessment: from error visibility to structural similarity. IEEE transactions on image processing, 13(4), 600-612.
+\bibitem{ref25} Liu, L., Liu, B., Huang, H., \& Bovik, A. C. (2014). No-reference image quality assessment based on spatial and spectral entropies. Signal Processing: Image Communication, 29(8), 856-863.
+\bibitem{ref26} Mittal, A., Moorthy, A. K., \& Bovik, A. C. (2012). No-reference image quality assessment in the spatial domain. IEEE Transactions on Image Processing, 21(12), 4695-4708.
+\bibitem{ref27} Fog accident in San Antonio TX. (2017, February 1st). Retrieved May 14, 2019, from: YouTube. 
 
 \end{thebibliography}
 
@@ -844,9 +845,7 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 
 \newpage
 
-\vspace{5cm}
 
-\textbf{fuck}
 
 \bigskip
 你好啊啊
@@ -864,6 +863,7 @@ what the hell is going on
 
 给公式、图片、表格、参考文献等等加超链接 it is just a label and a ref
 
+参考文献字体没调好！但在改了字体之后TOC里面的字体也会改！实在不行的办法就把正文里的字体改好，然后手动改.toc文件里面的参考文献字体！这是奇技淫巧
 
 
 
