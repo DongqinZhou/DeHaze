@@ -1,7 +1,7 @@
-\documentclass[a4paper, 12pt]{report}
+\documentclass[a4paper, 12pt, oneside]{report}
 \usepackage[UTF8]{ctex}
 \usepackage{graphicx} % for pictures
-\usepackage[margin=2cm]{geometry}
+\usepackage[left = 2.5cm, top = 2cm, bottom = 2cm, right = 2cm]{geometry}
 \usepackage{tocloft} % for tableofcontents
 \usepackage{float} % for pictures
 \usepackage{xeCJK}% for chinese input
@@ -15,6 +15,7 @@
 \usepackage{multirow} % for multirow in tables
 \usepackage{hyperref} % for hyperlink
 \usepackage[nottoc]{tocbibind} % add bibliography to toc
+\usepackage{fancyhdr}
 
 
 
@@ -32,7 +33,7 @@
 % 行距计算：baselineskip * baselinestretch，baselinestretch和linespread其实是差不多的，只是取值不一样，后者取1.3对应前者的1.5，1.6对应2；所以一般设置行距直接改后面的因子
 
 %%% new commands
-\newcommand{\mainheader}{东南大学 2019 届本科生毕业设计（论文）}
+\newcommand{\mainheader}{\fontsize{9}{10} \selectfont 东南大学 2019 届本科生毕业设计（论文）}
 \renewcommand{\contentsname}{\centerline{ \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 } }
 \renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
 \renewcommand{\cftdot}{$\cdot$}
@@ -220,6 +221,13 @@ KEY WORDS: \keywords
 \endgroup
 
 %%% 正文
+\pagestyle{fancy}
+\fancyfoot{}
+\fancyhead{}
+\fancyhead[C]{\mainheader}
+\fancyhead[R]{\fontsize{9}{10}\selectfont 第 \thepage 页}
+%\setlength{\headsep}{0.5cm}
+{\fontsize{12}{20}\selectfont % set line spacing for main text
 \pagenumbering{arabic}
 \titlecontentschapter   % 在这里才启用前面定义的目录章节格式，不在前面启用，因为摘要也算作章节，牛逼！
 \chapter{绪论\quad}
@@ -778,7 +786,7 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 从本文的研究可以知道，图像去雾可以应用到行车记录仪，更好的记录路面交通信息，也为将来完全基于视觉的自动驾驶系统做铺垫，还可以应用到交叉口视频监控，更清楚地捕捉交叉口的交通行为，更好地服务于交通管控。
 
 
-
+} % ends line spacing setting here
 
 
 
@@ -810,6 +818,9 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 %\end{References}
 
 \begin{thebibliography}{99}  
+\fontsize{10.5}{10.5} \selectfont
+% \setstretch{1.5} could be used to change the line spacing here, line spacing = baselineskip(10.5) * setstretch
+
 \setlength{\itemsep}{0pt}
 \bibitem{ref1} He, K., Sun, J., \& Tang, X. (2010). Single image haze removal using dark channel prior. IEEE transactions on pattern analysis and machine intelligence, 33(12), 2341-2353.
 \bibitem{ref2} McCartney, E. J. (1976). Optics of the atmosphere: scattering by molecules and particles. New York, John Wiley and Sons, Inc., 1976. 421 p.
