@@ -1,7 +1,7 @@
 \documentclass[a4paper, 12pt, oneside]{report}
 \usepackage[UTF8]{ctex}
 \usepackage{graphicx} % for pictures
-\usepackage[left = 2.5cm, top = 2cm, bottom = 2cm, right = 2cm]{geometry}
+\usepackage[left = 2.5cm, headsep = 0.5cm, headheight = 0.5cm, top = 2cm, bottom = 2cm, right = 2cm]{geometry}
 \usepackage{tocloft} % for tableofcontents
 \usepackage{float} % for pictures
 \usepackage{xeCJK}% for chinese input
@@ -16,6 +16,8 @@
 \usepackage{hyperref} % for hyperlink
 \usepackage[nottoc]{tocbibind} % add bibliography to toc
 \usepackage{fancyhdr}
+\usepackage{etoolbox}
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{}
 
 
 
@@ -106,7 +108,7 @@ KEY WORDS: \keywords
 %%% subsection格式
 \titleformat
 {\subsection} % command
-{\fontsize{12}{14} \selectfont \bfseries} % format
+{\fontsize{12}{14} \selectfont \bfseries } % format
 {\thesubsection \ } % label
 {0.1ex} % sep
 {
@@ -118,7 +120,7 @@ KEY WORDS: \keywords
 \newcommand{\titlecontentschapter}{%
 \titlecontents{chapter}[0pt]{\vspace{.5\baselineskip}\normalfont}
 {第\CJKnumber{\thecontentslabel}章\quad}{}
-{\hspace{.5em}\titlerule*[4pt]{$\cdot$}\contentspage}
+{\hspace{.5em}\titlerule*[5pt]{$\cdot$}\contentspage}
 }
 
 %%% 致谢
@@ -226,7 +228,7 @@ KEY WORDS: \keywords
 \fancyhead{}
 \fancyhead[C]{\mainheader}
 \fancyhead[R]{\fontsize{9}{10}\selectfont 第 \thepage 页}
-%\setlength{\headsep}{0.5cm}
+\setlength{\footskip}{0.75cm}
 {\fontsize{12}{20}\selectfont % set line spacing for main text
 \pagenumbering{arabic}
 \titlecontentschapter   % 在这里才启用前面定义的目录章节格式，不在前面启用，因为摘要也算作章节，牛逼！
@@ -861,9 +863,11 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 \bigskip
 你好啊啊
 
+\textbf{哈咯}
+
 {\heiti 你好啊啊，黑体}
 
-{\kaishu 你好啊啊，楷书}
+{\kaishu \bfseries 你好啊啊，楷书}
 
 %{\mlu 你好啊啊，细明体}
 
@@ -876,7 +880,7 @@ what the hell is going on
 
 参考文献字体没调好！但在改了字体之后TOC里面的字体也会改！实在不行的办法就把正文里的字体改好，然后手动改.toc文件里面的参考文献字体！这是奇技淫巧
 
-
+中文字体不能加粗，要装字体
 
 
 
