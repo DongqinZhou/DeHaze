@@ -15,9 +15,10 @@
 \usepackage{multirow} % for multirow in tables
 \usepackage{hyperref} % for hyperlink
 \usepackage[nottoc]{tocbibind} % add bibliography to toc
-\usepackage{fancyhdr}
+\usepackage{fancyhdr} % for header and footer
 \usepackage{etoolbox}
-\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{}
+\usepackage{xcolor}
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{} %reset chapter page style
 
 
 
@@ -705,45 +706,67 @@ SSIM({\bf x, y}) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy}+ C_2)}{(\mu_x^2 + \mu_
 
 此外，由于视觉的局部性，我们使用固定大小的窗口在图片上滑动，计算每个窗口的SSIM值，并使用高斯加权函数对每个窗口值进行加权平均以防止出现块状现象。
 
-\subsection{SSEQ\quad}
-SSEQ\cite{ref25}(Spatial-Spectral Entropy-based Quality)采用位置熵和谱熵来表征图片的结构性及像素之间的相关性。SSEQ方法首先计算图像中的位置熵特征以及谱熵特征，之后采用一个两步框架来分辨降质类型并评估图片质量。其中，SSEQ方法使用支持向量机进行降质类型预测，使用支持向量回归用于图片质量评估。本方法由Liu等人实现并公开。SSEQ指标值通常在0-100之间，0表示图片质量最高。
-
-在ubuntu中安装libsvm for matlab是很简单的，在Windows中很复杂，安装好之后关键是少了个ABI，按这两个网址解决\url{https://alexxunxu.wordpress.com/2018/01/15/version-cxxabi_1-3-8-not-found/} and \url{https://www.mathworks.com/matlabcentral/answers/329796-issue-with-libstdc-so-6}
-
 \subsection{BRISQUE\quad}
-To do here\cite{ref26}.
+自然图片有一个统计特征，即正则化的图像像素值是符合正态分布的。图片受到降质影响时，便会偏离这一统计特征，也即失真。因此，学者们提出可以设计算法来测量这一统计特征的偏离程度，以量化该图片受到的降质影响，进而评估图像质量。
 
-按这个网址\url{https://stackoverflow.com/questions/12877167/how-do-i-install-libsvm-for-python-under-windows-7}安装好libsvm for python，按brisque的readme直接算就可以。要注意，使用brisque时的时候要么需要close project，要么需要把文件什么的放到project路径下
+基于此，Mittal\cite{ref25}等人提出了BRISQUE方法。该方法先使用MSCN(Mean Subtracted Contrast Normalization)对图像进行正则化处理
+\begin{equation} \label{eq:4.11}
+\hat{I}(i, j) = \frac{I(i, j) - \mu(i, j)}{\sigma(i, j) + C}
+\end{equation}
+其中，$i = 1, 2, \cdots, M, j = 1, 2, \cdots, N$，$M$和$N$为图像的长和宽，$I(i, j)$为该图像像素值，$\mu(i, j)$为局部均值，$\sigma(i, j)$为局部标准差，$C$为常数，取作1，以防止分母过小。记计算出的$\hat{I}$为原图像对应的MSCN图像。
+
+Mittal等人发现，降质图像与自然图像中像素点的相邻关系也不一样，因此他们提出分四个方向计算MSCN图像间的两两乘积，分别为水平方向(H)，竖直方向(V)，左对角方向(D1)，右对角方向(D2)，得到四张相关性图像。
+\begin{equation} \label{eq:4.12}
+\begin{aligned}
+H(i, j) = \hat{I}(i, j)\hat{I}(i, j + 1) \\
+V(i, j) = \hat{I}(i, j)\hat{I}(i + 1, j) \\
+D1(i, j) = \hat{I}(i, j)\hat{I}(i + 1, j + 1) \\
+D2(i, j) = \hat{I}(i, j)\hat{I}(i + 1, j - 1) 
+\end{aligned}
+\end{equation}
+
+之后，Mittal等人使用广义高斯分布拟合MSCN图像，得到2个特征，一个表征形状，一个表征方差；使用非对称广义高斯分布拟合四张相关性图像，共得到16个特征。其中，每张相关图像对应4个特征：形状、均值、左侧方差、右侧方差。考虑到自然图像的多尺度性，他们将原图像尺寸重置为原来的一半，并重复上述操作，共获取36个特征。
+
+Mittal等人使用支持向量回归(SVR)拟合了上述计算得到的36个特征和其对应的主观评分间的映射关系。在对未知图片进行质量评价时，可以直接使用训练好的SVR模型，对提取出的特征进行回归，以得到图像质量评估得分。BRISQUE得分在0-100之间，得分越低，表明所受降质影响越小，因而图片质量越好。
+
+本方法是直接在空域中进行计算的，不需要将图片映射到DCT域。此外，本方法时间复杂度很低，能够应对实时的图像质量评估。
+
+\subsection{SSEQ\quad}
+与BRISQUE类似，SSEQ\cite{ref26}(Spatial-Spectral Entropy-based Quality)也有很好的计算效率，且和人眼评估较为一致。不同的是，本方法在曲波域中计算NSS(Natural Scene Statistics)特征以及质量得分。SSEQ采用位置熵和谱熵来表征图片的结构性及像素之间的相关性。该方法首先计算图像中的位置熵特征以及谱熵特征，之后采用一个两步框架来分辨降质类型并评估图片质量。其中，SSEQ方法使用支持向量机进行降质类型预测，使用支持向量回归用于图片质量评估。本方法由Liu等人实现并公开。SSEQ指标值通常在0-100之间，得分越低表示图片质量越好。
 
 \section{算法评估\quad}
-本节我们对上述介绍的算法进行评估。我们从SOTS数据集中indoor、outdoor子集各随机采样50张共100张含雾图片及其对应无雾图片对各算法进行测试，分析对比由算法计算出的各指标，之后观察各算法在实拍图片上的效果，计算指标。最后，我们将各算法应用于行车记录仪拍摄视频，以观察应用效果。
+本节我们从四个方面对上述介绍的算法进行评估：基于合成图片，基于实际图片，基于视频，以及去雾速率对比。
 
 本论文中，所有算法均用python/keras实现，在同一台Linux机器上运行，机器配置为Intel(R) Core(TM) i7-6700k 4GHz, 24GB RAM，Nvidia GeForce GTX 1080 Ti GPU, 8G显存。
 
 \subsection{基于合成图片的评价\quad}
-我们首先比较DCP、DehazeNet、MSCNN、AOD-Net在SOTS数据集上的去雾效果，评价指标为PSNR、SSIM、SSEQ、BRISQUE。各算法得分如表4.1所示。{\Large 注意这里SSEQ月低越好}
+我们从SOTS数据集中indoor、outdoor子集各随机采样50张共100张含雾图片及其对应无雾图片对各算法进行测试。我们首先比较DCP、DehazeNet、MSCNN、AOD-Net在SOTS数据集上的去雾效果，评价指标为PSNR、SSIM、SSEQ、BRISQUE。各算法得分如表\ref{tab:4.1}所示。
 
 \begin{table}[htbp]
   \centering
   \caption{合成图片测试算法得分表}
-    \begin{tabular}{c|c|c|c|c|c}
+    \begin{tabular}{c|c|c|c|c}
     \hline
-         & DCP    & DehazeNet  & MSCNN    & AOD-Net & DCP-2 \\
+         	&	DCP		&	DehazeNet	&	MSCNN	&	AOD-Net	\\
     \hline
-    	PSNR	 & 17.73    & 13.62 & 16.14    & 19.55 & 19.71\\
+    PSNR	&	17.73	& 	13.62		&	16.14	&	{\color{cyan}19.55}	\\
 	\hline
-     SSIM     & 0.85 & 0.75 & 0.72     & 0.85  &0.87 \\
+    SSIM	&	{\color{cyan}0.85}	&	0.75		&	0.72	&	{\color{cyan}0.85}	\\
 	\hline
-    SSEQ & 27.67 & 30.11 &  33.44   & 27.64 & 29.25\\
+    SSEQ	&	27.67	&	30.11		&	33.44	&	{\color{cyan}27.64}	\\
     \hline
-     BRISQUE     &  39.16     &    39.64   &  44.44 & 41.23  &  41.85 \\
+    BRISQUE	&	{\color{cyan}39.16}	&	39.64		& 	44.44	& 	41.23  	\\
      \hline
   
     \end{tabular}%
   \label{tab:4.1}%
 \end{table}%
-从表4.1可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时我们也注意到，虽然DehazeNet和MSCNN训练时都是最小化预测透射率和实际透射率之间的误差，但MSCNN是直接最小化两张透射图之间的误差，因而预测得到的透射图与实际投射图更接近，由此计算出的去雾图片与原图误差更小，所以MSCNN相比DehazeNet具有更高的PSNR得分。同理，DehazeNet比MSCNN更强调图片的内部结构，采用了划分图片块的方法训练网络并对含雾图片去雾，因此DehazeNet比MSCNN取得更高的结构相似性得分是合理的。除此之外，我们应该注意到，在本测试集上，暗通道法取得了非常显著的效果，全面超过DehazeNet和MSCNN。我们检查测试集发现，从SOTS中随机采样得到的图片中，含天空区域的图片较少，而DCP非常适用于不含天空区域或者不含与天空具有类似颜色物体的图片的去雾，这解释了为什么在这一测试集上该方法能取得如此优越的效果。
+从表4.1可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义(\ref{eq:4.5})中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时，AOD-Net将$t$和$A$融合为一个变量$K$，实际上是在训练过程中隐式地估计出大气光值，而这一估计是比根据透射图估计大气光值更准确的，因此与原无雾图片亮度值更相似，这与SSIM中亮度相似性的测量\ref{eq:4.7}是吻合的，因而AOD-Net也具有较高的SSIM得分。
 
+我们还注意到，虽然DehazeNet和MSCNN训练时都是最小化预测透射率和实际透射率之间的误差，但MSCNN是直接最小化两张透射图之间的误差，因而预测得到的透射图与实际投射图更接近，由此计算出的去雾图片与原图误差更小，所以MSCNN相比DehazeNet具有更高的PSNR得分。同理，DehazeNet比MSCNN更强调图片的内部结构，采用了划分图片块的方法训练网络并对含雾图片去雾，因此DehazeNet比MSCNN取得更高的结构相似性得分是合理的。
+
+除此之外，我们应该注意到，在本测试集上，暗通道法取得了非常显著的效果，全面超过DehazeNet和MSCNN。我们检查测试集发现，从SOTS中随机采样得到的图片中，含大量天空区域的图片较少，并且有一半的测试图片是室内拍摄并合成的。DCP非常适用于不含天空区域或者不含与天空具有类似颜色物体的图片的去雾，这解释了为什么在这一测试集上该方法能取得如此优越的效果。
+{\Large 这里这里啦啦啦}
 就无参考指标而言，to do here. 全参考指标和无参考指标对去雾算法评价的不一致，也表明了目前研究的困境，即现行的客观图像质量评估方法不能很好地适用于去雾图像，NR-IQA仍是一个非常困难的问题。
 
 图4.1（图片左边两张，右边四张）展示了各算法在不含天空区域图片上的去雾表现，可以看见 to do here。图4.2展示了各算法在含天空区域图片上的去雾效果，可以看见，DCP方法在去雾时会对天空区域造成较大失真，而其他方法to do here.
@@ -870,8 +893,8 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 \bibitem{ref22} Silberman, N., Hoiem, D., Kohli, P., \& Fergus, R. (2012, October). Indoor segmentation and support inference from rgbd images. In European Conference on Computer Vision (pp. 746-760). Springer, Berlin, Heidelberg.
 \bibitem{ref23} Scharstein, D., \& Szeliski, R. (2003, June). High-accuracy stereo depth maps using structured light. In 2003 IEEE Computer Society Conference on Computer Vision and Pattern Recognition, 2003. Proceedings. (Vol. 1, pp. I-I). IEEE.
 \bibitem{ref24} Wang, Z., Bovik, A. C., Sheikh, H. R., \& Simoncelli, E. P. (2004). Image quality assessment: from error visibility to structural similarity. IEEE transactions on image processing, 13(4), 600-612.
-\bibitem{ref25} Liu, L., Liu, B., Huang, H., \& Bovik, A. C. (2014). No-reference image quality assessment based on spatial and spectral entropies. Signal Processing: Image Communication, 29(8), 856-863.
-\bibitem{ref26} Mittal, A., Moorthy, A. K., \& Bovik, A. C. (2012). No-reference image quality assessment in the spatial domain. IEEE Transactions on Image Processing, 21(12), 4695-4708.
+\bibitem{ref25} Mittal, A., Moorthy, A. K., \& Bovik, A. C. (2012). No-reference image quality assessment in the spatial domain. IEEE Transactions on Image Processing, 21(12), 4695-4708.
+\bibitem{ref26} Liu, L., Liu, B., Huang, H., \& Bovik, A. C. (2014). No-reference image quality assessment based on spatial and spectral entropies. Signal Processing: Image Communication, 29(8), 856-863.
 \bibitem{ref27} Fog accident in San Antonio TX. (2017, February 1st). Retrieved May 14, 2019, from: YouTube. 
 
 \end{thebibliography}
@@ -906,10 +929,12 @@ what the hell is going on
 
 为什么使用Maxout?
 
+在ubuntu中安装libsvm for matlab是很简单的，在Windows中很复杂，安装好之后关键是少了个ABI，按这两个网址解决\url{https://alexxunxu.wordpress.com/2018/01/15/version-cxxabi_1-3-8-not-found/} and \url{https://www.mathworks.com/matlabcentral/answers/329796-issue-with-libstdc-so-6}
 
 
+按这个网址\url{https://stackoverflow.com/questions/12877167/how-do-i-install-libsvm-for-python-under-windows-7}安装好libsvm for python，按brisque的readme直接算就可以。要注意，使用brisque时的时候要么需要close project，要么需要把文件什么的放到project路径下
 
-
+brisque \url{https://www.learnopencv.com/image-quality-assessment-brisque/}
 
 
 
