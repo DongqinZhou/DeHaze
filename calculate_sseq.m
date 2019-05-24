@@ -1,6 +1,6 @@
 clc;
 clear;
-path = '/home/jianan/Incoming/dongqin/Test_RTTS_Results/Real_MSCNN';
+path = ''; % path where the images are stored
 files = dir(path);
 nb_files = size(files, 1);
 nb_images = nb_files - 2;
