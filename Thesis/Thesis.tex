@@ -1,6 +1,8 @@
 \documentclass[a4paper, 12pt, oneside]{report}
 \usepackage[UTF8]{ctex}
 \usepackage{graphicx} % for pictures
+\usepackage{subcaption} % for caption in multi-figures
+\usepackage{subfig}
 \usepackage[left = 2.5cm, headsep = 0.5cm, headheight = 0.5cm, top = 2cm, bottom = 2cm, right = 2cm]{geometry}
 \usepackage{tocloft} % for tableofcontents
 \usepackage{float} % for pictures
@@ -761,19 +763,146 @@ Mittal等人使用支持向量回归(SVR)拟合了上述计算得到的36个特�
     \end{tabular}%
   \label{tab:4.1}%
 \end{table}%
-从表4.1可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义(\ref{eq:4.5})中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时，AOD-Net将$t$和$A$融合为一个变量$K$，实际上是在训练过程中隐式地估计出大气光值，而这一估计是比根据透射图估计大气光值更准确的，因此与原无雾图片亮度值更相似，这与SSIM中亮度相似性的测量\ref{eq:4.7}是吻合的，因而AOD-Net也具有较高的SSIM得分。
+从表\ref{tab:4.1}可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义(\ref{eq:4.5})中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时，AOD-Net将$t$和$A$融合为一个变量$K$，实际上是在训练过程中隐式地估计出大气光值，而这一估计是比根据透射图估计大气光值更准确的，因此与原无雾图片亮度值更相似，这与SSIM中亮度相似性的测量\ref{eq:4.7}是吻合的，因而AOD-Net也具有较高的SSIM得分。
 
 我们还注意到，虽然DehazeNet和MSCNN训练时都是最小化预测透射率和实际透射率之间的误差，但MSCNN是直接最小化两张透射图之间的误差，因而预测得到的透射图与实际投射图更接近，由此计算出的去雾图片与原图误差更小，所以MSCNN相比DehazeNet具有更高的PSNR得分。同理，DehazeNet比MSCNN更强调图片的内部结构，采用了划分图片块的方法训练网络并对含雾图片去雾，因此DehazeNet比MSCNN取得更高的结构相似性得分是合理的。
 
 除此之外，我们应该注意到，在本测试集上，暗通道法取得了非常显著的效果，全面超过DehazeNet和MSCNN。我们检查测试集发现，从SOTS中随机采样得到的图片中，含大量天空区域的图片较少，并且有一半的测试图片是室内拍摄并合成的。DCP非常适用于不含天空区域或者不含与天空具有类似颜色物体的图片的去雾，这解释了为什么在这一测试集上该方法能取得如此优越的效果。
-{\Large 这里这里啦啦啦}
-就无参考指标而言，to do here. 全参考指标和无参考指标对去雾算法评价的不一致，也表明了目前研究的困境，即现行的客观图像质量评估方法不能很好地适用于去雾图像，NR-IQA仍是一个非常困难的问题。
 
-图4.1（图片左边两张，右边四张）展示了各算法在不含天空区域图片上的去雾表现，可以看见 to do here。图4.2展示了各算法在含天空区域图片上的去雾效果，可以看见，DCP方法在去雾时会对天空区域造成较大失真，而其他方法to do here.
+然而，就无参考指标而言，四种算法得分便不那么一致了。AOD-Net取得了最好的SSEQ得分，但其BRISQUE得分却不理想，这是由于AOD-Net在设计时较少考虑到图片中像素点之间的相关关系以及其像素值的统计特征，更注重于层与层之间的联系。MSCNN两个全参考指标得分均不理想，这也许是由于该网络使用的双层结构与人类视觉系统原理不符，因为人眼在查看图片时不会分两步感知景物深度，进而感知透射图。相反，由于人眼观察图片时会潜意识将图片结构化，而DehazeNet的设计是符合这一过程的，所以该网络相比于MSCNN能取得更好的结果。此外，可以观察到，暗通道法取得了最好的BRISQUE得分，而其SSEQ得分也与最佳得分非常接近。这一结果也是可以想见的，由于暗通道就是在人眼大量观察下总结提出的，而暗通道法去雾的步骤比较符合人眼预期（如大气光值的估计），因而暗通道法能在无参考指标上取得优异的得分。
 
-为了进一步研究暗通道法的效果及其对天空区域的去雾效果，我们对He提出的暗通道法进行微调，我们设置天空区域像素最大值为220，设置透射率最小值为0.2，将此微调后的暗通道法记为DCP-2.图4.3（这里用实际图片就行）展示了DCP和DCP-2的去雾效果对比图。两者对比我们发现，调整后的暗通道法对天空区域处理更接近实际情况，而去雾效果也比原方法好。对此，我们深入研究发现，原方法估计的大气光值往往较高，有的甚至达到了255，也即像素最高值，对应纯白色。但现实生活中，天空并不是纯白色，即便在浓雾天气其像素值也不会达到255，因此我们微调后，天空区域的计算更接近实际值，也更符合人的视觉系统。同时，原方法中设置透射率最小值为0.1，但未给出具体原因，因此我们有理由认为最小透射率设置为0.1时保留的景物信息太少而导致去雾效果不理想。适当上调透射率最小阈值后，图片的去雾效果更好，这也证实了我们的猜想。
+全参考指标和无参考指标对去雾算法评价的不一致，也表明了目前研究的困境，即现行的客观图像质量评估方法不能很好地适用于去雾图像，重建图像质量评估仍是一个非常困难的问题。
 
-另外，我们发现，各算法在浓雾环境下的去雾效果均不理想，因为浓雾情况下，图片中含有的景物信息过少，而去雾是一个图像复原的过程，我们没有足够的信息来复原无雾图像，如图4.4所示。
+\begin{figure}[htbp]
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{62-Hazy}
+  \caption{Hazy}
+  \label{fig:sfig1}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{62-DCP}
+  \caption{DCP}
+  \label{fig:sfig2}
+\end{subfigure}
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{62-DehazeNet}
+  \caption{DehazeNet}
+  \label{fig:sfig3}
+\end{subfigure} \\
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{62-Clear}
+  \caption{Clear}
+  \label{fig:sfig4}
+\end{subfigure}
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{62-MSCNN}
+  \caption{MSCNN}
+  \label{fig:sfig5}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{62-AOD}
+  \caption{AOD-Net}
+  \label{fig:sfig6}
+\end{subfigure}
+\caption{无天空区域去雾效果示意}
+\label{fig:4.1}
+\end{figure}
+
+图\ref{fig:4.1}展示了各算法在不含天空区域图片上的去雾表现，可以看见，无天空区域下暗通道法能取得非常卓越的去雾效果，某些区域去雾效果甚至超越了AOD-Net，如图中上部分建筑。但我们也注意到，DCP方法会对图片造成一定的失真，如图中地面的颜色，在这一方面AOD-Net更具优越性。由于MSCNN网络结构与人眼视觉系统过程不符，因此去雾效果在人眼看来不理想，这一结果是与表\ref{tab:4.1}相符的。DehazeNet保留了大部分雾没能去除，离AOD-Net和DCP相差甚远。
+
+\begin{figure}[htbp]
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{9-Hazy}
+  \caption{Hazy}
+  \label{fig:sfig11}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{9-DCP}
+  \caption{DCP}
+  \label{fig:sfig22}
+\end{subfigure}
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{9-DehazeNet}
+  \caption{DehazeNet}
+  \label{fig:sfig33}
+\end{subfigure} \\
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{9-Clear}
+  \caption{Clear}
+  \label{fig:sfig44}
+\end{subfigure}
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{9-MSCNN}
+  \caption{MSCNN}
+  \label{fig:sfig55}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{9-AOD}
+  \caption{AOD-Net}
+  \label{fig:sfig66}
+\end{subfigure}
+\caption{含天空区域去雾效果示意}
+\label{fig:4.2}
+\end{figure}
+
+图\ref{fig:4.2}展示了各算法在含天空区域图片上的去雾效果，可以看见，DCP方法在去雾时会对天空区域造成较大失真，但其他区域的去雾效果较好。DehazeNet依旧没能很好的去雾，MSCNN计算得到的天空亮度值太大，导致云层失真。AOD-Net有一定的去雾效果，但整体保留了部分雾，因而去雾图片亮度值更高。
+
+\begin{figure}[htbp]
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{73-Hazy}
+  \caption{Hazy}
+  \label{fig:sfig111}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{73-DCP}
+  \caption{DCP}
+  \label{fig:sfig222}
+\end{subfigure} \\
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{73-Clear}
+  \caption{Clear}
+  \label{fig:sfig333}
+\end{subfigure} 
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{73-DCP-1}
+  \caption{DCP-2}
+  \label{fig:sfig444}
+\end{subfigure}
+\caption{DCP与DCP-2去雾效果示意}
+\label{fig:4.3}
+\end{figure}
+
+为了进一步研究暗通道法的效果及其对天空区域的去雾效果，我们对He提出的暗通道法进行微调，我们设置天空区域像素最大值为220，设置透射率最小值为0.2，将此微调后的暗通道法记为DCP-2.图\ref{fig:4.3}展示了DCP和DCP-2的去雾效果对比图。两者对比我们发现，调整后的暗通道法对天空区域处理更接近实际情况，而去雾效果也比原方法好。对此，我们深入研究发现，原方法估计的大气光值往往较高，有的甚至达到了255，也即像素最高值，对应纯白色。但现实生活中，天空并不是纯白色，即便在浓雾天气其像素值也不会达到255，因此我们微调后，天空区域的计算更接近实际值，也更符合人的视觉系统。同时，原方法中设置透射率最小值为0.1，但未给出具体原因，因此我们有理由认为最小透射率设置为0.1时保留的景物信息太少而导致去雾效果不理想。适当上调透射率最小阈值后，图片的去雾效果更好，这也证实了我们的猜想。
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{ccc}
+\multirow{2}[2.5]{*}{\subfloat[D]{\includegraphics[width=2cm,height=4cm]{22-Hazy}}} &
+\subfloat[E]{\includegraphics{22-DCP}} & 
+\subfloat[F]{\includegraphics{22-DehazeNet}}\\
+\subfloat[G]{\includegraphics{22-MSCNN}}&
+\subfloat[H]{\includegraphics{22-AOD}} \\
+\end{tabular}
+\caption{浓雾去雾效果示意}
+\end{figure}
+
+另外，我们发现，各算法在浓雾环境下的去雾效果均不理想，因为浓雾情况下，图片中含有的景物信息过少，而去雾是一个图像复原的过程，我们没有足够的信息来复原无雾图像，如图\ref{fig:4.4}所示。
 
 \subsection{基于实际图片的评价\quad}
 我们通过实地拍摄及在RTTS数据集中随机采样，共选取了100张实际的含雾图片。图4.5，4.6显示了四种算法在实际图片上的去雾效果。可以看见to do here.
@@ -936,7 +1065,7 @@ what the hell is going on
 
 brisque \url{https://www.learnopencv.com/image-quality-assessment-brisque/}
 
-
+其他几张图改成subfigure的形式 \url{https://tex.stackexchange.com/questions/119905/insert-multiple-figures-in-latex}
 
 
 
