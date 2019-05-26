@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import random
 import os
+import math
 import keras.backend as K
 
 from keras.layers import Conv2D, Input, concatenate, MaxPooling2D, Activation
@@ -28,7 +29,7 @@ def load_data(data_files,label_files, patch_size = 16):
             width = width // patch_size * patch_size
         
         hazy_image = cv2.resize(hazy_image, (width, height), interpolation = cv2.INTER_AREA)
-        label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]
+        label_file = label_files[label_files.index(data_file.partition('.')[0][:-2] + data_file[-4:])]  #This is subject to modification depending on the file names of data_files.
         trans_map = cv2.imread(label_path + "/" + label_file, 0)
         trans_map = cv2.resize(trans_map, (width, height), interpolation = cv2.INTER_AREA)
         for i in random.sample(range(height // patch_size), height // patch_size):
@@ -38,7 +39,7 @@ def load_data(data_files,label_files, patch_size = 16):
                 data.append(hazy_patch)
                 label.append(np.mean(trans_patch))
     
-    data = np.asarray(data) # whether to normalize?
+    data = np.asarray(data)  / 255.0
     label = np.asarray(label).reshape(len(label), 1, 1, 1) / 255.0
     
     return data, label
@@ -52,6 +53,9 @@ def get_batch(data_files, label_files, batch_size):
             yield x, y
 
 def BReLu(x):
+    '''
+    a self-defined activation function
+    '''
     return K.minimum(K.maximum(0., x), 1.)
 
 def get_airlight(hazy_image, trans_map, p):
@@ -63,7 +67,6 @@ def get_airlight(hazy_image, trans_map, p):
     return np.max(flat_image.take(searchidx, axis=0), axis = 0)
 
 def get_radiance(hazy_image, airlight, trans_map, L):
-
     tiledt = np.ones_like(hazy_image) * 0.1
     tiledt[:,:,0] = tiledt[:,:,1] = tiledt[:,:,2] = trans_map
     min_t = np.ones_like(hazy_image) * 0.2
@@ -71,7 +74,7 @@ def get_radiance(hazy_image, airlight, trans_map, L):
     
     hazy_image = hazy_image.astype(int)
     airlight = airlight.astype(int)
-	airlight = np.minimum(airlight, 220)
+    airlight = np.minimum(airlight, 220)
     
     clear_ = (hazy_image - airlight) / t + airlight
     clear_image = np.maximum(np.minimum(clear_, L-1), 0).astype(np.uint8)
@@ -90,9 +93,6 @@ class MaxoutConv2D(Layer):
     output_dim: final number of filters after Maxout
     nb_features: number of filter maps to take the Maxout over; default=4
     padding: 'same' or 'valid'
-    first_layer: True if x is the input_tensor
-    input_shape: Required if first_layer=True
-    
     """
     
     def __init__(self, kernel_size, output_dim, nb_features=4, padding='valid', use_bias = True, **kwargs):
@@ -139,8 +139,8 @@ class MaxoutConv2D(Layer):
     
 def DehazeNet(): #### carefully inspect the weights! this and all other networks!
     get_custom_objects().update({'BReLU':Activation(BReLu)})
-    input_image = Input(shape = (None, None, 3), name = 'input')
     
+    input_image = Input(shape = (None, None, 3), name = 'input')
     convmax = MaxoutConv2D(kernel_size = (5, 5), output_dim = 4, nb_features = 16, padding = 'valid', use_bias = False, name='convmax')(input_image)
     conv1 = Conv2D(16, (3, 3), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv1')(convmax)
     conv2 = Conv2D(16, (5, 5), padding = 'same', use_bias = False, kernel_initializer=initializers.random_normal(mean=0.,stddev=0.001),name='conv2')(convmax)
@@ -165,31 +165,19 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
     dehazenet = DehazeNet()
     dehazenet.summary()
     
-    sgd = optimizers.SGD(lr = lr, momentum = momentum, decay=decay, nesterov=False)
+    sgd = optimizers.SGD(lr, momentum, decay, nesterov=False)
     dehazenet.compile(optimizer = sgd, loss = 'mean_squared_error')
-    
-    p_train = p_train
-    batch_size = batch_size
-    nb_epochs = nb_epochs
                         
-    data_files = os.listdir(data_path) # seems os reads files in an arbitrary order
+    data_files = os.listdir(data_path) 
     label_files = os.listdir(label_path)    
     
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files) 
-    data_files = data_files[0:10000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
     
-    if len(x_train) % batch_size == 0:
-        steps_per_epoch = len(x_train) // batch_size
-    else:
-        steps_per_epoch = len(x_train) // batch_size + 1
-        
-    if len(x_val) % batch_size == 0:
-        steps = len(x_val) // batch_size
-    else:
-        steps = len(x_val) // batch_size + 1
+    steps_per_epoch = math.ceil(len(x_train) / batch_size)
+    steps = math.ceil(len(x_val) / batch_size)
         
     reduce_lr = LearningRateScheduler(scheduler)
    
@@ -198,7 +186,7 @@ def train_model(data_path, label_path, weights_path, lr=0.005, momentum=0.9, dec
                         get_batch(x_val, label_files, batch_size), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0, callbacks = [reduce_lr])
-    dehazenet.save_weights(weights_path + '/dehazenet_weights.h5')
+    dehazenet.save_weights(weights_path + '/dehazenet.h5')
     print('dehazenet generated')
     
     return weights_path + '/dehazenet_weights.h5'
@@ -243,16 +231,28 @@ def usemodel(dehazenet, hazy_image):
 
 if __name__ =="__main__":
     '''
-    Possible modifications:
-        normalize the image patchs
-        increase batch size
-    '''
-    data_path = ''
-    label_path = ''                      
-    weights_path = ''
-    im_path = ''
+    Implementation of DehazeNet using keras. https://arxiv.org/pdf/1601.07661.pdf
     
-    weights = train_model(data_path, label_path, weights_path)
-    dehazenet = Load_model(weights_path)
+    Usage:
+        1. modify the paths
+        2. potentially change a line in load_data (see above)
+        3. run this file
+        4. visualize the images using:
+            cv2.imshow('nameofwindow', hazy_image)
+            cv2.imshow('nameofwindow', clear_image)
+            cv2.waitKey(0)
+            
+    Parameter tuning:
+        Changeable values are given in default, namely, lr, batch_size, p_train, nb_epochs etc.
+    '''
+    data_path = '/home/jianan/Incoming/dongqin/ITS_eg/haze'
+    label_path = '/home/jianan/Incoming/dongqin/ITS_eg/trans'                      
+    weights_path = '/home/jianan/Incoming/dongqin/ITS_eg'
+    dehazenet_weights = train_model(data_path, label_path, weights_path)
+    '''
+    im_path = ''
+    dehazenet = Load_model(dehazenet_weights)
+    
     im = cv2.imread(im_path)
     im_dehaze = usemodel(dehazenet, im)
+    '''

@@ -27,12 +27,12 @@ def SSIM(im1, im2):
         im1 = cv2.resize(im1, (im2.shape[1], im2.shape[0]), interpolation = cv2.INTER_AREA)
     return ssim(im1, im2, multichannel = True, gaussian_weights = True)
 
-### Video processing
 def extract_video_frames(video_path, video_frames_path):
     '''
-    Read a video file, and store them into a folder, while returning all frames of this video
-    video_path: file path, something like .../XXX.mp4
-    video_frames_path: folder path, something like .../video_1_frames
+    Break a video into discrete frames. Return the frames and store them into a folder.
+    
+    video_path:         file path
+    video_frames_path:  folder path
     '''
     cap = cv2.VideoCapture(video_path)
     frames = []
@@ -56,11 +56,12 @@ def takenum(elem):
 
 def frame_to_video(video_path, frame_path, fps = 30, shape = (1280, 720)):
     '''
-    Produce a video from some images
-    video_path: file path, something like .../XXX.avi
-    frame_path: folder path, something lke .../video_3_frames
+    Generate a video from frames.
+    
+    video_path: file path
+    frame_path: folder path
     '''
-    fps = fps
+    
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     video_writer = cv2.VideoWriter(video_path, fourcc, fps, shape)
     image_files = os.listdir(frame_path)
@@ -73,68 +74,56 @@ def frame_to_video(video_path, frame_path, fps = 30, shape = (1280, 720)):
     video_writer.release()
     
 def video_dehaze(fps, width, height):
-    video_path = '/home/jianan/Incoming/dongqin/Dashcam Captures Shocking Motorway Pile-Up In Fog.mp4'
-    video_frames_path = '/home/jianan/Incoming/dongqin/video_2_frames'
-    #DCP_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DCP_dehazed_frames_path'
-    AOD_dehazed_frames_path = '/home/jianan/Incoming/dongqin/AOD_dehazed_frames_path_2'
-    #MSCNN_dehazed_frames_path = '/home/jianan/Incoming/dongqin/MSCNN_dehazed_frames_path'
-    #DehazeNet_dehazed_frames_path = '/home/jianan/Incoming/dongqin/DehazeNet_dehazed_frames_path'
-    dehazed_videos_path = '/home/jianan/Incoming/dongqin'
+    '''
+    Read a video from video_path, store video frames in video_frames_path; dehaze frames and store dehazed frames in AOD_dehazed_frames_path; then generate a dehazed video and store it in dehazed_video_path.
     
-    AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
-    #MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
-    #DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    video path :                file path
+    video_frames_path :         folder path
+    AOD_dehazed_frames_path :   folder path
+    dehazed_video_path :       file path
+    '''
+    video_path = ''
+    video_frames_path = ''
+    AOD_dehazed_frames_path = ''
+    dehazed_video_path = ''
+    AOD_Net_Weights = ''
     
     model_aod = load_aodnet(AOD_Net_Weights)
-    #model_dehazenet = load_dehazenet(DehazeNet_Weights)
-    #model_mscnn = load_mscnn(MSCNN_Weights)
     
     hazy_images = extract_video_frames(video_path, video_frames_path)
     image_count = 1
     
     for hazy_image in hazy_images:
-        #DCP_Dehazed = DCP_2(hazy_image)
         AOD_Dehazed = AOD_Net(model_aod, hazy_image)
-        #DehazeNet_Dehazed = DehazeNet(model_dehazenet, hazy_image)
-        #MSCNN_Dehazed = MSCNN(model_mscnn, hazy_image)
-        
-        #cv2.imwrite(video_frames_path + '/Hazy_%d.jpg' % image_count, hazy_image)
-        #cv2.imwrite(DCP_dehazed_frames_path + '/DCP_%d.jpg' % image_count, DCP_Dehazed)
         cv2.imwrite(AOD_dehazed_frames_path + '/AOD_%d.jpg' % image_count, AOD_Dehazed)
-        #cv2.imwrite(MSCNN_dehazed_frames_path + '/MSCNN_%d.jpg' % image_count, MSCNN_Dehazed)
-        #cv2.imwrite(DehazeNet_dehazed_frames_path + '/DehazeNet_%d.jpg' % image_count, DehazeNet_Dehazed)
         
         image_count += 1
     
-    #frame_to_video(dehazed_videos_path + '/DCP_Dehazed_Video.avi', DCP_dehazed_frames_path, fps = fps, shape = (width, height))
-    frame_to_video(dehazed_videos_path + '/AOD_Dehazed_Video_2.avi', AOD_dehazed_frames_path, fps = fps, shape = (width, height))
-    #frame_to_video(dehazed_videos_path + '/MSCNN_Dehazed_Video.avi', MSCNN_dehazed_frames_path, fps = fps, shape = (width, height))
-    #frame_to_video(dehazed_videos_path + '/DehazeNet_Dehazed_Video.avi', DehazeNet_dehazed_frames_path, fps = fps, shape = (width, height))
-    
-
+    frame_to_video(dehazed_video_path + '/AOD_Dehazed_Video.avi', AOD_dehazed_frames_path, fps, shape = (width, height))
+  
 def compute_psnr_ssim():
     '''
     computes PSNR and SSIM for DCP, AOD, DehazeNet, MSCNN
-    stores the dehazed images to a file for calculation of SSEQ and BLIINDS-II
+    stores the dehazed images to a file for calculation of SSEQ and BRISQUE
     '''
-    testdata_path = '/home/jianan/Incoming/dongqin/testdata'
-    testlabel_path = '/home/jianan/Incoming/dongqin/testlabel'
+    testdata_path = ''
+    testlabel_path = ''
     
-    AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
-    MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
-    DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    AOD_Net_Weights = ''
+    MSCNN_Weights = ''
+    DehazeNet_Weights = ''
     
     model_aod = load_aodnet(AOD_Net_Weights)
     model_dehazenet = load_dehazenet(DehazeNet_Weights)
     model_mscnn = load_mscnn(MSCNN_Weights)
     
-    Hazy_Images_Path = '/home/jianan/Incoming/dongqin/Hazy_Images'
-    Clear_Images_Path = '/home/jianan/Incoming/dongqin/Clear_Images'
-    DCP_Dehazed_Path_1 = '/home/jianan/Incoming/dongqin/DCP_Dehazed'
-    DCP_Dehazed_Path_2 = '/home/jianan/Incoming/dongqin/DCP_Dehazed_1'
-    AOD_Dehazed_Path = '/home/jianan/Incoming/dongqin/AOD_Dehazed'
-    MSCNN_Dehazed_Path = '/home/jianan/Incoming/dongqin/MSCNN_Dehazed'
-    DehazeNet_Dehazed_Path = '/home/jianan/Incoming/dongqin/DehazeNet_Dehazed'
+    Hazy_Images_Path = ''
+    Clear_Images_Path = ''
+    DCP_Dehazed_Path_1 = ''
+    DCP_Dehazed_Path_2 = ''
+    AOD_Dehazed_Path = ''
+    MSCNN_Dehazed_Path = ''
+    DehazeNet_Dehazed_Path = ''
     
     test_data_files = os.listdir(testdata_path)
     test_label_files = os.listdir(testlabel_path)
@@ -188,12 +177,15 @@ def compute_psnr_ssim():
     return np.mean(DCP_PSNR), np.mean(DCP_SSIM), np.mean(DCP_2_PSNR), np.mean(DCP_2_SSIM), np.mean(AOD_PSNR), np.mean(AOD_SSIM), np.mean(MSCNN_PSNR), np.mean(MSCNN_SSIM), np.mean(DehazeNet_PSNR), np.mean(DehazeNet_SSIM) 
 
 def run_time():
+    '''
+    Compare run time of each algorithm
+    '''
     data_path = ''
     data_files = os.listdir(data_path)
     
-    AOD_Net_Weights = '/home/jianan/Incoming/dongqin/DeHaze/aodnet.h5'
-    MSCNN_Weights = '/home/jianan/Incoming/dongqin/DeHaze/mscnn.h5'
-    DehazeNet_Weights = '/home/jianan/Incoming/dongqin/DeHaze/dehazenet.h5'
+    AOD_Net_Weights = ''
+    MSCNN_Weights = ''
+    DehazeNet_Weights = ''
     
     model_aod = load_aodnet(AOD_Net_Weights)
     model_dehazenet = load_dehazenet(DehazeNet_Weights)
@@ -236,8 +228,8 @@ def run_time():
 
 if __name__ =="__main__":
     
-    #dcp_psnr, dcp_ssim, dcp_2_psnr, dcp_2_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
-    video_dehaze(30,1280,720)
+    dcp_psnr, dcp_ssim, dcp_2_psnr, dcp_2_ssim, aod_psnr, aod_ssim, mscnn_psnr, mscnn_ssim, dehazenet_psnr, dehazenet_ssim = compute_psnr_ssim()
+    #video_dehaze(30,1280,720)
 
 
 

@@ -43,7 +43,8 @@
 \renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
 \renewcommand{\cftdot}{$\cdot$}
 \renewcommand{\cftdotsep}{1}
-\setlength{\cftbeforechapskip}{12pt}
+\setlength{\cftbeforechapskip}{1em}
+\setlength{\cftbeforetoctitleskip}{-2em} % adjust the distance from top of page to toc title
 \newcommand{\acknowledgementtitle}{\heiti \fontsize{14}{17} \selectfont 致\quad 谢}
 \newcommand{\acknowledgementtitletoc}{致谢}
 %\newcommand{\referencetitle}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
@@ -52,8 +53,8 @@
 \renewcommand{\labelenumi}{\roman{enumi}) } % change enumeratior index
 %\setcounter{secnumdepth}{3}% Number \subsubsection https://tex.stackexchange.com/questions/146304/subsubsection-in-a-report-style-document/146307 Very good information about the toc and numbering for reports
 %\setcounter{tocdepth}{3}
-%\renewcommand{\bibname}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
-\renewcommand{\bibname}{\protect\leftline{参考文献}}
+\renewcommand{\bibname}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
+%\renewcommand{\bibname}{\protect\leftline{参考文献}}
 
 
 %%% 中文摘要
@@ -62,7 +63,7 @@
 \newcommand{\keywords}{#1}
 \phantomsection
 \addcontentsline{toc}{chapter}{摘要\quad }
-
+\vspace*{12pt}
 \begin{center}
 \fontsize{18}{21.6}\selectfont 摘\quad 要
 \end{center}
@@ -80,7 +81,7 @@
 \newcommand{\keywords}{#1}
 \phantomsection
 \addcontentsline{toc}{chapter}{Abstract\quad }
-
+\vspace*{12pt}
 \begin{center}
 ABSTRACT
 \end{center}
@@ -97,10 +98,9 @@ KEY WORDS: \keywords
 {\chapter} % command
 {\centering \heiti \fontsize{15}{18} \selectfont} % format
 {第\CJKnumber{\thechapter}章} % label
-{0.1ex} % sep
-{
-   \centering
-} % before-code
+{1ex} % sep
+{\centering} % before-code
+\titlespacing{\chapter}{0pt}{12pt}{24pt} % set chapter title spacing
 
 %%% section格式
 \titleformat
@@ -123,7 +123,7 @@ KEY WORDS: \keywords
 
 %%% 目录中章节
 \newcommand{\titlecontentschapter}{%
-\titlecontents{chapter}[0pt]{\vspace{.5\baselineskip}\normalfont}
+\titlecontents{chapter}[0pt]{\vspace{1\baselineskip}\normalfont} % determine the spacing for chapters in TOC
 {第\CJKnumber{\thecontentslabel}章\quad}{}
 {\hspace{.5em}\titlerule*[5pt]{$\cdot$}\contentspage}
 }
@@ -205,9 +205,8 @@ KEY WORDS: \keywords
 \pagenumbering{Roman}
 %{\fontsize{12}{18}\selectfont
 \begin{abstract}{暗通道法，DehazeNet，MSCNN，AOD-Net，图像质量评估}
-
-
-电子设备的普及极大的促进了图像、视频的获取，让人们得以记录多彩的世界。然而，由于天气变化的不稳定性，图像、视频非常容易受到天气的降质影响。本文着重研究降质影响的一种，雾，以及图像中雾的去除。
+\vspace{12pt}
+\par 电子设备的普及极大的促进了图像、视频的获取，让人们得以记录多彩的世界。然而，由于天气变化的不稳定性，图像、视频非常容易受到天气的降质影响。本文着重研究降质影响的一种，雾，以及图像中雾的去除。
 
 单幅图像的去雾是一个约束不足的病态问题，对此学者们提出了许多方法。本论文主要研究暗通道法(DCP)、DehazeNet、MSCNN和AOD-Net。其中，DCP通过暗通道的发现能够对一部分含雾图像进行非常高效的去雾，且原理简单，代表了基于先验知识的传统去雾方法；其他三者则是新颖的基于机器学习的去雾算法。DehazeNet首次将卷积神经网络(CNN)与传统去雾算法结合，用CNN估计图像块的透射率；类似的，MSCNN利用CNN直接对一张图片进行透射图的估计。AOD-Net则提出了一个结构非常简单的全卷积网络，直接对含雾图片进行去雾。
 
@@ -217,6 +216,7 @@ KEY WORDS: \keywords
 \newpage
 
 \begin{englishabstract}{dark channel prior, DehazeNet, MSCNN, AOD-Net, image quality assessment}
+\vspace{12pt}
 \par The availability of electronic devices enabled us to obtain a significant amount of images and videos, thus making it easier for us to record what's happending around us. However, images and videos are rather prone to degradation because of the weather instability. In this paper, we focus on the formation of hazy images and how to remove haze (dehaze) for them.
 
 Single image dehazing is a challenging ill-posed problem which lacks efficient solution, and scholars have been consistently investing efforts on it. In this paper, we present a comprehensive study and evaluation of some seminar dehazing algorithms: dark channel prior (DCP), DehazeNet, MSCNN, and AOD-Net. DCP represents traditional ways of image dehazing, i.e., prior-based haze removal methods, while the other three are well developed learning based image dehazing methods. DehazeNet is a first-in-class approach to combine Convolutional Neural Network (CNN) with traditional method for haze removal. Similarly, MSCNN generalized the idea in DehazeNet to predict the transmission map with a single feed-forward computation. AOD-Net, on the other hand, proposed a much simpler full-convolutional network architecture to remove haze in an end-to-end manner.  
@@ -588,16 +588,15 @@ K(x) = \frac{\frac{1}{t(x)}(I(x) - A) + A - b}{I(x) - 1}
 \end{aligned}
 \end{equation}
 其中$b$为一个常数偏置，默认值为1。经过上述转换，我们便无需分开估计$t$和$A$，而是最小化上式输出$J(x)$和真实无雾图之间的误差。
-
-\subsection{网络结构\quad}
-
-如图\ref{fig:3.9}所示，该网络结构分为两个模块，一个模块用来估计$K(x)$，另一个模块用来逐元素计算生成无雾图片。前一个模块为全卷积网络，采用五个卷积层和三个融合层。其中，每一个卷积层都只使用三个卷积核，网络中使用不同大小的卷积核以获得多尺度特征，而使用融合层则用以弥补在卷积操作中丢失的信息。不同于DehazeNet，本网络中每个卷积层之后均使用ReLU激活函数。该网络的输入为含雾图片，输出为生成的无雾图片，训练以及预测未知含雾图片均比较简便。
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{AOD-Net}
 \caption{AOD-Net网络结构}
 \label{fig:3.9}
 \end{figure}
+\subsection{网络结构\quad}
+
+如图\ref{fig:3.9}所示，该网络结构分为两个模块，一个模块用来估计$K(x)$，另一个模块用来逐元素计算生成无雾图片。前一个模块为全卷积网络，采用五个卷积层和三个融合层。其中，每一个卷积层都只使用三个卷积核，网络中使用不同大小的卷积核以获得多尺度特征，而使用融合层则用以弥补在卷积操作中丢失的信息。不同于DehazeNet，本网络中每个卷积层之后均使用ReLU激活函数。该网络的输入为含雾图片，输出为生成的无雾图片，训练以及预测未知含雾图片均比较简便。
 
 \subsection{无雾图像计算\quad}
 由于AOD-Net具有非常轻便且端对端的网络结构，因此在网络训练好之后，对未知的含雾图片进行处理时，只需进行一次前向传播即可获取去雾图片。相比于DehazeNet，省去了划分图片块、使用引导滤波等过程；相比于MSCNN，也不用估计大气光并另外进行无雾图像计算。
@@ -775,7 +774,7 @@ Mittal等人使用支持向量回归(SVR)拟合了上述计算得到的36个特�
     \end{tabular}%
   \label{tab:4.1}%
 \end{table}%
-从表\ref{tab:4.1}可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义(\ref{eq:4.5})中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时，AOD-Net将$t$和$A$融合为一个变量$K$，实际上是在训练过程中隐式地估计出大气光值，而这一估计是比根据透射图估计大气光值更准确的，因此与原无雾图片亮度值更相似，这与SSIM中亮度相似性的测量\ref{eq:4.7}是吻合的，因而AOD-Net也具有较高的SSIM得分。
+从表\ref{tab:4.1}可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义(\ref{eq:4.5})中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时，AOD-Net将$t$和$A$融合为一个变量$K$，实际上是在训练过程中隐式地估计出大气光值，而这一估计是比根据透射图估计大气光值更准确的，因此与原无雾图片亮度值更相似，这与SSIM中亮度相似性的测量(式\ref{eq:4.7})是吻合的，因而AOD-Net也具有较高的SSIM得分。
 
 我们还注意到，虽然DehazeNet和MSCNN训练时都是最小化预测透射率和实际透射率之间的误差，但MSCNN是直接最小化两张透射图之间的误差，因而预测得到的透射图与实际投射图更接近，由此计算出的去雾图片与原图误差更小，所以MSCNN相比DehazeNet具有更高的PSNR得分。同理，DehazeNet比MSCNN更强调图片的内部结构，采用了划分图片块的方法训练网络并对含雾图片去雾，因此DehazeNet比MSCNN取得更高的结构相似性得分是合理的。
 
@@ -1141,7 +1140,6 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 
 \begin{thebibliography}{99}  
 \fontsize{10.5}{10.5} \selectfont
-% \setstretch{1.5} could be used to change the line spacing here, line spacing = baselineskip(10.5) * setstretch
 
 \setlength{\itemsep}{0pt}
 \bibitem{ref1} He, K., Sun, J., \& Tang, X. (2010). Single image haze removal using dark channel prior. IEEE transactions on pattern analysis and machine intelligence, 33(12), 2341-2353.
@@ -1176,26 +1174,11 @@ $480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
 
 
 
-%\newpage
-
-
-
-
-%{\heiti 你好啊啊，黑体}
-
-%{\kaishu \bfseries 你好啊啊，楷书}
-
-%参考文献字体没调好！但在改了字体之后TOC里面的字体也会改！实在不行的办法就把正文里的字体改好，然后手动改.toc文件里面的参考文献字体！这是奇技淫巧
+%    参考文献字体没调好！但在改了字体之后TOC里面的字体也会改！实在不行的办法就把正文里的字体改好，然后手动改.toc文件里面的参考文献字体！这是奇技淫巧
 
 %中文字体不能加粗，要装字体
 
 %为什么使用Maxout?
-
-%在ubuntu中安装libsvm for matlab是很简单的，在Windows中很复杂，安装好之后关键是少了个ABI，按这两个网址解决\url{https://alexxunxu.wordpress.com/2018/01/15/version-cxxabi_1-3-8-not-found/} and \url{https://www.mathworks.com/matlabcentral/answers/329796-issue-with-libstdc-so-6}
-
-%按这个网址\url{https://stackoverflow.com/questions/12877167/how-do-i-install-libsvm-for-python-under-windows-7}安装好libsvm for python，按brisque的readme直接算就可以。要注意，使用brisque时的时候要么需要close project，要么需要把文件什么的放到project路径下
-
-%brisque \url{https://www.learnopencv.com/image-quality-assessment-brisque/}
 
 %其他几张图改成subfigure的形式 \url{https://tex.stackexchange.com/questions/119905/insert-multiple-figures-in-latex}
 

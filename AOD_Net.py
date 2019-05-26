@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import random
+import math
 import os
 
 from keras.layers import Conv2D, Input, concatenate, multiply, subtract, Lambda
@@ -8,15 +9,14 @@ from keras import optimizers
 from keras.models import Model
 from keras.activations import relu 
 
- 
 def load_data(data_files,label_files, height, width):
-   
+    
     data = []
     label = []
     
     for data_file in data_files:
         hazy_image = cv2.imread(data_path + "/" + data_file)
-        label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])]
+        label_file = label_files[label_files.index(data_file[0:4] + data_file[-4:])] # This is subject to modification depending on the file names of data_files.
         clear_image = cv2.imread(label_path + "/" + label_file)
         
         if hazy_image.shape != (height, width, 3):
@@ -57,40 +57,31 @@ def aodmodel():
     return model
 
 def train_model(data_path, label_path, weights_path, lr=0.001, batch_size=32, p_train=0.8, width=320, height=240, nb_epochs=15):
+    '''
+    p_train : proportion of training data
+    '''
     model = aodmodel()
     model.summary()
     sgd = optimizers.SGD(lr, clipvalue=0.1, momentum=0.9, decay=0.0001, nesterov=False)
     model.compile(optimizer = sgd, loss = 'mean_squared_error')
     
-    p_train = p_train # proportion of training data
-    width = width
-    height = height
-    batch_size = batch_size
-    nb_epochs = nb_epochs
-    
     data_files = os.listdir(data_path) 
     label_files = os.listdir(label_path)
     random.seed(100)  # ensure we have the same shuffled data every time
     random.shuffle(data_files)  
-    data_files = data_files[0:40000]
     x_train = data_files[0: round(len(data_files) * p_train)]
     x_val =  data_files[round(len(data_files) * p_train) : len(data_files)]
-    if len(x_train) % batch_size == 0:
-        steps_per_epoch = len(x_train) // batch_size
-    else:
-        steps_per_epoch = len(x_train) // batch_size + 1
-        
-    if len(x_val) % batch_size == 0:
-        steps = len(x_val) // batch_size
-    else:
-        steps = len(x_val) // batch_size + 1
+    
+    steps_per_epoch = math.ceil(len(x_train) / batch_size)
+    steps = math.ceil(len(x_val) / batch_size)
     
     model.fit_generator(generator = get_batch(x_train, label_files, batch_size, height, width), 
                         steps_per_epoch=steps_per_epoch, epochs = nb_epochs, validation_data = 
                         get_batch(x_val, label_files, batch_size, height, width), validation_steps = steps,
                         use_multiprocessing=True, 
                         shuffle=False, initial_epoch=0)
-    model.save_weights('aodnet.h5')
+    
+    model.save_weights(weights_path + '/aodnet.h5')
     print('model generated')
     return weights_path + '/aodnet.h5'
 
@@ -113,26 +104,27 @@ def usemodel(model, hazy_image):
 if __name__ =="__main__":
     
     ''' 
-    Implementation of AOD-Net using keras.
+    Implementation of AOD-Net using keras. http://openaccess.thecvf.com/content_ICCV_2017/papers/Li_AOD-Net_All-In-One_Dehazing_ICCV_2017_paper.pdf
     
     Usage: 
         1. modify the paths
-        2. run this file
-        3. visualize the images using:
+        2. potentially change a line in load_data (see above)
+        3. run this file
+        4. visualize the images using:
             cv2.imshow('nameofwindow', hazy_image)
             cv2.imshow('nameofwindow', clear_image)
             cv2.waitKey(0)
             
     Parameter tuning:
-        Changeable values are given in default, namely, lr, batch_size, p_train, nb_epochs
+        Changeable values are given in default, namely, lr, batch_size, p_train, nb_epochs etc.
     '''
-    im_path = ''
-    data_path = ''
-    label_path = ''
-    weights_path = ''
+    data_path = ''      # path where all training hazy images are stored
+    label_path = ''     # path where all training clear images are stored
+    weights_path = ''   # path where trained weights is to be stored
     
     aod_weights = train_model(data_path, label_path, weights_path)
 
-    aodnet = Load_model(aod_weights)    
+    aodnet = Load_model(aod_weights)  
+    im_path = ''        # a single image, just to illustrate the usage of the trained network :)  
     im = cv2.imread(im_path)
     im_dehaze = usemodel(aodnet, im)

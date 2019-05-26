@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri May 24 14:59:32 2019
+'''
+BRISQUE: https://ieeexplore.ieee.org/document/6272356 & https://www.learnopencv.com/image-quality-assessment-brisque/
 
-@author: Zero_Zhou
-"""
+Based on pybrisque: https://github.com/bukalapak/pybrisque
 
+Installation of libsvm for python: https://stackoverflow.com/questions/12877167/how-do-i-install-libsvm-for-python-under-windows-7%7D
+
+Make sure to set working directory to where brisque.py is stored.
+'''
 import os
 import numpy as np
 import brisque
 
-path = r'H:\Undergraduate\18-19-3\Undergraduate Thesis\Dataset\Test_RTTS Results\Real_MSCNN'
+path = ''
 files = os.listdir(path)
 BRI = []
 

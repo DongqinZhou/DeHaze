@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# borrowed heavily from https://github.com/joyeecheung/dark-channel-prior-dehazing
 import cv2
 import numpy as np
 import guidedfilter
@@ -39,9 +40,6 @@ def dehaze_1(im, tmin = 0.1, w = 15, p = 0.001,
     W      window size
     omega  before transmission
     L      highest pixel value
-    Possible modification:
-        tmin = 0.2
-        Amax = 220
     '''
     I = np.asarray(im, dtype=np.float64)
     
