@@ -66,10 +66,12 @@
 \begin{center}
 \fontsize{18}{21.6}\selectfont 摘\qquad 要
 \end{center}
+\fontsize{12}{18}\selectfont
 }
 {
   \\[1\baselineskip]
   关键词： \keywords
+
 }
 
 %%% 英文摘要
@@ -154,24 +156,24 @@ KEY WORDS: \keywords
 \begin{document}
 
 %%% 封面
-\vspace*{36pt}
+\vspace*{24pt}
 \thispagestyle{empty}
 \begin{figure}[H]
 \centering
-\includegraphics[width=4.28in, height = 1.52in]{seu}
+\includegraphics[width=4.28in, height = 1.53in]{seu}
 \end{figure}
-\vspace{16pt}
+%\vspace{16pt}
 
 \begin{center}
 {\fontsize{16}{46}\selectfont % first : fontsize; second : baselineskip
 
 \textbf{题目} \quad \underline{\makebox[250pt][c]{\textbf{图像去雾化方法研究}}}\\
-\underline{\makebox[100pt][c]{\textbf{交通学院}}}院（系）\quad \underline{\makebox[100pt][c]{\bf 交通工程}}专业 \\
+\underline{\makebox[100pt][c]{交通学院}}院（系）\quad \underline{\makebox[100pt][c]{交通工程}}专业 \\
 学\qquad 号 \underline{\makebox[300pt][c]{\textbf{21015111}}}\\
 学生姓名 \underline{\makebox[300pt][c]{\textbf{周冬秦}}}\\
 指导教师 \underline{\makebox[300pt][c]{\textbf{何铁军\  教授}}}\\
-起止日期 \underline{\makebox[300pt][c]{\textbf{2019年2月25日至2019年6月2日}}}\\
-设计地点 \underline{\makebox[300pt][c]{\textbf{东南大学交通学院203室}}}\\
+起止日期 \underline{\makebox[300pt][c]{\textbf{2019年2月25日至2019年5月29日}}}\\
+设计地点 \underline{\makebox[300pt][c]{\textbf{东南大学交通学院}}}\\
 }
 \end{center}
 \newpage
@@ -199,20 +201,27 @@ KEY WORDS: \keywords
 
 %%% 摘要
 \pagenumbering{Roman}
+%{\fontsize{12}{18}\selectfont
 \begin{abstract}{暗通道法，DehazeNet，MSCNN，AOD-Net，图像质量评估}
-\linespread{1.3}
 
-单幅图像的去雾是一个约束不足的病态问题，对此学者们提出了许多方法。本论文主要研究单幅图像去雾领域的标志性算法：暗通道法(DCP)、DehazeNet、MSCNN和AOD-Net。其中，DCP通过暗通道的发现能够对一部分含雾图像进行非常高效的去雾，且原理简单，代表了基于先验知识的传统去雾方法；其他三者则是新颖的基于机器学习的去雾算法。DehazeNet首次将卷积神经网络(CNN)与传统去雾算法结合，用CNN估计图像块的透射率；类似的，MSCNN利用CNN直接对一张图片进行透射图的估计。AOD-Net则提出了一个全卷积网络，直接对含雾图片进行去雾，网络结构非常简单。
 
-我们采用全参考指标PSNR、SSIM和无参考评价指标SSEQ、BRISQUE对去雾图像进行评价以评估各算法的去雾效果。在合成图片与实际图片上测试，我们发现AOD-Net和DCP效果较好全参考得分较高，但无参考指标对各算法评价结果不一致。我们还发现，MSCNN和AOD-Net的计算速率较高，且AOD-Net对视频去雾能取得一定效果。
+电子设备的普及极大的促进了图像、视频的获取，让人们得以记录多彩的世界。然而，由于天气变化的不稳定性，图像、视频非常容易受到天气的降质影响。本文着重研究降质影响的一种，雾，以及图像中雾的去除。
+
+单幅图像的去雾是一个约束不足的病态问题，对此学者们提出了许多方法。本论文主要研究暗通道法(DCP)、DehazeNet、MSCNN和AOD-Net。其中，DCP通过暗通道的发现能够对一部分含雾图像进行非常高效的去雾，且原理简单，代表了基于先验知识的传统去雾方法；其他三者则是新颖的基于机器学习的去雾算法。DehazeNet首次将卷积神经网络(CNN)与传统去雾算法结合，用CNN估计图像块的透射率；类似的，MSCNN利用CNN直接对一张图片进行透射图的估计。AOD-Net则提出了一个结构非常简单的全卷积网络，直接对含雾图片进行去雾。
+
+在学习实现上述算法之后，我们采用全参考指标PSNR、SSIM和无参考评价指标SSEQ、BRISQUE对去雾图像进行评价以评估各算法的去雾效果。在合成图片与实际图片上测试，我们发现AOD-Net和DCP效果较好且全参考得分较高，但无参考指标对各算法评价结果不一致。我们还发现，MSCNN和AOD-Net的计算速率较高，且AOD-Net对视频去雾能取得一定效果。
 \end{abstract}
+
 \newpage
 
 \begin{englishabstract}{dark channel prior, DehazeNet, MSCNN, AOD-Net, image quality assessment}
-\par Single image dehazing is a challenging ill-posed problem which lacks efficient solution, on which scholars have been consistently investing efforts. In this paper, we present a comprehensive study and evaluation of some seminar dehazing algorithms for a single image: dark channel prior(DCP), DehazeNet, MSCNN, and AOD-Net. DCP represents traditional ways of image dehazing, i.e., prior-based haze removal methods, while the other three are well developed learning based image dehazing methods. DehazeNet is a first-in-class approach to combine Convolutional Neural Network (CNN) with traditional method for haze removal. Similarly, MSCNN generalized the idea in DehazeNet to predict the transmission map with a single feed-forward computation. AOD-Net, on the other hand, proposed a much simpler full-convolutional network architecture to remove haze in an end-to-end manner.  
+\par The availability of electronic devices enabled us to obtain a significant amount of images and videos, thus making it easier for us to record what's happending around us. However, images and videos are rather prone to degradation because of the weather instability. In this paper, we focus on the formation of hazy images and how to remove haze (dehaze) for them.
+
+Single image dehazing is a challenging ill-posed problem which lacks efficient solution, and scholars have been consistently investing efforts on it. In this paper, we present a comprehensive study and evaluation of some seminar dehazing algorithms: dark channel prior(DCP), DehazeNet, MSCNN, and AOD-Net. DCP represents traditional ways of image dehazing, i.e., prior-based haze removal methods, while the other three are well developed learning based image dehazing methods. DehazeNet is a first-in-class approach to combine Convolutional Neural Network (CNN) with traditional method for haze removal. Similarly, MSCNN generalized the idea in DehazeNet to predict the transmission map with a single feed-forward computation. AOD-Net, on the other hand, proposed a much simpler full-convolutional network architecture to remove haze in an end-to-end manner.  
 
 Image quality assessment (IQA) is another big topic discussed in this paper. We utilized full reference (FR) metrics, PSNR and SSIM, and no reference (NR) metrics, SSEQ and BRISQUE, to evaluate the quality of dehazed images, thus benchmarking the performances of aforementioned algorithms. We tested all four algorithms on synthetic and real hazy images. We found that AOD-Net received the best dehazed results followed by DCP, and they outperform other methods in terms of PSNR and SSIM. However, the results are less consistent when it comes to NR metrics. Additionally, MSCNN and AOD-Net have clear advantages over other methods in computation efficiency, and AOD-Net could be used to dehaze a hazy video.   
 \end{englishabstract}
+
 \newpage
 
 %%% 目录
