@@ -33,13 +33,12 @@
 \captionsetup[table]{labelsep=space}
 
 %%% format settings
-% 要注意，latex的字号变动会覆盖baselineskip
-% latex默认的baselineskip是fontsize的1.2倍，所以改了fontsize之后baselineskip也变了
-% 行距计算：baselineskip * baselinestretch，baselinestretch和linespread其实是差不多的，只是取值不一样，后者取1.3对应前者的1.5，1.6对应2；所以一般设置行距直接改后面的因子
+% In default, changing font size will change line skip, which is set to 1.2 * fontsize. 
+% Line spacing = baselineskip * baselinestretch or Line spacing = baselineskip * linespread, while baselinestretch and linespread differ only in value.
 
 %%% new commands
 \newcommand{\mainheader}{\fontsize{9}{10} \selectfont 东南大学 2019 届本科生毕业设计（论文）}
-\renewcommand{\contentsname}{\centerline{ \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 } }
+\renewcommand{\contentsname}{\centerline{ \fontsize{16}{19.2} \selectfont \heiti 目 \qquad 录 } } % not recommended, but could do the trick.
 \renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
 \renewcommand{\cftdot}{$\cdot$}
 \renewcommand{\cftdotsep}{1}
@@ -47,17 +46,16 @@
 \setlength{\cftbeforetoctitleskip}{-2em} % adjust the distance from top of page to toc title
 \newcommand{\acknowledgementtitle}{\heiti \fontsize{14}{17} \selectfont 致\quad 谢}
 \newcommand{\acknowledgementtitletoc}{致谢}
-%\newcommand{\referencetitle}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
-%\newcommand{\referencetitletoc}{参考文献}
 \renewcommand{\arraystretch}{1.5} % table stretch
 \renewcommand{\labelenumi}{\roman{enumi}) } % change enumeratior index
+%\renewcommand{\bibname}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}} % This changes the format of bibliography title in TOC as well. But because it's easier to use, I leave it here. And the TOC title could be modified manually in .toc file (dirty trick though).
+
+\renewcommand{\bibname}{\protect\leftline{参考文献}}
 %\setcounter{secnumdepth}{3}% Number \subsubsection https://tex.stackexchange.com/questions/146304/subsubsection-in-a-report-style-document/146307 Very good information about the toc and numbering for reports
 %\setcounter{tocdepth}{3}
-\renewcommand{\bibname}{\protect\leftline{\heiti \fontsize{14}{17} \selectfont 参考文献}}
-%\renewcommand{\bibname}{\protect\leftline{参考文献}}
 
 
-%%% 中文摘要
+%%% Chinese abstract
 \renewenvironment{abstract}[1]
 {
 \newcommand{\keywords}{#1}
@@ -75,7 +73,7 @@
 
 }
 
-%%% 英文摘要
+%%% English abstract
 \newenvironment{englishabstract}[1]
 {
 \newcommand{\keywords}{#1}
@@ -93,7 +91,7 @@ KEY WORDS: \keywords
 
 }
 
-%%% 章节格式
+%%% chapter format 
 \titleformat
 {\chapter} % command
 {\centering \heiti \fontsize{15}{18} \selectfont} % format
@@ -102,7 +100,7 @@ KEY WORDS: \keywords
 {\centering} % before-code
 \titlespacing{\chapter}{0pt}{12pt}{24pt} % set chapter title spacing
 
-%%% section格式
+%%% section format
 \titleformat
 {\section} % command
 {\heiti \fontsize{14}{17} \selectfont} % format
@@ -110,7 +108,7 @@ KEY WORDS: \keywords
 {0.1ex} % sep
 {} % before-code
 
-%%% subsection格式
+%%% subsection format
 \titleformat
 {\subsection} % command
 {\fontsize{12}{14} \selectfont \bfseries } % format
@@ -121,14 +119,14 @@ KEY WORDS: \keywords
 } % before-code
 
 
-%%% 目录中章节
+%%% chapter style in TOC
 \newcommand{\titlecontentschapter}{%
 \titlecontents{chapter}[0pt]{\vspace{1\baselineskip}\normalfont} % determine the spacing for chapters in TOC
 {第\CJKnumber{\thecontentslabel}章\quad}{}
 {\hspace{.5em}\titlerule*[5pt]{$\cdot$}\contentspage}
 }
 
-%%% 致谢
+%%% Acknowledgement
 \newenvironment{Acknowledgement}[1][\acknowledgementtitle]
 {%
   
@@ -138,26 +136,10 @@ KEY WORDS: \keywords
 
 }
 
-%%% 参考文献 没用上
-\newenvironment{References}[1][\referencetitle]
-{%
-  
-  \phantomsection
-  \addcontentsline{toc}{chapter}{\referencetitletoc}
-  \chapter*{#1}
-
-}
-
-
-
-
-
-
-
 
 \begin{document}
 
-%%% 封面
+%%% Cover
 \vspace*{24pt}
 \thispagestyle{empty}
 \begin{figure}[H]
@@ -169,13 +151,13 @@ KEY WORDS: \keywords
 \begin{center}
 {\fontsize{16}{46}\selectfont % first : fontsize; second : baselineskip
 
-\textbf{题目} \quad \underline{\makebox[250pt][c]{\textbf{图像去雾化方法研究}}}\\
-\underline{\makebox[100pt][c]{交通学院}}院（系）\quad \underline{\makebox[100pt][c]{交通工程}}专业 \\
-学\qquad 号 \underline{\makebox[300pt][c]{\textbf{21015111}}}\\
-学生姓名 \underline{\makebox[300pt][c]{\textbf{周冬秦}}}\\
-指导教师 \underline{\makebox[300pt][c]{\textbf{何铁军\  教授}}}\\
-起止日期 \underline{\makebox[300pt][c]{\textbf{2019年2月25日至2019年5月29日}}}\\
-设计地点 \underline{\makebox[300pt][c]{\textbf{东南大学交通学院}}}\\
+\textbf{题目} \quad \underline{\makebox[250pt][c]{\textbf{THESIS TITLE}}}\\
+\underline{\makebox[100pt][c]{\bf DEPARTMENT}}院（系）\quad \underline{\makebox[100pt][c]{\bf SPECIALIZATION}}专业 \\
+学\qquad 号 \underline{\makebox[300pt][c]{\textbf{STUDENT NUMBER}}}\\
+学生姓名 \underline{\makebox[300pt][c]{\textbf{NAME}}}\\
+指导教师 \underline{\makebox[300pt][c]{\textbf{NAME \& TITLE OF SUPERVISOR}}}\\
+起止日期 \underline{\makebox[300pt][c]{\textbf{TIME}}}\\
+设计地点 \underline{\makebox[300pt][c]{\textbf{LOCATION}}}\\
 }
 \end{center}
 \newpage
@@ -201,32 +183,24 @@ KEY WORDS: \keywords
 \end{flushright}
 \newpage
 
-%%% 摘要
+%%% Abstracts
 \pagenumbering{Roman}
 %{\fontsize{12}{18}\selectfont
-\begin{abstract}{暗通道法，DehazeNet，MSCNN，AOD-Net，图像质量评估}
+\begin{abstract}{KEYWORDS IN CHINESE}
 \vspace{12pt}
-\par 电子设备的普及极大的促进了图像、视频的获取，让人们得以记录多彩的世界。然而，由于天气变化的不稳定性，图像、视频非常容易受到天气的降质影响。本文着重研究降质影响的一种，雾，以及图像中雾的去除。
-
-单幅图像的去雾是一个约束不足的病态问题，对此学者们提出了许多方法。本论文主要研究暗通道法(DCP)、DehazeNet、MSCNN和AOD-Net。其中，DCP通过暗通道的发现能够对一部分含雾图像进行非常高效的去雾，且原理简单，代表了基于先验知识的传统去雾方法；其他三者则是新颖的基于机器学习的去雾算法。DehazeNet首次将卷积神经网络(CNN)与传统去雾算法结合，用CNN估计图像块的透射率；类似的，MSCNN利用CNN直接对一张图片进行透射图的估计。AOD-Net则提出了一个结构非常简单的全卷积网络，直接对含雾图片进行去雾。
-
-在学习实现上述算法之后，我们采用全参考指标PSNR、SSIM和无参考评价指标SSEQ、BRISQUE对去雾图像进行评价以评估各算法的去雾效果。在合成图片与实际图片上测试，我们发现AOD-Net和DCP效果较好且全参考得分较高，但无参考指标对各算法评价结果不一致。我们还发现，MSCNN和AOD-Net的计算速率较高，且AOD-Net对视频去雾能取得一定效果。
+\par ENTER CHINESE ABSTRACT HERE.
 \end{abstract}
 
 \newpage
 
-\begin{englishabstract}{dark channel prior, DehazeNet, MSCNN, AOD-Net, image quality assessment}
+\begin{englishabstract}{KEYWORDS IN ENGLISH}
 \vspace{12pt}
-\par The availability of electronic devices enabled us to obtain a significant amount of images and videos, thus making it easier for us to record what's happending around us. However, images and videos are rather prone to degradation because of the weather instability. In this paper, we focus on the formation of hazy images and how to remove haze (dehaze) for them.
-
-Single image dehazing is a challenging ill-posed problem which lacks efficient solution, and scholars have been consistently investing efforts on it. In this paper, we present a comprehensive study and evaluation of some seminar dehazing algorithms: dark channel prior (DCP), DehazeNet, MSCNN, and AOD-Net. DCP represents traditional ways of image dehazing, i.e., prior-based haze removal methods, while the other three are well developed learning based image dehazing methods. DehazeNet is a first-in-class approach to combine Convolutional Neural Network (CNN) with traditional method for haze removal. Similarly, MSCNN generalized the idea in DehazeNet to predict the transmission map with a single feed-forward computation. AOD-Net, on the other hand, proposed a much simpler full-convolutional network architecture to remove haze in an end-to-end manner.  
-
-Image quality assessment (IQA) is another big topic discussed in this paper. We utilized full reference (FR) metrics, PSNR and SSIM, and no reference (NR) metrics, SSEQ and BRISQUE, to evaluate the quality of dehazed images, thus benchmarking the performances of aforementioned algorithms. We tested all four algorithms on synthetic and real hazy images. We found that AOD-Net received the best dehazed results followed by DCP, and they outperform other methods in terms of PSNR and SSIM. However, the results are less consistent when it comes to NR metrics. Additionally, MSCNN and AOD-Net have clear advantages over other methods in computation efficiency, and AOD-Net could be used to dehaze a hazy video.   
+\par ENTER ENGLISH ABSTRACT HERE.  
 \end{englishabstract}
 
 \newpage
 
-%%% 目录
+%%% TOC 
 % good info for removing the footer on TOC: https://tex.stackexchange.com/questions/180874/remove-page-numbers-from-footer-for-multi-page-table-of-contents/180877
 \pagestyle{empty}
 \begingroup
@@ -237,7 +211,7 @@ Image quality assessment (IQA) is another big topic discussed in this paper. We 
 \endgroup
 \newpage
 
-%%% 正文
+%%% Mainmatter
 \pagestyle{fancy}
 \fancyfoot{}
 \fancyhead{}
@@ -249,949 +223,40 @@ Image quality assessment (IQA) is another big topic discussed in this paper. We 
 \titlecontentschapter   % 在这里才启用前面定义的目录章节格式，不在前面启用，因为摘要也算作章节，牛逼！
 \chapter{绪论\quad}
 \section{研究背景和意义\quad}
-信息化时代的一大特征即是海量数据的存储，例如图片、视频、音频、文本数据等。以图片数据为例，绝大部分的图片都采集于室外，但室外采集的图片相比于室内图片，更容易受到空中浑浊物，如水滴、悬浮颗粒的降质影响。降质图片无法反映原景物的对比度和真实颜色，降低观赏性，某些图片还会丢失重要信息。例如，交叉口抓拍照片有可能在雾天无法获取车辆、行人违章信息，在出现交通事故时，有可能因为记录图片、视频受降质影响太严重而无法对事故原因正确分析。因此，对获取图片进行去雾处理显得尤为重要。
 
-图像去雾化处理是一个热门的研究领域。一方面，图像去雾有助于高层次的计算机视觉研究，如目标检测、无人驾驶等；另一方面，经过去雾处理的图片能够较好地纠正色差，更具观赏性。此外，在去雾处理中生成的深度图也会有助于图像编辑和其他视觉算法\cite{ref1}。
+CITATION EXAMPLE\cite{ref1}。
 
-含雾图片的形成是一个非常复杂的过程，在计算机视觉和图形学领域，大气散射模型被广泛用来描述含雾图片的生成。大气散射模型最初是由McCartney\cite{ref2}提出来的，之后由Narasimhan和Nayar\cite{ref3, ref4}进一步发展。模型表达式如下：
+EQUATION EXAMPLE
 \begin{equation} \label{eq:1.1}
 {\bf I(x)} = {\bf J(x)} t{\bf (x)} + {\bf A}(1 - t{\bf (x)})
 \end{equation}
-其中，$I$是获取的含雾图片，$J$是对应的无雾图片，$t$是介质透射率，即获取图片中来自景物自身的光的比例，$A$是全局大气光值。去雾的目的即为，根据已有的$I$，获取对应的$J$，$A$，$t$。若介质是均质的，则介质透射率可以表示为：
-\begin{equation} \label{eq:1.2}
-t{\bf (x)} = e^{-\beta d{\bf (x)}}
-\end{equation}
-其中，$\beta$是大气散射系数，为未知正值，$d$为景深，即景物到镜头的距离。
+
 
 \section{研究现状\quad}
-由大气散射模型 (\ref{eq:1.1}) 可知，图像去雾的关键步骤在于估计出透射图和大气光。含雾图片的形成及其逆过程图像去雾都与景深有关，但对于一张随意采集的图像，我们无法获取其景深。此外，由于大气散射系数未知，我们无法通过式 (\ref{eq:1.2}) 计算出透射率。因此单幅图片的去雾是一个约束不足的问题。
+CITE EQUATION(\ref{eq:1.1}) 
 
-针对这一困境，许多学者提出使用多幅图像获取附加信息进行去雾。\cite{ref3, ref5, ref6}使用不同天气状况下同一景物的多幅图像以获取更多约束，基于偏振的去雾方法\cite{ref7, ref8}使用两幅或多幅偏振度不同的图片估计图片大气光、透射图，进而计算无雾图像。这些方法虽然取得了一定的去雾效果，但其应用场景会受到限制。以自动驾驶为例，行驶中的车辆无法对同一处景物进行多次拍照，多个摄像头同时拍照则无法保证拍照取景、景物深度完全一致，难以获取同一景物的多幅图像；此外，此类算法需要对多幅图片进行处理，速率较慢，而自动驾驶车辆获取的数据量巨大，且要求算法能对获取的图片进行实时去雾，多幅图像去雾无法满足其处理速度要求。
-
-理想的去雾算法可以对摄像头拍摄的图片进行实时去雾，因此单幅图片的高效、快速去雾成为研究的热点。目前，单幅图像去雾主要有两类较高效的方法：基于先验知识的去雾方法和基于神经网络的去雾方法，这两类方法都基于上述的大气散射模型。除此之外，还有不基于物理模型的图像增强方法，如直方图均衡化算法\cite{ref9}、Retinex算法\cite{ref10}等，但此类方法不考虑有雾图像的生成原因，直接对关注的细节进行增强，虽然简便易行，但容易丢失图像信息，使图像失真，本论文不对此类算法进行深入研究。
-
-\subsection{基于先验知识的去雾算法\quad}
-Tan\cite{ref11}等人观察到无雾图像比其对应有雾图像的对比度高，于是采用了最大化对比度的方法来去除图像中的雾，该方法在视觉上能取得一定的效果，但是容易使图像过饱和及颜色失真。Fattal\cite{ref12}假设透射率局部不相关、反射率局部为常数，估计出景物的反射率并推导出透射率，进而计算出原图像，这一方法假设太强并且未考虑到景物深度的结构，导致无法处理浓雾图像并且不能准确估计景物深度。He\cite{ref1}等人在统计分析大量无雾图像后，于2009年提出了基于暗通道先验的去雾算法。这一方法非常简单，却能取得非常好的去雾效果。He最初提出该方法时采用了软抠图的方法来优化透射率，但是该方法计算效率太低，其在2013年提出的引导滤波\cite{ref13}方法可以大幅度提升计算效率。在He之后，有许多学者研究如何改进He的算法以使其适用于天空区域，并尝试优化透射率的估计以及计算效率。这一方法主要问题是对于含天空区域的图像，暗通道会失效，天空区域进行去雾处理后会失真。Zhu\cite{ref14}等人提出了基于颜色衰减先验的去雾方法，该方法提出了一个线性模型来表示颜色衰减先验下含雾图像中的景物深度，之后采用监督学习的方法学习到模型参数，从而获取图像中的深度信息，并以此来估计透射图从而给图像去雾。Berman\cite{ref15}提出了基于非局部先验的去雾方法，该方法假设无雾图像中每个颜色团簇都是RGB空间中的一条雾线。本论文以暗通道法为例研究基于先验知识的去雾算法。
-
-\subsection{基于神经网络的去雾算法\quad}
-随着卷积神经网络的兴起及其在计算机视觉领域的大规模应用，一些去雾算法也开始应用卷积神经网络。Cai\cite{ref16}等人提出了一个可训练的系统DehazeNet，用以估计含雾块的透射率，而后将此系统应用到整张图片以获取含雾图片的透射图，从而根据大气散射模型计算出无雾图片。Ren\cite{ref17}等人提出了一个多尺度卷积神经网络 (MSCNN) 用以直接估计与含雾图片对应的透射图，该方法先使用粗尺度模型对含雾图像进行处理，之后将此模型输出和原含雾图像作为细尺度模型的输入，而后使用细尺度模型输出的透射图进行无雾图像的计算。Li\cite{ref18}等人提出了一个端到端的去雾网络AOD-Net，该方法先将透射率$t$和大气光$A$重建为一个新的变量，而后使用两个模块构成的AOD-Net对含雾图像进行端到端的处理。
+\subsection{SUBSECTION\quad}
 
 \section{研究目的和研究内容\quad}
-本论文旨在探索图像去雾化的研究前沿，实现去雾算法，并对其效果进行综合性地对比评估。此外，本论文将去雾算法应用到雾天视频，以探索其在生活中的应用前景。
 
-本论文主要内容是实现去雾领域较为代表性的算法，例如暗通道法DCP，DehazeNet, MSCNN, AOD-Net。第一章介绍去雾研究的背景意义，去雾研究的现状综述。第二章以暗通道法为例介绍基于先验知识的图像去雾算法，第三章以DehazeNet, MSCNN, AOD-Net为主要内容介绍基于神经网络的去雾算法。第四章介绍领域内基准性的数据集，上述各算法具体实现，图像质量评价的客观指标和各算法性能评估。第五章总结全文并提出后续研究方向和本研究应用前景展望。
 
-
-\chapter{基于先验知识的去雾算法研究：以暗通道法为例\quad}
-本章以暗通道法为例介绍基于先验知识的去雾算法，并对该算法进行描述性的评价。先验知识为不对问题进行具体处理即可知道的知识，即先于经验之前的知识。与之对应的是后验知识，即在有经验之后的知识。去雾处理中的先验知识，即不对图像进行去雾，只凭观察对比含雾图像或去雾图像就能获得的知识。在应用神经网络的去雾方法变得较为流行之前，单幅图像的去雾方法主要是基于不同的先验知识，如本章介绍的暗通道先验。
-\section{暗通道\quad }
-暗通道是He\cite{ref1}等人观察分析大量无雾图片所得出的。他们发现，大多数户外无天空区域的图片块中存在某些像素点，这些像素点有至少一个很小的RGB分量值，也就是说这些图片块中最小的像素值很小，甚至接近于0。这一发现可由下式表示：
-\begin{equation} \label{eq:2.1}
-{\bf J}^{dark}{\bf (x)} = \min_{c \in \{r, g, b\}}(\min_{{\bf y} \in \Omega({\bf x})}(\bf J^c(y)))
-\end{equation}
-其中，$J$是一张户外无天空不含雾图片，$J^c$是其中一个颜色通道，$\{ r, g, b\}$为红绿蓝三个颜色通道，$\Omega(x)$是以x为中心的一个图片块。他们观察到$J^{dark}$非常小，且接近于0，于是将$J^{dark}$称为图片J的暗通道，而将式(\ref{eq:2.1})称为暗通道先验。
-
-暗通道的发现有其物理背景。He等人提出，户外图片常常具有很多阴影，并且是具有多种颜色的。阴影的存在会使得各通道像素值均较小，具有鲜明颜色的物体则往往会缺少某一通道的颜色，使得该通道像素值较小，因此户外无天空区域图像的暗通道确实应该是暗的。理论分析之外，他们从网上搜集了5000张无雾风景图，裁剪掉天空区域并统计了他们的暗通道像素强度，统计数据也支持了他们提出的暗通道理论。
-
-这一理论的发现在去雾领域激起了千层浪。一方面，这一理论有很好的物理依据和数据支撑，远超当时的其他先验知识；另一方面，这一理论的提出为图像透射率的估计提供了一种新颖且高效的方法，极大的推动了去雾领域的知识前沿。
-
-\section{透射图估计\quad } \label{transmission}
-估计透射图之前，He等人先假设大气光值$A$已给定且为常数，并且假设以$x$为中心的局部区域内透射率为常数，记之为$\tilde{t}(x)$，对大气散射模型(\ref{eq:1.1})两端取最小值则有
-\begin{equation} \label{eq:2.2}
-\min_{{\bf y} \in \Omega({\bf x})}({\bf I}^c({\bf y})) = \tilde{t}(x) \min_{{\bf y} \in \Omega({\bf x})}({\bf J}^c({\bf y})) + (1-\tilde{t}(x)){\bf A}^c
-\end{equation}
-两端同时除以大气光值有
-\begin{equation} \label{eq:2.3}
-\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c}) = \tilde{t}(x)\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf J}^c({\bf y})}{{\bf A}^c}) + (1-\tilde{t}(x))
-\end{equation}
-在三个通道之内取最小值有
-\begin{equation} \label{eq:2.4}
-\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c})) = \tilde{t}(x)\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf J}^c({\bf y})}{{\bf A}^c})) + (1-\tilde{t}(x))
-\end{equation}
-根据暗通道先验有
-\begin{equation} \label{eq:2.5}
-{\bf J}^{dark}{\bf (x)} = \min_c(\min_{{\bf y} \in \Omega({\bf x})}(\bf J^c(y))) = 0
-\end{equation}
-而大气光值$A^c$恒为正值，则
-\begin{equation} \label{eq:2.6}
-\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf J}^c({\bf y})}{{\bf A}^c})) = 0
-\end{equation}
-联式(\ref{eq:2.4})和(\ref{eq:2.6})有
-\begin{equation} \label{eq:2.7}
-\tilde{t}(x) = 1 - \min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c}))
-\end{equation}
-
-在含雾图片中，天空区域的颜色和大气光值很相近，即$\textbf{I} \rightarrow \textbf{A}$，因此由(\ref{eq:2.7})计算出天空区域透射率为
-$$\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c})) \rightarrow 1,\ \tilde{t}(x) \rightarrow 0$$
-而天空是在无限远处的，按式(\ref{eq:1.2})计算得其透射率应当为0，这一结果与式(\ref{eq:2.7})计算结果一致，因此计算透射率时无需区分开天空区域和非天空区域。
-
-在实际中，即便是无雾天气空中也会存在小颗粒，在远眺时图像仍会被降质。而倘使将小颗粒全部去除，即令$\tilde{t}(x) = 0$，则$d \rightarrow \infty$，人眼无法感知图中景物深度，使看到的景物不真实，因此可在式(\ref{eq:2.7})中引入一个常数$\omega$以保留空中的部分颗粒，结果如下
-\begin{equation} \label{eq:2.8}
-\tilde{t}(x) = 1 - \omega\min_c(\min_{{\bf y} \in \Omega({\bf x})}(\frac{{\bf I}^c({\bf y})}{{\bf A}^c}))
-\end{equation}
-参照He等人的研究，我们将$\omega$定为0.95。
-
-利用式(\ref{eq:2.8})计算透射图是一个简单有效的办法，但由于计算的前提假设是局部区域透射率为定值，因此会产生一些块状效应，即局部区域的边缘不连续。为此，需要对该式计算出的透射图进行优化。
-
-\section{引导滤波\quad}
-He等人最初使用软抠图的方法优化透射图，但该方法需要逐元素计算抠图矩阵并且需要求解该矩阵的逆矩阵，因此时间复杂度非常高，难以应对快速的去雾处理。其在2013年提出的引导滤波\cite{ref13}方法能够较好地提升计算效率，同时保持了暗通道法较好的去雾效果。
-
-\subsection{滤波\quad}
-一张图片可以视作一个函数，自变量为图片中像素点的位置，因变量为像素值的大小，由此我们可以得到与每张图片唯一对应的一个函数。如是灰度图片，自变量为二元坐标值$(x, y)$，因变量$f(x, y)$则为处于0-255之间的一个整数值；如是彩色图片，自变量仍为二元坐标值$(x, y)$，因变量则为$3\times 1$的向量，该向量分量值为每个颜色通道的像素值（0-255之间的整数）
-$$ f(x. y) = 
-\begin{vmatrix}
-  r(x, y) \\
-  g(x, y) \\
-  b(x, y)  
-\end{vmatrix}
-$$
-
-滤波的作用即改变像素点位置对应的像素值，即$f(x,y)$，但不改变像素点的位置$(x,y)$，是常用的图像增强、提取图像信息的手段。常用滤波器有线性时不变滤波器，如均值滤波、中值滤波、高斯滤波，这类滤波器有显式声明的核函数，不因图片内容产生变化。例如，均值滤波会用每个像素点周围窗口内像素值的平均值取代该像素点原值：
-$$g(x) = \frac{1}{|\Omega(x)|}\sum_{y \in \Omega(x)}f(y)$$
-式中$\Omega(x)$为以$x$为中心的窗口大小，该大小可自定义，$|\Omega(x)|$为该窗口内像素点的个数。
-
-图\ref{fig:2.1}是含有高斯噪声的图片，我们使用均值滤波对该图片去噪，窗口大小选择为$7\times 7$，去噪效果如图\ref{fig:2.2}所示。
-\begin{figure}[htbp]
-\centering
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\includegraphics[width=8cm]{noisy}
-\caption{含噪图片}
-\label{fig:2.1}
-\end{minipage}\quad
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\includegraphics[width=8cm]{de-noisy}
-\caption{去噪图片}
-\label{fig:2.2}
-\end{minipage}
-\end{figure}
-
-均值滤波算法简单，对图像处理速度较快，但在降低噪声的同时容易使图像变模糊，尤其是图像边缘部分，这是因为滤波在处理边缘部分时会进行补零操作，进行补零操作后的像素点不具备原来图像的信息，因而取均值后造成模糊。此外，均值滤波较适合高斯噪声的去噪，对椒盐噪声处理效果较差。除线性时不变滤波器之外，有时候我们想利用图片的信息进行对图片进行滤波处理，因而需要使用一张引导图像，此即引导滤波。
-\subsection{引导滤波\quad}
-引导滤波的输入为引导图像$I$，被引导图像$p$，滤波器半径大小$r$，正则化参数$\epsilon$，输出为滤波处理后的图像$q$。引导滤波的关键假设是引导图像$I$与滤波输出$q$之间存在线性关系：在以像素点$k$为中心的窗口$\omega_k$中，滤波输出是引导图像的线性转换
-\begin{equation} \label{eq:2.9}
-q_i = a_k I_i + b_k, \forall i \in \omega_k
-\end{equation}
-其中，$(a_k, b_k)$是在窗口$\omega_k$中为常数的线性系数，窗口大小由半径$r$决定。
-
-我们通过最小化滤波器输入$p$与输出$q$之间的差异来确定线性系数的大小，由此定义的损失函数为
-\begin{equation} \label{eq:2.10}
-E(a_k, b_k) = \sum_{i\in \omega_k}((a_k I_i + b_k - p_i) + \epsilon a_k^2)
-\end{equation}
-其中$\epsilon$是正则化系数，用以惩罚过大的系数$a_k$。最小化上述损失函数，得
-\begin{equation} \label{eq:2.11}
-a_k = \frac{\frac{1}{|\omega|}\sum_{i\in \omega_k}I_ip_i - \mu_k\bar{p_k}}{\sigma_k^2 + \epsilon}
-\end{equation}
-\begin{equation} \label{eq:2.12}
-b_k = \bar{p_k} - a_k \mu_k
-\end{equation}
-其中，$\mu_k$和$\sigma_k^2$是引导图像在窗口$\omega_k$中的均值和方差，$|\omega|$是窗口内像素点的个数，而$\bar{p_k} = \frac{1}{|\omega|}\sum_{i\in \omega_k}p_i$是窗口内被引导图像的均值。得到线性系数$(a_k, b_k)$值后，我们即可通过(\ref{eq:2.9})式计算滤波器输出。
-
-值得注意的是，图片中某个像素点$i$不为某一个窗口专属，因此在不同窗口下根据(\ref{eq:2.9})式计算出的$q_i$并不一样。对此，一个较为简单可行的方法是对$q_i$所有可能值取平均。因此，在计算出每个窗口中的线性系数之后，我们可以通过下式计算滤波器输出
-\begin{equation} \label{eq:2.13}
-q_i = \frac{1}{|\omega|}\sum_{k|i\in \omega_k}(a_k I_i + b_k)
-\end{equation}
-也即
-\begin{equation} \label{eq:2.14}
-q_i = \bar{a_i}I_i + \bar{b_i}
-\end{equation}
-其中，$\bar{a_i} = \frac{1}{|\omega|}\sum_{k\in \omega_i}a_k$和$\bar{b_i} = \frac{1}{|\omega|}\sum_{k\in \omega_i}b_k$是包含像素点$i$的所有窗口中线性系数的均值。式(\ref{eq:2.11}), (\ref{eq:2.12}), (\ref{eq:2.14})即是引导滤波的定义。由以上介绍的算法，我们可以对\ref{transmission}节中估计出的透射图进行优化，以此得到更精确的透射图。
-
-\section{大气光估计\quad} \label{airlight}
-以往的研究中，学者们多使用图片中像素最大值作为大气光值，但这一方法不具较强的鲁棒性，因为像素最大值可能出现在一辆白色的车或者白色的建筑物外壁上，但这些像素值不能够很好的代表大气光值。对此，He等人提出利用暗通道进行大气光值的估计。
-
-含雾图片其对应无雾图像相比，$t$值更小，因此含有大气光的比例更高，从而导致图片更明亮，也即像素值越高。与之类似，在暗通道中，雾越浓的区域像素值越高，而浓雾区域的像素值与大气光值较为接近。由此，He等人提出，先选出暗通道中前0.1\%亮度值最高的像素点，在这些像素点中选取原图中的最高亮度值作为大气光$A$。这一方法实际上是先挑选出原图中雾最浓的区域，而后在此区域中选取最高像素值作为大气光值。由于浓雾区域一般在较远处，因此这一方法有效的解决了将白色物体像素值作为大气光值的问题。
-
-\section{无雾图像计算\quad}
-如前所述，根据大气散射模型(\ref{eq:1.1})进行图像去雾处理，最关键步骤是计算出透射图和大气光。值得注意的是，在介质透射率较小甚至趋近于0时，景物直接衰减光值$J(x)t(x)$会趋于0，由此根据模型获取的无雾图像易产生较大噪声，因此需要对透射率最小值进行限制。我们设置透射率最小值为$t_0$，这意味着在浓雾区域我们人为减小雾的厚度以保留景物信息。可由下式进行无雾图像的计算
-\begin{equation} \label{eq:2.15}
-{\bf J(x)} = \frac{\bf I(x) - A}{\max(t({\bf x}), t_0)} + {\bf A}
-\end{equation}
-其中，$t_0$的取值我们参照He的研究，设为0.1。
-
-\section{算法评价\quad}
-He等人提出的暗通道法毫无疑问是单幅图像去雾的标志性工作。该方法一方面提出了一个原理简单而牢靠的暗通道理论，另一方面优化了去雾处理的各个步骤，取得非常好的去雾效果，直击领域前沿。在暗通道法提出后，许多学者对此方法表现出极大兴趣，并致力于改进该算法，如让其更好的适用于天空区域，进一步优化透射率的计算等。
-
-与此同时，我们也应当意识到这一方法的局限性，其一，是多次提到过的，该方法不适用于存在天空区域或和天空颜色较为相似的物体的图片，在此类图片中，暗通道会失效。其二，是所有基于大气散射模型的去雾算法共有的局限性——大气散射模型也许无法准确描述含雾图片的生成。
-
-\chapter{基于神经网络的去雾算法研究\quad}
-本章着重介绍几种领域内广为人知的基于神经网络的去雾算法，DehazeNet, MSCNN, AOD-Net。神经网络以其强大的非线性拟合能力在学界掀起了一股热潮，而卷积神经网络以其对图像的卓越处理能力成为了计算机视觉领域的标志性算法。本章将先介绍卷积神经网络的基本结构，如卷积层、池化层等，再深入讲解以卷积神经网络为基础的去雾算法。
-
-\section{卷积神经网络\quad}
-卷积神经网络最早是由Yang LeCun提出的，但当时并未引起较大注意。之后的十几年，计算能力显著提高，CPU越来越快，GPU成为常用的计算工具，智能手机、摄像头的广泛应用使人们可以获取海量数据，大量的数据和不断提高的计算能力让神经网络的训练变得越来越易行。卷积神经网络因其独特的结构，使得网络参数相较于全连接前馈网络大幅减少，并能捕捉图像中的局部特征，因而非常适合于图像处理。2012年，Alex Krizhevsky提出的AlexNet在ImageNet图像识别比赛中大幅获胜，激起了卷积神经网络的热潮，并由此拉开了深度学习的时代序幕。
-
-典型的卷积神经网络一般含有卷积层、池化层和全连接层。
-
-\subsection{卷积层\quad}
-卷积操作和上述线性时不变滤波器对图片进行的操作是类似的，如图\ref{fig:3.1}所示。其中，$I$为需进行卷积操作的图层，$K$为卷积核，卷积结果为$I\otimes K$。卷积层一般用于提取前一层的局部特征，卷积核即特征提取器。
-
-以彩色图片为输入层时，令其大小为$M \times N \times D$，其中$M$为图片高度，$N$为图片宽度，$D$为图片深度，即颜色通道个数，彩色图片通道个数为3（$D = 3$），灰度图片通道个数为1（$D = 1$）。不失一般性，不妨假设输入卷积层的张量大小为$M \times N \times D$，记为$X$，进行卷积操作后输出层张量大小为 $M^{\prime} \times N^{\prime} \times P$，记为$Y$，则卷积核张量大小为$m \times n \times D \times P$，记为$W$，其中，$m$，$n$为二维卷积核大小，$P$为输出特征图的个数。
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{convolution}
-\caption{卷积操作}
-\label{fig:3.1}
-\end{figure}
-
-卷积层计算输出特征图$Y_p$时，用卷积核$W_p$（大小为$m \times n \times D$）对输入张量$X$进行卷积操作，加上偏置标量$b_p$即得到卷积层的净输入$Z_p$，$Z_p$经过激活函数得到特征图$Y_p$。其计算过程如下
-\begin{equation} \label{eq:3.1}
-Z^p = W^p \otimes X + b^p = \sum_{d = 1}^D W^{p, d} \otimes X^d + b^p
-\end{equation}
-\begin{equation} \label{eq:3.2}
-Y^p = f(Z^p)
-\end{equation}
-其中，$f$为激活函数，常用的激活函数有tanh, ReLU, sigmoid, Leaky ReLU等。计算其他的输出特征图时采用类似的方法。一个卷积层的可训练参数为权重$W$和偏置$b$，权重参数个数即为卷积核张量大小$P \times D \times (m \times n)$，偏置参数个数与输出特征图的张数一致，为$P$，故共需要$P \times D \times (m \times n) + P$个参数。
-
-\subsection{池化层\quad}
-池化层，又叫下采样层，一般置于卷积层之后，目的是进行特征选择，减少特征数量。池化层的一般操作是将每张特征图划分为$2\times 2$的不重叠区域，对每个区域使用最大池化或平均池化函数。其中，划分区域及池化函数可以自定义，但过大的划分区域会导致信息的过分损失。
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.6\textwidth]{pool}
-\caption{池化操作}
-\label{fig:3.2}
-\end{figure}
-常用的池化函数有最大池化和平均池化，两者作用原理如图\ref{fig:3.2}所示。
-
-\subsection{上采样层\quad}
-上采样层与池化层对应，类似于池化层的逆操作，即将一个像素点的值扩充至以该像素点为中心的窗口，窗口大小可以自己定义，一般选择$2\times 2$的窗口。其过程如图\ref{fig:3.3}所示，此图选择的窗口大小为 $3 \times 3$。
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.6\textwidth]{upsample}
-\caption{上采样操作}
-\label{fig:3.3}
-\end{figure}
-
-\section{DehazeNet\quad}
-由大气散射模型可知，图片去雾最关键步骤在于透射图的估计，由是Cai\cite{ref16}等人提出了一个端到端预测透射率的系统，该网络架构如图\ref{fig:3.4}所示。值得注意的是，该网络输入层是大小为$16 \times 16 \times 3$的图片块，输出结果是该图片块的透射率，这一性质将在第四章详细讨论。
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{DehazeNet}
-\caption{DehazeNet网络结构}
-\label{fig:3.4}
-\end{figure}
-
-\subsection{特征提取层\quad}
-特征提取层通过卷积操作和非线性激活函数实现。卷积操作使用16个大小为$5 \times 5 \times 3$的卷积核，不同于一般使用ReLU或tanh激活函数，这一层使用Maxout\cite{ref19}激活函数，并设置其参数为$k = 4$。以下使用一个简单的例子讲解Maxout激活函数。
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{Maxout}
-\caption{传统激活函数与Maxout激活函数}
-\label{fig:3.5}
-\end{figure}
-如图\ref{fig:3.5}，(a)表示传统的激活函数，(b)表示Maxout激活函数。(a)中，我们有$$Y = f(W \otimes X + b)$$
-其中，$f$为常用的激活函数，如tanh, ReLU, sigmoid，参数个数为 $2 + 1 = 3$个。(b)中，我们有
-\begin{equation} \label{eq:3.3}
-Y = \max\{W_1 \otimes X + b_1, W_2 \otimes X + b_2, W_3 \otimes X + b_3, W_4 \otimes X + b_4\}
-\end{equation}
-其中参数个数有 $(2 + 1) \times 4 = 12$个。由此知，Maxout单元会成倍的增加参数个数，成倍因子为Maxout单元的参数$k$。
-
-由式(\ref{eq:3.3})可知，Maxout激活单元是分段的线性函数，因而可以拟合任意的凸函数，如图\ref{fig:3.6}所示。
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{Maxout-fitting}
-\caption{Maxout激活单元}
-\label{fig:3.6}
-\end{figure}
-
-\subsection{多尺度映射\quad}
-多尺度特征在图像去雾上被证明是较为有效的，于是本网络也采用了多尺度卷积。具体而言，三个尺度的卷积核大小分别为$3\times 3$， $5\times 5$， $7\times 7$，每个尺度均选用16个卷积核。由于上一层输出特征组中有四张特征图，因此每个卷积核的深度均为4。
-
-\subsection{局部极值\quad}
-局部极值采用最大池化，窗口大小为$7\times 7$。上一层输出特征组有$16 \times 3 = 48$张特征图，大小均为$12 \times 12$。因此本层局部极值的输出张量大小为$48 \times 6 \times 6$。
-
-\subsection{非线性回归\quad}
-本层在卷积操作之后采用双边线性整流函数(BReLU)作为激活函数。一方面，sigmoid激活函数容易导致梯度消失，进而导致较慢的收敛速度和不理想的局部极值；另一方面，ReLU激活函数比较适用于分类问题，不是非常适合回归问题，如这里的图像复原。受sigmoid函数和ReLU函数启发，DehazeNet提出使用BReLU激活函数，该函数可以保持双边约束以及局部线性。图\ref{fig:3.7}为BReLU和ReLU激活函数图像对比，在本方法中，$t_{min}$和$t_{max}$分别取值为0和1。
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{BReLU}
-\caption{ReLU和BReLU激活单元对比}
-\label{fig:3.7}
-\end{figure}
-本层仅使用一个卷积核，其大小为$6 \times 6$，因而输出张量大小为$1 \times 1$，经过BReLU激活函数之后输出一个0-1之间的标量值，即为该图片块的透射率值。
-
-\subsection{网络参数\quad}
-表\ref{tab:3.1}显示了DehazeNet中各层的参数设置。在本网络中，卷积层的偏置恒为0，只设置权重参数，该网络中可训练参数共有$16 \times 4 \times 5 \times 5 + 16 \times 4 \times (3 \times 3 + 5 \times 5 + 7 \times 7) + 48 \times 6 \times 6 = 8240$个。
-
-% Table generated by Excel2LaTeX from sheet 'Sheet1'
-\begin{table}[htbp]
-  \centering
-  \caption{DehazeNet参数设置}
-    \begin{tabular}{c|c|c|c|c|c}
-    \hline
-    层     & 类型    & 输入尺寸  & 个数    & 卷积核大小 & 补0 \\
-    \hline
-    \multirow{2}[1]{*}{特征提取} & 卷积    & $3 \times 16 \times 16$ & 16    & $5 \times 5$ & 0 \\
-          & Maxout & $16 \times 12 \times 12$ & 4     & —     & 0 \\
-	\hline
-    \multirow{3}[0]{*}{多尺度映射} & \multirow{3}[0]{*}{卷积} & \multirow{3}[0]{*}{$4 \times 12 \times 12$} & 16    & $3 \times 3$ & 1 \\
-          &       &       & 16    & $5 \times 5$ & 2 \\
-          &       &       & 16    & $7 \times 7$ & 3 \\
-	\hline
-    局部极值  & 最大池化  & $48 \times 12 \times 12$ & —     & $7 \times 7$ & 0 \\
-	\hline
-    \multirow{2}[1]{*}{非线性回归} & 卷积    & $48 \times 6 \times 6$ & 1     & $6 \times 6$ & 0 \\
-          & BReLU & $1 \times 1$ & 1     & —     & 0 \\
-    \hline
-    \end{tabular}%
-  \label{tab:3.1}%
-\end{table}%
-
-\subsection{无雾图像计算\quad}
-如前所述，DehazeNet的输入是$16 \times 16 \times 3$的图片块，输出该图片块的透射率值。在网络训练好之后，对含雾图像去雾时，需要先划分出图片块，然后预测每个图片块的透射率值从而得到整张图片的透射图，之后使用引导滤波的方法对该透射图进行优化。估计大气光时，需先选出透射图中前0.1\%像素强度值的像素点位置，并在这些位置中选取最高像素值作为大气光值。最后按照大气散射模型采用下式计算无雾图像
-\begin{equation}\label{eq:3.4}
-J(x) = \frac{I(x) - A(1 - t(x))}{t(x)}
-\end{equation}
-
-\section{MSCNN\quad}
-与DehazeNet类似，Ren\cite{ref17}等人提出了多尺度卷积神经网络(MSCNN)以预测透射图。该网络结构如图\ref{fig:3.8}所示。由图可知，该网络分为粗尺度网络和细尺度网络，粗尺度网络的输出作为细尺度网络的一个输入，该网络包含有卷积层、池化层、上采样层、线性组合层以及融合层。
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{MSCNN}
-\caption{MSCNN网络结构}
-\label{fig:3.8}
-\end{figure}
-
-\subsection{网络各层介绍\quad}
-	输入层为彩色含雾图片，具有三个通道。
-\par 卷积层采用线性整流函数(ReLU)作为激活函数，并且含有偏置。
-\par 池化层置于卷积层之后，采用的下采样因子为2，也即窗口大小为$2 \times 2$。
-\par 上采样层采用$2 \times 2$的窗口。
-\par 线性组合层旨在融合特征。具体而言，该层将上采样层输出的特征图进行线性组合，并添加偏置，之后应用sigmoid激活函数。
-\par 细尺度网络将粗尺度网络的输出和第一个上采样层的输出融合，共同作为第二个卷积层的输入。
-
-\subsection{网络参数\quad}
-	本网络在训练时，需先训练粗尺度网络，后训练细尺度网络。粗尺度网络训练时，可训练参数个数为$(5 \times 3 \times 11 \times 11 + 5) + (5 \times 5 \times 9 \times 9 + 5) + (10 \times 5 \times 7 \times 7 + 10) + (10 + 1) = 6321$个，其中包含权重和偏置；细尺度网络训练时，可训练参数个数为$(4 \times 3 \times 7 \times 7 + 4) + (5 \times 5 \times 5 \times 5 + 5) + (10 \times 5 \times 3 \times 3 + 10) + (10 + 1) = 1693$个，包含权重和偏置。
-
-\subsection{无雾图像计算\quad}
-由该网络结构可知，输出透射图与输入RGB图像具有同样的高度和宽度，因此无需对输入图像进行划分。估计大气光时，需先选出透射图中前0.1\%像素强度值的像素点位置，并在这些位置中选取最高像素值作为大气光值，并按照下式进行无雾图像的计算
-\begin{equation} \label{eq:3.5}
-{\bf J}(x) = \frac{{\bf I}(x) - {\bf A}}{\max\{0.1, t(x)\}} + {\bf A}
-\end{equation}
-
-\section{AOD-Net\quad}
-上述两种基于神经网络的方法都采用了同一种思路，即先估计透射图，后根据大气散射模型对图片去雾。这种思路存在两方面的问题，其一，这种思路并不是直接最小化去雾生成图片和无雾图片的差异，因而生成的去雾图片会与真实无雾图片存在较大偏差；其二，分别估计透射率和大气光值产生的误差会累积，进而加剧估计偏差。由此，Li\cite{ref18}等人提出了AOD-Net，完全将去雾转化为一个端对端的问题，不需要任何的中间步骤估计参数，如大气光值。
-
-\subsection{问题重构\quad}
-根据大气散射模型，无雾图片可以由以下方程计算得到
-\begin{equation} \label{eq:3.6}
-J(x) = \frac{1}{t(x)}I(x) - A\frac{1}{t(x)} + A
-\end{equation}
-为了不用分开估计透射图$t$和大气光值$A$，Li等人将式\ref{eq:3.6}重写为下式
-\begin{equation} \label{eq:3.7}
-\begin{aligned}
-J(x) = K(x)I(x) - K(x) + b \\
-K(x) = \frac{\frac{1}{t(x)}(I(x) - A) + A - b}{I(x) - 1}
-\end{aligned}
-\end{equation}
-其中$b$为一个常数偏置，默认值为1。经过上述转换，我们便无需分开估计$t$和$A$，而是最小化上式输出$J(x)$和真实无雾图之间的误差。
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{AOD-Net}
-\caption{AOD-Net网络结构}
-\label{fig:3.9}
-\end{figure}
-\subsection{网络结构\quad}
-
-如图\ref{fig:3.9}所示，该网络结构分为两个模块，一个模块用来估计$K(x)$，另一个模块用来逐元素计算生成无雾图片。前一个模块为全卷积网络，采用五个卷积层和三个融合层。其中，每一个卷积层都只使用三个卷积核，网络中使用不同大小的卷积核以获得多尺度特征，而使用融合层则用以弥补在卷积操作中丢失的信息。不同于DehazeNet，本网络中每个卷积层之后均使用ReLU激活函数。该网络的输入为含雾图片，输出为生成的无雾图片，训练以及预测未知含雾图片均比较简便。
-
-\subsection{无雾图像计算\quad}
-由于AOD-Net具有非常轻便且端对端的网络结构，因此在网络训练好之后，对未知的含雾图片进行处理时，只需进行一次前向传播即可获取去雾图片。相比于DehazeNet，省去了划分图片块、使用引导滤波等过程；相比于MSCNN，也不用估计大气光并另外进行无雾图像计算。
-
-\section{本章小结\quad}
-由上可知，基于神经网络的去雾算法有更大的灵活度，网络结构的选择层出不穷，但我们也应注意到，以上介绍的三种算法均依据大气散射模型进行去雾，是否存在不基于大气散射模型、端对端、高效快速的去雾算法，这不得而知。本论文中，我们着重研究各种方法的去雾效果，以及他们的泛化能力，并将这些方法应用到雾天视频以观察其实际效果。
-
-\chapter{算法实现及评估\quad}
-
-本章我们具体讲解每种算法的实现，以及他们在统一测试数据上的表现。注意到，前面介绍的几种方法中，只有暗通道法是直接对含雾图像进行处理，不需要其对应的无雾图像，而另外几种方法除含雾图像外，均需要其他信息，如该图像对应无雾图像，或该图像对应透射图，或该图像中图片块对应的透射率值。在实际中，我们几乎不可能找到大量的含雾—无雾图片对，而任意给定一张含雾图像，我们也不知道该图像的透射率或投射图，因此，现存文献中均使用图片合成的方法对上述神经网络进行训练。
-
-含雾图片的合成基于两个假设\cite{ref20}：1) 图片内容与景物深度或介质透射率无关，也即同一图片内容可以出现在不同图片的不同深度；2) 局部范围内，景物深度相近，也即在一个较小的窗口里，该窗口中所含像素点对应的景物深度值相近。依据上述两条假设，我们可以采用下述方法生成含雾图片块：给定无雾图片块\textbf{$p_j$}，以及大气光值$A$，我们随机生成透射率值$t\in [0,1]$，根据${\bf p}_I = t{\bf p}_j + (1 - t){\bf A}$计算含雾图片块。同时，为减少参数学习的不确定性，设置大气光值为$A = [1,1,1]$。
-
-以上生成含雾图片的方法影响了许多后续研究，这让大规模含雾—无雾图片对的获取成为可能，是一项开创性的工作。在此基础上，Li\cite{ref21}等人创建了RESIDE\footnote{\url{https://sites.google.com/view/reside-dehaze-datasets}.}数据集——一个去雾算法学习评估的基准数据集，下面会介绍。
-
-此外，由第二条假设可知，一个较小的图片块具有相同的透射率值，我们可以通过图片块预估该图片块中所有像素点的透射率值，此即DehazeNet所采用的方法。
-
-\section{RESIDE数据集\quad}
-RESIDE数据集旨在解决去雾领域含雾—无雾图片对难以获取的困境，通过大规模合成室内、室外含雾图片，为研究人员提供一个综合全面的去雾数据集。此外，该数据集提供了一个评价去雾算法的平台，由学者提出的去雾算法可以使用该数据集的数据进行训练、评估，从而界定各种算法的效果。评估算法时，该平台提出了一系列的评价指标，包括但不限于峰值信噪比PSNR、结构相似性SSIM，以及人眼评价去雾效果。
-
-根据公式(\ref{eq:1.1})，(\ref{eq:1.2})可得出下式
-\begin{equation}\label{eq:4.1}
-I(x) = J(x) e^{-\beta d(x)} + A(1 - e^{-\beta d(x)})
-\end{equation}
-由上式可知，含雾图片的生成需要无雾图片$J$，该图片对应的深度数据$d$，大气光值$A$，大气散射系数$\beta$。RESIDE数据集的生成使用了NYU2\cite{ref22}和Middlebury stereo\cite{ref23}深度数据集，并从该数据集获取了对应的无雾图片，因而获取了$J$和$d$的信息。在此基础上，Li等人在$[0.7, 1.0]$之间对大气光值$A$随机取值，在$[0.6, 1.8]$之间对$\beta$随机取值，从而生成含雾图片。
-
-在该数据集网站上可以看到，RESIDE数据集含有五个共训练测试的子集，分别为：室内训练集ITS，共110000张含雾图片；室外训练集OTS，共313950张含雾图片；客观合成测试集SOTS，共1000张含雾图片；应用驱动测试集RTTS，共4322张；综合主观测试集20张。该数据集数据量之大，图片内容之全，以及评价指标之多，均为领域之最。
-
-\section{算法实现与参数设置\quad}
-本节我们讲解各算法的具体实现及其参数设置。算法中部分参数值，作者在提出算法时已经给出，我们不做更改；而另一部分参数，作者并未明确，因此我们自行调优给出。
-
-\subsection{暗通道法 (DCP)\quad}
-	暗通道法是直接对含雾图片进行处理的算法，不需要对应的无雾图片，也不需要对图片大小进行修改，算法输入是任意的含雾图片。算法具体实现步骤为：
-\begin{enumerate}
-\item 根据公式(\ref{eq:2.1})计算图像暗通道
-\item 根据公式(\ref{eq:2.8})计算透射图
-\item 根据引导滤波算法优化透射图
-\item 根据\ref{airlight}节提出方法估计大气光值
-\item 根据公式(\ref{eq:2.15})计算无雾图像
-\end{enumerate}
-
-其中，计算暗通道时需给定窗口大小，我们设置该大小为$15\times 15$。引导滤波中使用盒子滤波的半径值设为40，正则化参数设为0.001。
-
-\subsection{DehazeNet\quad}
-如前所述，DehazeNet输入数据为$16 \times 16 \times 3$的图片块，输出为该图片块的透射率值。我们采用RESIDE数据集的ITS子集作为训练数据。值得注意的是，ITS中给出的数据是含雾图片和该图片对应的透射图，因此我们需要对该图片进行划分。以一张$320 \times 240$的彩色图片及其对应透射图为例，我们用$16 \times 16$的窗口在该图片及其对应透射图上不重复随机采样，将该采样图片块作为一个样本。由于样本标签是该采样图片块对应透射率值，而我们采样出透射图的图片块是一个$16 \times 16$的数值矩阵，因此我们对透射图图片块取均值作为样本标签。经此处理，一张$320 \times 240$的彩色图片可以生成300个无关联样本（因为我们采用不重复随机采样）。由于训练样本数据大小为$16 \times 16 \times 3$，与ITS数据集中图片大小无关，因此我们不需要统一图片大小尺寸，将图片高度和宽度均调整为距自身最近的16的整数倍即可。原作者训练网络时使用了100 000个样本，本论文一方面扩大训练数据量，另一方面考虑到机器性能以及运行时间，最终决定在ITS数据集中随机抽取10 000张图片生成样本进行训练。
-	
-DehazeNet使用均方误差作为损失函数
-\begin{equation} \label{eq:4.2}
-L(\Theta) = \frac{1}{N}\sum_{i = 1}^N {||F(I_i^P; \Theta) - t_i||}^2
-\end{equation}
-其中，$F(I_i^P; \Theta)$为网络输出，$t$为实际透射率值，$N$为使用图片块个数。本网络使用随机梯度下降优化器，动量设置为0.9，衰减率设置为$5e-4$，学习率初始化为0.005，每训练10轮让学习率减半，共训练50轮。权重初始值从均值为0，标准差为0.001的正态分布中随机取值，偏置恒设置为0，共8240个参数。训练过程中，我们按4:1的比例划分训练集和交叉验证集，并将批尺寸设为100。
-
-训练好DehazeNet之后，我们采用划分图片块的方法对测试图片进行预测，并使用引导滤波优化投射图，之后如前所述估计大气光值并计算无雾图像。
-
-\subsection{MSCNN\quad}
-MSCNN的输入为含雾图像，输出为该图像对应投射图。我们使用RESIDE数据集中的ITS子集对该网络进行训练。原作者训练时使用了6 000张无雾图片并生成18 000个样本作为训练集，本论文采用更大的数据量并考虑到机器性能和处理时间，最终从ITS数据集中随机抽取30 000张图片用作训练。此外，该网络在训练时将所有图片统一尺寸为$320 \times 240$。本论文采取类似做法。
-
-MSCNN按下式计算损失函数
-\begin{equation} \label{eq:4.3}
-L(t_i(x), t_i^{\ast}(x)) = \frac{1}{q}\sum_{i = 1}^q {||t_i(x) - t_i^{\ast}(x)||}^2
-\end{equation}
-其中，$q$为含雾图片张数，$t_i(x)$为网络生成投射图，$t_i^{\ast}(x)$为实际使用的投射图。值得注意的是，本网络中粗尺度网络和细尺度网络是分开训练的，两次训练均采用此损失函数。网络在训练时，先训练好粗尺度网络，而后将粗尺度网络的输出作为细尺度网络的一张特征图，继续训练细尺度网络。本网络使用随机梯度下降优化器，初始学习率设置为0.001，动量设置为0.9，衰减率设置为$5e-4$，每十轮让学习率减至原值的10\%，共训练四十轮。训练过程中，我们按4:1的比例划分训练集和交叉验证集，并设置批尺寸为100。
-
-训练好MSCNN之后，我们用之对测试图片进行预测，并按照传统方法估计大气光值，进而计算无雾图像。MSCNN对传入图片的限制是该图片的高度值和宽度值均为偶数，基于此，我们将测试图片大小调整为距自身最近的偶数值，以尽量保存测试图片信息。
-
-\subsection{AOD-Net\quad}
-AOD-Net的输入为含雾图片，输出为去雾图片。我们使用RESIDE数据集中的OTS子集对该网络进行训练。原作者训练时使用27 256个样本，我们采用更大的数据量并考虑机器性能和处理时间，最终从OTS数据集中随机选取40 000张图片用于训练。AOD-Net是一个全卷积网络，因此对输入图片大小没有限制，但是考虑到我们训练时采取分批次的方法，而每一批次的数据应当具有相同大小，于是我们将所有训练数据统一尺寸为$320 \times 240$。训练过程中，我们按4:1的比例划分训练集和交叉验证集，并设置批尺寸为32。
-	
-AOD-Net使用均方误差作为损失函数，使用随机梯度下降优化器，其中动量设置为0.9，衰减率设置为0.0001，并且将梯度值限制在$[-0.1, 0.1]$之间。本网络采用高斯分布随机变量初始化权重。
-	
-网络训练好之后，即可直接对测试图片进行去雾。由于该网络是全卷积网络，因此不用调整图片大小。
-
-\section{图像质量评价指标\quad}
-图片在获取、处理、压缩、储存或传输时都有可能引入噪声，本论文研究的雾属于噪声的一种。本论文对图片的处理最终是以人为受众的，因此处理效果由由受众主观评价最为合理。然而，主观评价需要花费大量的时间精力，且评价结果极易收到评价者的影响（如同一评价者在不同的环境下有可能对同一张图片给出不同的评价结果），因而主观评价是不稳定的。
-
-由此，学者们展开了客观评价指标的研究。图像质量评估（Image Quality Assessment, IQA）中的客观指标可以分为三类\cite{ref24}：全参考(Full-Reference, FR)指标，即可以获得参考图片时对处理图片进行评价的指标；部分参考(Reduced-Reference, RR)指标，旨在能获取部分参考图片信息（如结构信息、深度信息等）时对处理后图片进行评价；无参考(No-Reference, NR)指标，即无法获取参考图片时进行评价的指标。在图片处理领域，一般情况下我们是无法获取参考图片的，因此此类指标的研究应用至关重要。无参考指标通常分为两类，一类是单一用途质量评估方法，这类方法需要先知道降质类型，如噪声、模糊等，进而对该特定类型计算指标得分；另一类是基于训练和学习的通用质量评估方法，此类方法先自动对图片所含噪声类型进行判断分类，之后针对降质类型计算评价指标。此类方法不受限于某一特定的图片降质原因，因而具有更广的应用前景。除传统方法之外，也有学者应用深度学习进行图像质量评价。神经网络有复杂的结构和强大的非线性拟合能力，因而性能会超过传统方法，但该方法需要大量的数据进行训练，且网络设计和训练极度强调技巧，本文暂不深入研究。
-
-全参考指标中，最常用的指标为峰值信噪比PSNR和结构相似性SSIM，本文我们也采用这两个全参考指标对算法进行评价。无参考指标中，通用型的指标SSEQ和BRISQUE具有较低的时间复杂度，且与人眼评价较为一致，因此本文选用这两个无参考指标。下面对各指标逐一介绍。
-
-\subsection{峰值信噪比PSNR\quad}
-
-在通信领域，信噪比是指信号功率与噪声功率之比，峰值信噪比表示信号最大可能功率与噪声功率之比值。在图像处理领域，峰值信噪比则通过均方误差MSE进行定义，即像素点最大像素值与MSE的比值。
-
-假设有一张去雾图像$I$和其对应的无雾真实图像$J$，其大小为$m \times n \times 3$，其中3是颜色通道个数。则均方误差定义为
-\begin{equation} \label{eq:4.4}
-MSE = \frac{1}{3mn}\sum_{i = 0}^{m - 1}\sum_{j = 0}^{n - 1}{[I(i, j) - J(i, j)] }^2
-\end{equation}
-峰值信噪比为
-\begin{equation} \label{eq:4.5}
-PSNR = 10 log_{10}(\frac{MAX_I^2}{MSE})
-\end{equation}
-其中，$MAX_I$表示图像点像素最大值。由上可知，峰值信噪比越大，图像失真越小，去雾效果越好，PSNR指标值通常在0-100之间。
-	
-MSE和PSNR的计算非常简便，也具有清晰的物理含义，因此被广泛应用于重建图像的评估，但这两个指标对图像的的评价结果与人眼的评价结果不完全一致，因此存在应用的局限性。
-
-\subsection{结构相似性SSIM\quad}
-与PSNR不一样，SSIM更强调与评价指标与人眼判断具有较好的一致性。人眼在观看图片时，会潜意识将图片内容结构化，也即认为相邻像素之间是存在关联的，因此Wang\cite{ref24}等人在设计SSIM时着重考虑了图片间的结构性信息。
-	
-Wang等人设计的SSIM系统将图像相似性的测量分为亮度、对比度以及结构的测量，按照下式进行SSIM的计算
-\begin{equation} \label{eq:4.6}
-SSIM(x, y) = {[l{\bf (x, y)}]}^{\alpha}\cdotp {[c{\bf (x, y)}]}^{\beta}\cdotp {[s{\bf (x, y)}]}^{\gamma} 
-\end{equation}
-其中
-\begin{equation} \label{eq:4.7}
-l{\bf (x, y)} = \frac{2\mu_x\mu_y + C_1}{\mu_x^2 + \mu_y^2 + C_1}
-\end{equation}
-\begin{equation} \label{eq:4.8}
-c{\bf (x, y)} = \frac{2\sigma_x\sigma_y + C_2}{\sigma_x^2 + \sigma_y^2 + C_2}
-\end{equation}
-\begin{equation} \label{eq:4.9}
-s{\bf (x, y)} = \frac{\sigma_{xy}+ C_3}{\sigma_x\sigma_y + C_3}
-\end{equation}
-
-$l{\bf (x, y)}$比较$x$和$y$的亮度，$c{\bf (x, y)}$比较$x$和$y$的对比度，$s{\bf (x, y)}$比较$x$和$y$的结构，$\alpha > 0, \beta > 0, \gamma > 0$为调整三者相对重要性的参数，$C_1, C_2, C_3$为维持三者稳定性的常数，$\mu_x, \sigma_x, \mu_y, \sigma_y$分别为$x$和$y$的平均值和标准差，$\sigma_{xy}$为$x$和$y$的协方差。
-
-SSIM指标值在0-1之间，用SSIM评估图像相似度时，计算的SSIM越大，则两张图片相似度越高。在实际使用时，为简化上述表达式，一般令$\alpha = \beta = \gamma = 1$并使$C_3 = 3/2 C_2$，得
-\begin{equation}
-SSIM({\bf x, y}) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy}+ C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
-\end{equation}
-
-此外，由于视觉的局部性，我们使用固定大小的窗口在图片上滑动，计算每个窗口的SSIM值，并使用高斯加权函数对每个窗口值进行加权平均以防止出现块状现象。
-
-\subsection{BRISQUE\quad}
-自然图片有一个统计特征，即正则化的图像像素值是符合正态分布的。图片受到降质影响时，便会偏离这一统计特征，也即失真。因此，学者们提出可以设计算法来测量这一统计特征的偏离程度，以量化该图片受到的降质影响，进而评估图像质量。
-
-基于此，Mittal\cite{ref25}等人提出了BRISQUE方法。该方法先使用MSCN(Mean Subtracted Contrast Normalization)对图像进行正则化处理
-\begin{equation} \label{eq:4.11}
-\hat{I}(i, j) = \frac{I(i, j) - \mu(i, j)}{\sigma(i, j) + C}
-\end{equation}
-其中，$i = 1, 2, \cdots, M, j = 1, 2, \cdots, N$，$M$和$N$为图像的长和宽，$I(i, j)$为该图像像素值，$\mu(i, j)$为局部均值，$\sigma(i, j)$为局部标准差，$C$为常数，取作1，以防止分母过小。记计算出的$\hat{I}$为原图像对应的MSCN图像。
-
-Mittal等人发现，降质图像与自然图像中像素点的相邻关系也不一样，因此他们提出分四个方向计算MSCN图像间的两两乘积，分别为水平方向(H)，竖直方向(V)，左对角方向(D1)，右对角方向(D2)，得到四张相关性图像。
-\begin{equation} \label{eq:4.12}
-\begin{aligned}
-H(i, j) = \hat{I}(i, j)\hat{I}(i, j + 1) \\
-V(i, j) = \hat{I}(i, j)\hat{I}(i + 1, j) \\
-D1(i, j) = \hat{I}(i, j)\hat{I}(i + 1, j + 1) \\
-D2(i, j) = \hat{I}(i, j)\hat{I}(i + 1, j - 1) 
-\end{aligned}
-\end{equation}
-
-之后，Mittal等人使用广义高斯分布拟合MSCN图像，得到2个特征，一个表征形状，一个表征方差；使用非对称广义高斯分布拟合四张相关性图像，共得到16个特征。其中，每张相关图像对应4个特征：形状、均值、左侧方差、右侧方差。考虑到自然图像的多尺度性，他们将原图像尺寸重置为原来的一半，并重复上述操作，共获取36个特征。
-
-Mittal等人使用支持向量回归(SVR)拟合了上述计算得到的36个特征和其对应的主观评分间的映射关系。在对未知图片进行质量评价时，可以直接使用训练好的SVR模型，对提取出的特征进行回归，以得到图像质量评估得分。BRISQUE得分在0-100之间，得分越低，表明所受降质影响越小，因而图片质量越好。
-
-本方法是直接在空域中进行计算的，不需要将图片映射到DCT域。此外，本方法时间复杂度很低，能够应对实时的图像质量评估。
-
-\subsection{SSEQ\quad}
-与BRISQUE类似，SSEQ\cite{ref26}(Spatial-Spectral Entropy-based Quality)也有很好的计算效率，且和人眼评估较为一致。不同的是，本方法在曲波域中计算NSS(Natural Scene Statistics)特征以及质量得分。SSEQ采用位置熵和谱熵来表征图片的结构性及像素之间的相关性。该方法首先计算图像中的位置熵特征以及谱熵特征，之后采用一个两步框架来分辨降质类型并评估图片质量。其中，SSEQ方法使用支持向量机进行降质类型预测，使用支持向量回归用于图片质量评估。本方法由Liu等人实现并公开。SSEQ指标值通常在0-100之间，得分越低表示图片质量越好。
-
-\section{算法评估\quad}
-本节我们从四个方面对上述介绍的算法进行评估：基于合成图片，基于实际图片，去雾速率对比以及视频去雾。
-
-本论文中，所有算法均用python/keras实现，在同一台Linux机器上运行，机器配置为Intel(R) Core(TM) i7-6700k 4GHz, 24GB RAM，Nvidia GeForce GTX 1080 Ti GPU, 8G显存。
-
-\subsection{基于合成图片的评价\quad}
-我们从SOTS数据集中indoor、outdoor子集各随机采样50张共100张含雾图片及其对应无雾图片对各算法进行测试。我们首先比较DCP、DehazeNet、MSCNN、AOD-Net在SOTS数据集上的去雾效果，评价指标为PSNR、SSIM、SSEQ、BRISQUE。各算法得分如表\ref{tab:4.1}所示。
-
-\begin{table}[htbp]
-  \centering
-  \caption{合成图片测试算法得分表}
-    \begin{tabular}{c|c|c|c|c}
-    \hline
-         	&	DCP		&	DehazeNet	&	MSCNN	&	AOD-Net	\\
-    \hline
-    PSNR	&	17.73	& 	13.62		&	16.14	&	{\color{cyan}19.55}	\\
-	\hline
-    SSIM	&	{\color{cyan}0.85}	&	0.75		&	0.72	&	{\color{cyan}0.85}	\\
-	\hline
-    SSEQ	&	27.67	&	30.11		&	33.44	&	{\color{cyan}27.64}	\\
-    \hline
-    BRISQUE	&	{\color{cyan}39.16}	&	39.64		& 	44.44	& 	41.23  	\\
-     \hline
-  
-    \end{tabular}%
-  \label{tab:4.1}%
-\end{table}%
-从表\ref{tab:4.1}可以看出，就全参考指标而言，AOD-Net的得分较高，尤其是PSNR。这一结果与我们的预期是相符的。在PSNR的定义(\ref{eq:4.5})中可以看见，两张图片间的均方误差(MSE)越小，则计算得到的PSNR值越大，得分越高。而AOD-Net在训练时即是以减小图片间的MSE为目标的，因此该网络取得PSNR最高分是意料之中的。同时，AOD-Net将$t$和$A$融合为一个变量$K$，实际上是在训练过程中隐式地估计出大气光值，而这一估计是比根据透射图估计大气光值更准确的，因此与原无雾图片亮度值更相似，这与SSIM中亮度相似性的测量(式\ref{eq:4.7})是吻合的，因而AOD-Net也具有较高的SSIM得分。
-
-我们还注意到，虽然DehazeNet和MSCNN训练时都是最小化预测透射率和实际透射率之间的误差，但MSCNN是直接最小化两张透射图之间的误差，因而预测得到的透射图与实际投射图更接近，由此计算出的去雾图片与原图误差更小，所以MSCNN相比DehazeNet具有更高的PSNR得分。同理，DehazeNet比MSCNN更强调图片的内部结构，采用了划分图片块的方法训练网络并对含雾图片去雾，因此DehazeNet比MSCNN取得更高的结构相似性得分是合理的。
-
-除此之外，我们应该注意到，在本测试集上，暗通道法取得了非常显著的效果，全面超过DehazeNet和MSCNN。我们检查测试集发现，从SOTS中随机采样得到的图片中，含大量天空区域的图片较少，并且有一半的测试图片是室内拍摄并合成的。DCP非常适用于不含天空区域或者不含与天空具有类似颜色物体的图片的去雾，这解释了为什么在这一测试集上该方法能取得如此优越的效果。
-
-然而，就无参考指标而言，四种算法得分便不那么一致了。AOD-Net取得了最好的SSEQ得分，但其BRISQUE得分却不理想，这是由于AOD-Net在设计时较少考虑到图片中像素点之间的相关关系以及其像素值的统计特征，更注重于层与层之间的联系。MSCNN两个全参考指标得分均不理想，这也许是由于该网络使用的双层结构与人类视觉系统原理不符，因为人眼在查看图片时不会分两步感知景物深度，进而感知透射图。相反，由于人眼观察图片时会潜意识将图片结构化，而DehazeNet的设计是符合这一过程的，所以该网络相比于MSCNN能取得更好的得分。此外，可以观察到，暗通道法取得了最好的BRISQUE得分，而其SSEQ得分也与最佳得分非常接近。这一结果也是可以想见的，由于暗通道就是在人眼大量观察下总结提出的，而暗通道法去雾的步骤比较符合人眼预期（如大气光值的估计），因而暗通道法能在无参考指标上取得优异的得分。
-
-全参考指标和无参考指标对去雾算法评价的不一致，也表明了目前研究的困境，即现行的客观图像质量评估方法不能很好地适用于去雾图像，重建图像质量评估仍是一个非常困难的问题。
-
-\begin{figure}[htbp]
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{62-Hazy}
-  \caption{Hazy}
-  \label{fig:sfig1}
-\end{subfigure}%
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{62-DCP}
-  \caption{DCP}
-  \label{fig:sfig2}
-\end{subfigure}
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{62-DehazeNet}
-  \caption{DehazeNet}
-  \label{fig:sfig3}
-\end{subfigure} \\
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{62-Clear}
-  \caption{Clear}
-  \label{fig:sfig4}
-\end{subfigure}
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{62-MSCNN}
-  \caption{MSCNN}
-  \label{fig:sfig5}
-\end{subfigure}%
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{62-AOD}
-  \caption{AOD-Net}
-  \label{fig:sfig6}
-\end{subfigure}
-\caption{无天空区域去雾效果示意}
-\label{fig:4.1}
-\end{figure}
-
-图\ref{fig:4.1}展示了各算法在不含天空区域图片上的去雾表现，可以看见，无天空区域下暗通道法能取得非常卓越的去雾效果，某些区域去雾效果甚至超越了AOD-Net，如图中上部分建筑。但我们也注意到，DCP方法会对图片造成一定的失真，如图中地面的颜色，在这一方面AOD-Net更具优越性。由于MSCNN网络结构与人眼视觉系统过程不符，因此去雾效果在人眼看来不理想，这一结果是与表\ref{tab:4.1}相符的。DehazeNet保留了大部分雾没能去除，离AOD-Net和DCP相差甚远。
-
-\begin{figure}[htbp]
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{9-Hazy}
-  \caption{Hazy}
-  \label{fig:sfig11}
-\end{subfigure}%
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{9-DCP}
-  \caption{DCP}
-  \label{fig:sfig22}
-\end{subfigure}
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{9-DehazeNet}
-  \caption{DehazeNet}
-  \label{fig:sfig33}
-\end{subfigure} \\
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{9-Clear}
-  \caption{Clear}
-  \label{fig:sfig44}
-\end{subfigure}
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{9-MSCNN}
-  \caption{MSCNN}
-  \label{fig:sfig55}
-\end{subfigure}%
-\begin{subfigure}{.33\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{9-AOD}
-  \caption{AOD-Net}
-  \label{fig:sfig66}
-\end{subfigure}
-\caption{含天空区域去雾效果示意}
-\label{fig:4.2}
-\end{figure}
-
-图\ref{fig:4.2}展示了各算法在含天空区域图片上的去雾效果，可以看见，DCP方法在去雾时会对天空区域造成较大失真，但其他区域的去雾效果较好。DehazeNet依旧没能很好的去雾，MSCNN计算得到的天空亮度值太大，导致云层失真，但其对天空的去雾以及景深较小区域的去雾效果良好。AOD-Net有一定的去雾效果，但整体保留了部分雾，因而去雾图片亮度值更高。
-\begin{figure}[htbp]
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{73-Hazy}
-  \caption{Hazy}
-  \label{fig:sfig111}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{73-DCP}
-  \caption{DCP}
-  \label{fig:sfig222}
-\end{subfigure} \\
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{73-Clear}
-  \caption{Clear}
-  \label{fig:sfig333}
-\end{subfigure} 
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{73-DCP-1}
-  \caption{DCP-2}
-  \label{fig:sfig444}
-\end{subfigure}
-\caption{DCP与DCP-2去雾效果示意}
-\label{fig:4.3}
-\end{figure}
-
-为了进一步研究暗通道法的效果及其对天空区域的去雾效果，我们对He提出的暗通道法进行微调，我们设置天空区域像素最大值为220，设置透射率最小值为0.2，将此微调后的暗通道法记为DCP-2.图\ref{fig:4.3}展示了DCP和DCP-2的去雾效果对比图。两者对比我们发现，调整后的暗通道法对天空区域处理更接近实际情况，而去雾效果也比原方法好。对此，我们深入研究发现，原方法估计的大气光值往往较高，有的甚至达到了255，也即像素最高值，对应纯白色。但现实生活中，天空并不是纯白色，即便在浓雾天气其像素值也不会达到255，因此我们微调后，天空区域的计算更接近实际值，也更符合人的视觉系统。同时，原方法中设置透射率最小值为0.1，但未给出具体原因，因此我们有理由认为最小透射率设置为0.1时保留的景物信息太少而导致去雾效果不理想。适当上调透射率最小阈值后，图片的去雾效果更好，这也证实了我们的猜想。
-
-\begin{figure}
-    \centering
-    \minipage{.33\linewidth}
-            \begin{subfigure}{.9\linewidth}
-                \includegraphics[width=\textwidth]{22-Hazy}
-                \caption{Hazy}
-                \label{fig:sfig1111}
-            \end{subfigure}
-        \endminipage\hfill
-    \minipage{.33\linewidth}
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{22-DCP}
-            \caption{DCP}
-            \label{fig:sfig2222}
-        \end{subfigure} 
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{22-DehazeNet}
-            \caption{DehazeNet}
-            \label{fig:sfig3333}
-        \end{subfigure} 
-    \endminipage\hfill
-	\minipage{.33\linewidth}	
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{22-MSCNN}
-            \caption{MSCNN}
-            \label{fig:sfig4444}
-        \end{subfigure} 
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{22-AOD}
-            \caption{AOD-Net}
-            \label{fig:sfig5555}
-        \end{subfigure} 
-    	\endminipage
-    \caption{浓雾图去雾效果示意}
-	\label{fig:4.4}
-\end{figure}
-
-另外，我们发现，各算法在浓雾环境下的去雾效果均不理想，因为浓雾情况下，图片中含有的景物信息过少，而去雾是一个图像复原的过程，我们没有足够的信息来复原无雾图像，如图\ref{fig:4.4}所示。
-\begin{figure}[H]
-    \centering
-    \minipage{.33\linewidth}
-            \begin{subfigure}{.9\linewidth}
-                \includegraphics[width=\textwidth]{65-Hazy}
-                \caption{Hazy}
-                \label{fig:sfig11111}
-            \end{subfigure}
-        \endminipage\hfill
-    \minipage{.33\linewidth}
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{65-DCP}
-            \caption{DCP}
-            \label{fig:sfig22222}
-        \end{subfigure} 
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{65-DehazeNet}
-            \caption{DehazeNet}
-            \label{fig:sfig33333}
-        \end{subfigure} 
-    \endminipage\hfill
-	\minipage{.33\linewidth}	
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{65-MSCNN}
-            \caption{MSCNN}
-            \label{fig:sfig44444}
-        \end{subfigure} 
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{65-AOD}
-            \caption{AOD-Net}
-            \label{fig:sfig55555}
-        \end{subfigure} 
-    	\endminipage
-    \caption{真实含雾图片去雾效果示意1}
-	\label{fig:4.5}
-\end{figure}
-\subsection{基于实际图片的评价\quad}
-我们通过实地拍摄及在RTTS数据集中随机采样，共选取了100张实际的含雾图片。图\ref{fig:4.5}，\ref{fig:4.6}显示了四种算法在实际图片上的去雾效果。可以看见DCP和AOD-Net的去雾效果较好，但依旧存在问题，AOD-Net去雾不彻底，而DCP去雾之后导致图片亮度值变低，图片整体偏暗。MSCNN较好地恢复了图片中近处的景物，如图\ref{fig:4.5}中驾驶员和\ref{fig:4.6}中花卉，其效果非常好。但MSCNN会对图中远处区域造成色差，使图片偏蓝色。
-\begin{figure}
-    \centering
-    \minipage{.33\linewidth}
-            \begin{subfigure}{.9\linewidth}
-                \includegraphics[width=\textwidth]{Hazy_62}
-                \caption{Hazy}
-                \label{fig:sfig111111}
-            \end{subfigure}
-        \endminipage\hfill
-    \minipage{.33\linewidth}
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{DCP_62}
-            \caption{DCP}
-            \label{fig:sfig222222}
-        \end{subfigure} 
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{DehazeNet_62}
-            \caption{DehazeNet}
-            \label{fig:sfig333333}
-        \end{subfigure} 
-    \endminipage\hfill
-	\minipage{.33\linewidth}	
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{MSCNN_62}
-            \caption{MSCNN}
-            \label{fig:sfig444444}
-        \end{subfigure} 
-        \begin{subfigure}{.9\linewidth}
-            \includegraphics[width=\textwidth]{AOD_62}
-            \caption{AOD-Net}
-            \label{fig:sfig555555}
-        \end{subfigure} 
-    	\endminipage
-    \caption{真实含雾图片去雾效果示意2}
-	\label{fig:4.6}
-\end{figure}
-
-此外，表\ref{tab:4.2}展示了各算法在此数据集上的SSEQ、BRISQUE指标。可见AOD-Net取得了最好的SSEQ得分，其次是DCP，MSCNN的得分最不理想。这与我们的观察是一致的，AOD-Net最能复原原图，而MSCNN会对图片造成较大色差。值得注意的是，BRISQUE得分中，DehazeNet取得了最佳得分，但这并不表明该方法去雾效果最好。相反，BRISQUE是用以评判图片与自然图片偏离程度的，得分越低表明与自然图片偏离程度越低，也即与原含雾图片差异越小，因而去雾效果越不好。同理，BRISQUE得分越高表明去雾图片与原含雾图片差异越大，但不代表去雾效果最好，例如此处MSCNN得分最高，但其去雾图片与原图片色差最大。
-\begin{table}[htbp]
-  \centering
-  \caption{实际图片测试算法得分表}
-    \begin{tabular}{c|c|c|c|c}
-    \hline
-         & DCP    & DehazeNet  & MSCNN    & AOD-Net \\
-    \hline
-    SSEQ & 33.19  & 34.66 &   39.09  & {\color{cyan} 31.81} \\
-    \hline
-     BRISQUE     &     47.37  &  {\color{cyan}46.22}     &  54.00 & 50.19 \\
-     \hline
-    \end{tabular}%
-  \label{tab:4.2}%
-\end{table}%
-
-\subsection{去雾速率\quad}
-表\ref{tab:4.3}展示了各算法对一张$480 \times 640$大小的图片去雾所花费的时间，所有算法均在同一机器上使用python实现，因此具有可比性。由表可知，AOD-Net和MSCNN的计算速率非常快，大幅高于DCP和DehazeNet。这一结果是可以预见的。DCP和DehazeNet均需使用引导滤波对估计得到的透射图进行优化，而引导滤波的计算相比于神经网络的前向传播是非常缓慢的。训练好的MSCNN和AOD-Net在对一张图片去雾时，仅需进行一次前向传播，之后不需对透射图进行优化，这一过程非常迅速。除此之外，MSCNN的网络结构更为复杂，且估计出透射图后仍需按传统方法估计大气光并计算得到去雾图像，而AOD-Net网络结构简单，对图像进行端对端的处理，直接前向传播即可计算出去雾图像，因此AOD-Net具有更快的运行速率。在实际应用时，我们要求算法能够快速乃至实时对获取图片进行去雾，因此传统方法和DehazeNet计算速率不满足要求。
-
-\begin{table}[htbp]
-\centering
-\caption{各算法去雾速率对比 (单位: s)}
-\begin{tabular}{c|c|c|c|c}
-\hline
-图片大小 & DCP & DehazeNet	& MSCNN	& AOD-Net \\
-\hline
-$480\times  640$ & 21.99 & 20.63 & 0.05 & 0.02\\
-\hline
-\end{tabular}
-\label{tab:4.3}
-\end{table}
-
-\subsection{视频去雾\quad}
-自动驾驶巨头特斯拉CEO马斯克及其团队曾说激光雷达在自动驾驶领域已经走到尽头，人们在驾驶的时候就是只凭视觉的，所以马斯克团队说未来的自动驾驶也应该只靠视觉。倘使未来真的只需要靠视觉即可实现自动驾驶，那么毫无疑问，将去雾算法应用到自动驾驶车辆，则该车辆行驶时能获取的信息增多，自动驾驶的应用面会更广泛，其可靠性也会上升。
-
-考虑到AOD-Net极高的计算速率，我们应用其对视频文件进行去雾。值得注意的是，雾天行车记录仪记录视频或者其他交通监控视频难以获取，因此我们从YouTube\cite{ref27}获取了一个用户上传的视频，由于可选择范围有限，这个视频中含雾较浓。图\ref{fig:4.7}展示了算法对该视频的去雾效果示意。可以看见，浓雾天气下去雾效果不理想，但经过去雾处理之后，图像对比度更大，指示牌文字更便于识别。因此可以想见，若获取视频含雾不这么浓，AOD-Net是能取得很好的去雾效果的。而由于该网络计算速率较快，因而可以满足实时去雾的要求。
-
-\section{本章小结\quad}
-本章我们详细介绍了RESIDE数据集中含雾图片的合成以及该数据集的组成，而后讲解了我们在研究过程中对DCP、DehazeNet、MSCNN、AOD-Net的具体实现及参数设置。最后，我们具体介绍了图像质量评估领域的全参考指标PSNR、SSIM和无参考指标SSEQ、BRISQUE，并从合成图片去雾、实际图片去雾、去雾速率以及视频处理去雾四个方面对各算法进行了评估。综合而言，我们认为AOD-Nets具有更强的去雾能力和更广阔的应用前景。
-\begin{figure}[H]
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{385-frame}
-  \caption{Frame 385}
-  \label{fig:sfig5555555}
-\end{subfigure} 
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{385-AOD}
-  \caption{Dehaze 385}
-  \label{fig:sfig6666666}
-\end{subfigure}\\
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{870-frame}
-  \caption{Frame 870}
-  \label{fig:sfig1111111}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{870-AOD}
-  \caption{Dehaze 870}
-  \label{fig:sfig2222222}
-\end{subfigure} \\
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{1683-frame}
-  \caption{Frame 1683}
-  \label{fig:sfig3333333}
-\end{subfigure} 
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{1683-AOD}
-  \caption{Dehaze 1683}
-  \label{fig:sfig4444444}
-\end{subfigure}
-\caption{视频去雾效果示意}
-\label{fig:4.7}
-\end{figure}
-
-\chapter{总结与展望\quad}
-\section{总结\quad}
-本文旨在探索比对去雾领域的前沿算法。以表征含雾图片生成的大气散射模型引入，本文介绍了研究背景与意义，并从基于先验知识和神经网络的去雾算法两个方面综述本领域的发展变迁。以暗通道法为例，本文介绍了基于先验知识的去雾算法。鉴于卷积神经网络在图像处理中的卓越效果，本文介绍了卷积神经网络及其典型层，并详细介绍基于卷积神经网络的去雾算法DehazeNet，MSCNN和AOD-Net。
-
-神经网络的训练需要大量数据，尤其是含雾—无雾图片对。由此，本文介绍了领域中基准性数据集RESIDE。此外，我们具体讲解了各算法实现及其参数设置。本文采用全参考指标PSNR，SSIM和无参考指标SSEQ、BRISQUE对图像质量进行评价。在合成图片测试集上，我们发现AOD-Net取得了最佳的PSNR、SSIM、SSEQ得分，DehazeNet和MSCNN表现并不理想，而DCP也取得了非常卓越的客观指标得分，这主要得益于我们的测试图片中含大量天空区域的图片较少。我们也将各算法应用于实际图片，发现AOD-Net和DCP去雾的视觉效果最好，虽然客观指标得分上DCP并未取得最优得分，但其效果却是超越DehazeNet和MSCNN的。同时，我们测试各算法速率，发现MSCNN和AOD-Net计算速率远远超过需要使用引导滤波的DCP和DehazeNet，具有非常好的实时去雾潜力。我们应用AOD-Net对实际的雾天视频进行去雾，由于雾气较浓，算法未能取得非常好的效果，但经其处理后的图片具有更大的对比度且能更好的识别图中文字，因此我们认为该算法的应用前景是广泛的。
-	
-\section{展望\quad}
-图像去雾化是图像处理中较为热门的领域。许多学者致力于提出高效、快速、通用的去雾方法，但由于单幅图像去雾是一个病态的问题，这一通用方法仍未被发现。研究过程中，我们注意到，现行的去雾方法都是基于大气散射模型的，也即我们是按照给出$I$求解$J$的思路进行去雾的。但我们实验发现，从合成图像上训练出的去雾模型在实际图像中表现并不好，说明通过这一模型合成出的含雾图像与实际的含雾图像存在较大差距。是否存在一个更为合理的描述含雾图片生成的模型，我们不得而知。
-
-此外，神经网络模型在训练时遇到的最大困难，便是样本的获取。实际生活中，我们几乎不可能获取到含雾—无雾图片对，因此极大的限制了神经网络模型的泛化能力。如果能获取到真实的含雾—无雾图像对，神经网络的优越性便会充分体现。在图像质量评价时，我们意识到现行的IQA方法不能很好的适用于去雾图片的质量评价，全参考指标和无参考指标得出的结论并不一致，我们认为可以应用深度学习的方法对去雾效果进行评价。
-
-从本文的研究可以知道，图像去雾可以应用到行车记录仪，更好的记录路面交通信息，也为将来完全基于视觉的自动驾驶系统做铺垫，还可以应用到交叉口视频监控，更清楚地捕捉交叉口的交通行为，更好地服务于交通管控。
+\chapter{CHAPTER 2\quad}
 
 
 } % ends line spacing setting here
 
-
-
-
-
-
-
-
-
-
 \begin{Acknowledgement}{}
 \par To my family, friends, and tearchers.
-\par 从家庭中获得了最多的养分，也对家庭亏欠得最多。Luckily, I have a whole life to pay you back, and I will pay you back.
-\par 饺子姐，how you doing? 你是对我的大学乃至以后的人生都有关键影响的人，大二大三两年如果没有你，我可能会步入温水，become nobody. You are the first one that pops up in my mind when I recall my undergraduate years.
-\par 感谢远在长春的基友，感谢你陪我扯犊子，谈天论地，挥斥方遒，指点江山。我乐于领略你的讲话精神，享受互损互吹，you are my shaper.
-\par 感谢小魏同学，you are a dear friend of mine, always.
-\par 感谢富婆瑾神，情圣阿曾，天才凡仔仔，you brought me laughter. You stood with me when I broke down.
-\par 感谢建安和文强，你们教会了我太多太多。I don't know what will become of me if I confined myself to this tiny world, but I know I'll hate him badly.
-\par 感谢Sunny, you are my drive and my comfort. You are the goodness I'd love to think about when I am down.
-\par 感谢Martin \& Soffia, your kindness will stay with me in my life to come.
-\par 感谢Janet \& Kaitlyn, I could never come here without your support.
-\par 感谢刘老师，带我进行科研训练，让我受益良多。感谢李老师，细致的指导让我体会到何为学者风范。感谢罗老师，从工作、生活、人生各方面指引我。You are remembered.
-\par 感谢何老师，为我提供悉心的毕设资源和指导，让我能够安心地完成毕业设计。感谢吕学长和江学长，在我毕设过程中不嫌烦扰的为我答疑解惑。 
-\par Finally, thanks to those who forced me to realize the cruelty of life. I am still alive, so I guess I am stronger :).
 
 \end{Acknowledgement}
-
-%\begin{References}
-%\end{References}
 
 \begin{thebibliography}{99}  
 \fontsize{10.5}{10.5} \selectfont
 
 \setlength{\itemsep}{0pt}
-\bibitem{ref1} He, K., Sun, J., \& Tang, X. (2010). Single image haze removal using dark channel prior. IEEE transactions on pattern analysis and machine intelligence, 33(12), 2341-2353.
-\bibitem{ref2} McCartney, E. J. (1976). Optics of the atmosphere: scattering by molecules and particles. New York, John Wiley and Sons, Inc., 1976. 421 p.
-\bibitem{ref3} Narasimhan, S. G., \& Nayar, S. K. (2000). Chromatic framework for vision in bad weather. In Proceedings IEEE Conference on Computer Vision and Pattern Recognition. CVPR 2000 (Cat. No. PR00662) (Vol. 1, pp. 598-605). IEEE.
-\bibitem{ref4} Narasimhan, S. G., \& Nayar, S. K. (2002). Vision and the atmosphere. International journal of computer vision, 48(3), 233-254.
-\bibitem{ref5} Narasimhan, S. G., \& Nayar, S. K. (2003). Contrast restoration of weather degraded images. IEEE Transactions on Pattern Analysis \& Machine Intelligence, (6), 713-724.
-\bibitem{ref6} Nayar, S. K., \& Narasimhan, S. G. (1999). Vision in bad weather. In Proceedings of the Seventh IEEE International Conference on Computer Vision (Vol. 2, pp. 820-827). IEEE.
-\bibitem{ref7} Schechner, Y. Y., Narasimhan, S. G., \& Nayar, S. K. (2001, December). Instant dehazing of images using polarization. In CVPR (1) (pp. 325-332).
-\bibitem{ref8} Shwartz, S., Namer, E., \& Schechner, Y. Y. (2006). Blind haze separation. In 2006 IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR'06) (Vol. 2, pp. 1984-1991). IEEE.
-\bibitem{ref9} Kim, J. Y., Kim, L. S., \& Hwang, S. H. (2001). An advanced contrast enhancement using partially overlapped sub-block histogram equalization. IEEE transactions on circuits and systems for video technology, 11(4), 475-484.
-\bibitem{ref10} Parthasarathy, S., \& Sankaran, P. (2012, August). A RETINEX based haze removal method. In 2012 IEEE 7th International Conference on Industrial and Information Systems (ICIIS) (pp. 1-6). IEEE.
-\bibitem{ref11} Tan, R. T. (2008, June). Visibility in bad weather from a single image. In 2008 IEEE Conference on Computer Vision and Pattern Recognition (pp. 1-8). IEEE.
-\bibitem{ref12} Fattal, R. (2008). Single image dehazing. ACM transactions on graphics (TOG), 27(3), 72.
-\bibitem{ref13} He, K., Sun, J., \& Tang, X. (2012). Guided image filtering. IEEE transactions on pattern analysis and machine intelligence, 35(6), 1397-1409.
-\bibitem{ref14} Zhu, Q., Mai, J., \& Shao, L. (2015). A fast single image haze removal algorithm using color attenuation prior. IEEE transactions on image processing, 24(11), 3522-3533.
-\bibitem{ref15} Berman, D., \& Avidan, S. (2016). Non-local image dehazing. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 1674-1682).
-\bibitem{ref16} Cai, B., Xu, X., Jia, K., Qing, C., \& Tao, D. (2016). Dehazenet: An end-to-end system for single image haze removal. IEEE Transactions on Image Processing, 25(11), 5187-5198.
-\bibitem{ref17} Ren, W., Liu, S., Zhang, H., Pan, J., Cao, X., \& Yang, M. H. (2016, October). Single image dehazing via multi-scale convolutional neural networks. In European conference on computer vision (pp. 154-169). Springer, Cham.
-\bibitem{ref18} Li, B., Peng, X., Wang, Z., Xu, J., \& Feng, D. (2017). Aod-net: All-in-one dehazing network. In Proceedings of the IEEE International Conference on Computer Vision (pp. 4770-4778).
-\bibitem{ref19} Goodfellow, I. J., Warde-Farley, D., Mirza, M., Courville, A., \& Bengio, Y. (2013). Maxout networks. arXiv preprint arXiv:1302.4389.
-\bibitem{ref20} Tang, K., Yang, J., \& Wang, J. (2014). Investigating haze-relevant features in a learning framework for image dehazing. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 2995-3000).
-\bibitem{ref21} Li, B., Ren, W., Fu, D., Tao, D., Feng, D., Zeng, W., \& Wang, Z. (2019). Benchmarking single-image dehazing and beyond. IEEE Transactions on Image Processing, 28(1), 492-505.
-\bibitem{ref22} Silberman, N., Hoiem, D., Kohli, P., \& Fergus, R. (2012, October). Indoor segmentation and support inference from rgbd images. In European Conference on Computer Vision (pp. 746-760). Springer, Berlin, Heidelberg.
-\bibitem{ref23} Scharstein, D., \& Szeliski, R. (2003, June). High-accuracy stereo depth maps using structured light. In 2003 IEEE Computer Society Conference on Computer Vision and Pattern Recognition, 2003. Proceedings. (Vol. 1, pp. I-I). IEEE.
-\bibitem{ref24} Wang, Z., Bovik, A. C., Sheikh, H. R., \& Simoncelli, E. P. (2004). Image quality assessment: from error visibility to structural similarity. IEEE transactions on image processing, 13(4), 600-612.
-\bibitem{ref25} Mittal, A., Moorthy, A. K., \& Bovik, A. C. (2012). No-reference image quality assessment in the spatial domain. IEEE Transactions on Image Processing, 21(12), 4695-4708.
-\bibitem{ref26} Liu, L., Liu, B., Huang, H., \& Bovik, A. C. (2014). No-reference image quality assessment based on spatial and spectral entropies. Signal Processing: Image Communication, 29(8), 856-863.
-\bibitem{ref27} Fog accident in San Antonio TX. (2017, February 1st). Retrieved May 14, 2019, from: YouTube. 
+\bibitem{ref1} https://github.com/DongqinZhou/DeHaze.
 
 \end{thebibliography}
-
-
-
-%    参考文献字体没调好！但在改了字体之后TOC里面的字体也会改！实在不行的办法就把正文里的字体改好，然后手动改.toc文件里面的参考文献字体！这是奇技淫巧
-
-%中文字体不能加粗，要装字体
-
-%为什么使用Maxout?
-
-%其他几张图改成subfigure的形式 \url{https://tex.stackexchange.com/questions/119905/insert-multiple-figures-in-latex}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
