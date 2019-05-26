@@ -64,7 +64,7 @@
 \addcontentsline{toc}{chapter}{摘要\quad }
 
 \begin{center}
-\fontsize{18}{21.6}\selectfont 摘\qquad 要
+\fontsize{18}{21.6}\selectfont 摘\quad 要
 \end{center}
 \fontsize{12}{18}\selectfont
 }
@@ -84,10 +84,12 @@
 \begin{center}
 ABSTRACT
 \end{center}
+\fontsize{12}{18}\selectfont
 }
 {
 \\[1\baselineskip]
 KEY WORDS: \keywords
+
 }
 
 %%% 章节格式
@@ -217,7 +219,7 @@ KEY WORDS: \keywords
 \begin{englishabstract}{dark channel prior, DehazeNet, MSCNN, AOD-Net, image quality assessment}
 \par The availability of electronic devices enabled us to obtain a significant amount of images and videos, thus making it easier for us to record what's happending around us. However, images and videos are rather prone to degradation because of the weather instability. In this paper, we focus on the formation of hazy images and how to remove haze (dehaze) for them.
 
-Single image dehazing is a challenging ill-posed problem which lacks efficient solution, and scholars have been consistently investing efforts on it. In this paper, we present a comprehensive study and evaluation of some seminar dehazing algorithms: dark channel prior(DCP), DehazeNet, MSCNN, and AOD-Net. DCP represents traditional ways of image dehazing, i.e., prior-based haze removal methods, while the other three are well developed learning based image dehazing methods. DehazeNet is a first-in-class approach to combine Convolutional Neural Network (CNN) with traditional method for haze removal. Similarly, MSCNN generalized the idea in DehazeNet to predict the transmission map with a single feed-forward computation. AOD-Net, on the other hand, proposed a much simpler full-convolutional network architecture to remove haze in an end-to-end manner.  
+Single image dehazing is a challenging ill-posed problem which lacks efficient solution, and scholars have been consistently investing efforts on it. In this paper, we present a comprehensive study and evaluation of some seminar dehazing algorithms: dark channel prior (DCP), DehazeNet, MSCNN, and AOD-Net. DCP represents traditional ways of image dehazing, i.e., prior-based haze removal methods, while the other three are well developed learning based image dehazing methods. DehazeNet is a first-in-class approach to combine Convolutional Neural Network (CNN) with traditional method for haze removal. Similarly, MSCNN generalized the idea in DehazeNet to predict the transmission map with a single feed-forward computation. AOD-Net, on the other hand, proposed a much simpler full-convolutional network architecture to remove haze in an end-to-end manner.  
 
 Image quality assessment (IQA) is another big topic discussed in this paper. We utilized full reference (FR) metrics, PSNR and SSIM, and no reference (NR) metrics, SSEQ and BRISQUE, to evaluate the quality of dehazed images, thus benchmarking the performances of aforementioned algorithms. We tested all four algorithms on synthetic and real hazy images. We found that AOD-Net received the best dehazed results followed by DCP, and they outperform other methods in terms of PSNR and SSIM. However, the results are less consistent when it comes to NR metrics. Additionally, MSCNN and AOD-Net have clear advantages over other methods in computation efficiency, and AOD-Net could be used to dehaze a hazy video.   
 \end{englishabstract}
@@ -225,16 +227,15 @@ Image quality assessment (IQA) is another big topic discussed in this paper. We 
 \newpage
 
 %%% 目录
+% good info for removing the footer on TOC: https://tex.stackexchange.com/questions/180874/remove-page-numbers-from-footer-for-multi-page-table-of-contents/180877
 \pagestyle{empty}
 \begingroup
 \renewcommand{\leftline}{}
-\renewcommand{\bibname}{}
-
-{\fontsize{12pt}{18pt} \selectfont
+\renewcommand{\thispagestyle}[1]{}
+\fontsize{12pt}{18pt} \selectfont
 \tableofcontents
-}
-\newpage
 \endgroup
+\newpage
 
 %%% 正文
 \pagestyle{fancy}
@@ -598,7 +599,7 @@ K(x) = \frac{\frac{1}{t(x)}(I(x) - A) + A - b}{I(x) - 1}
 \label{fig:3.9}
 \end{figure}
 
-\section{无雾图像计算\quad}
+\subsection{无雾图像计算\quad}
 由于AOD-Net具有非常轻便且端对端的网络结构，因此在网络训练好之后，对未知的含雾图片进行处理时，只需进行一次前向传播即可获取去雾图片。相比于DehazeNet，省去了划分图片块、使用引导滤波等过程；相比于MSCNN，也不用估计大气光并另外进行无雾图像计算。
 
 \section{本章小结\quad}
